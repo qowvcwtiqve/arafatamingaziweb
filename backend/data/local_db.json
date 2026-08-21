@@ -1,0 +1,218 @@
+{
+  "users": [
+    {
+      "id": "usr-admin-001",
+      "name": "QuantumXD Admin",
+      "email": "admin@quantumxd.store",
+      "password_hash": "$2a$10$ttu78i0KS2E0iTT0vxnvG.l.uWayBRf7Oal1hIJCTX1hikZzsDYw2",
+      "role": "admin",
+      "balance": 5000,
+      "currency": "INR",
+      "all_time_topup": 5000,
+      "is_verified": true,
+      "is_frozen": false,
+      "telegram_username": "@quantumxd_admin",
+      "created_at": "2026-08-21T14:17:24.977Z"
+    },
+    {
+      "id": "usr-demo-002",
+      "name": "Demo Buyer",
+      "email": "demo@quantumxd.store",
+      "password_hash": "$2a$10$fMYONShsOJP3uWvaW0EHFuGtwqgyPBeuoont7sCH/KF6yMIZZqz.S",
+      "role": "buyer",
+      "balance": 1500,
+      "currency": "INR",
+      "all_time_topup": 1500,
+      "is_verified": true,
+      "is_frozen": false,
+      "telegram_username": "@demobuyer",
+      "created_at": "2026-08-21T14:17:25.034Z"
+    }
+  ],
+  "products": [],
+  "product_variants": [
+    {
+      "id": "var-001-1",
+      "product_id": "prod-001",
+      "name": "1 Year Plan",
+      "price": 199,
+      "display_order": 1
+    },
+    {
+      "id": "var-001-2",
+      "product_id": "prod-001",
+      "name": "Lifetime VIP Plan",
+      "price": 299,
+      "display_order": 2
+    },
+    {
+      "id": "var-003-1",
+      "product_id": "prod-003",
+      "name": "1 Month Access",
+      "price": 399,
+      "display_order": 1
+    },
+    {
+      "id": "var-003-2",
+      "product_id": "prod-003",
+      "name": "3 Months VIP Access",
+      "price": 999,
+      "display_order": 2
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord-1787322935279",
+      "order_number": "QXDMT31XF5B",
+      "buyer_id": "usr-admin-001",
+      "buyer_email": "admin@quantumxd.store",
+      "total_amount": 1999,
+      "discount_amount": 0,
+      "coupon_code": null,
+      "payment_method": "upi",
+      "unique_amount": 2039.48,
+      "base_amount": 1999,
+      "timeout_at": "2026-08-21T15:05:35.279Z",
+      "payment_status": "pending",
+      "created_at": "2026-08-21T14:35:35.280Z"
+    },
+    {
+      "id": "ord-1787324360886",
+      "order_number": "QXDMT32RZ5I",
+      "buyer_id": null,
+      "buyer_email": "test@example.com",
+      "total_amount": 1999,
+      "discount_amount": 0,
+      "coupon_code": null,
+      "payment_method": "upi",
+      "unique_amount": 2039.22,
+      "base_amount": 1999,
+      "timeout_at": "2026-08-21T15:29:20.886Z",
+      "payment_status": "pending",
+      "created_at": "2026-08-21T14:59:20.886Z"
+    },
+    {
+      "id": "ord-1787324458519",
+      "order_number": "QXDMT32U2HJ",
+      "buyer_id": null,
+      "buyer_email": "test@example.com",
+      "total_amount": 1999,
+      "discount_amount": 0,
+      "coupon_code": null,
+      "payment_method": "binance",
+      "unique_amount": null,
+      "base_amount": 1999,
+      "timeout_at": "2026-08-21T15:30:58.519Z",
+      "payment_status": "pending",
+      "created_at": "2026-08-21T15:00:58.519Z"
+    },
+    {
+      "id": "ord-1787326003607",
+      "order_number": "QXDMT33R6OM",
+      "buyer_id": "usr-admin-001",
+      "buyer_email": "admin@quantumxd.store",
+      "total_amount": 1599.2,
+      "discount_amount": 399.8,
+      "coupon_code": "WELCOME20",
+      "payment_method": "wallet",
+      "unique_amount": "paid",
+      "base_amount": 1599.2,
+      "timeout_at": "2026-08-21T16:26:43.606Z",
+      "payment_status": "pending",
+      "created_at": "2026-08-21T15:26:43.607Z"
+    }
+  ],
+  "order_items": [
+    {
+      "id": "item-1787322935303-x3qc",
+      "order_id": "ord-1787322935279",
+      "product_id": "prod-004",
+      "variant_id": null,
+      "product_title": "Adobe Creative Cloud All Apps 1-Year Subscription",
+      "variant_name": null,
+      "price": 1999,
+      "delivered_content": "https://redeem.adobe.com/?token=QUANTUMXD_ADOBE_CC_REDEEM_LINK",
+      "download_token": "tok_qdvehpszzfq",
+      "download_count": 0,
+      "max_downloads": 5,
+      "created_at": "2026-08-21T14:35:35.303Z"
+    },
+    {
+      "id": "item-1787324360911-jkof",
+      "order_id": "ord-1787324360886",
+      "product_id": "prod-005",
+      "variant_id": null,
+      "product_title": "Adobe Creative Cloud All Apps 1-Year Subscription",
+      "variant_name": null,
+      "price": 1999,
+      "delivered_content": "https://redeem.adobe.com/?token=QUANTUMXD_ADOBE_CC_REDEEM_LINK",
+      "download_token": "tok_qxtsfjt1ty",
+      "download_count": 0,
+      "max_downloads": 5,
+      "created_at": "2026-08-21T14:59:20.911Z"
+    },
+    {
+      "id": "item-1787324458545-a4zb",
+      "order_id": "ord-1787324458519",
+      "product_id": "prod-005",
+      "variant_id": null,
+      "product_title": "Adobe Creative Cloud All Apps 1-Year Subscription",
+      "variant_name": null,
+      "price": 1999,
+      "delivered_content": "https://redeem.adobe.com/?token=QUANTUMXD_ADOBE_CC_REDEEM_LINK",
+      "download_token": "tok_j1k3dyvy6mj",
+      "download_count": 0,
+      "max_downloads": 5,
+      "created_at": "2026-08-21T15:00:58.545Z"
+    },
+    {
+      "id": "item-1787326003633-zrim",
+      "order_id": "ord-1787326003607",
+      "product_id": "prod-006",
+      "variant_id": null,
+      "product_title": "Adobe Creative Cloud All Apps 1-Year Subscription",
+      "variant_name": null,
+      "price": 1999,
+      "delivered_content": "https://redeem.adobe.com/?token=QUANTUMXD_ADOBE_CC_REDEEM_LINK",
+      "download_token": "tok_4q4rj166f2",
+      "download_count": 0,
+      "max_downloads": 5,
+      "created_at": "2026-08-21T15:26:43.633Z"
+    }
+  ],
+  "deposits": [],
+  "coupons": [],
+  "reviews": [
+    {
+      "id": "rev-001",
+      "product_id": "prod-001",
+      "buyer_id": "usr-demo-002",
+      "rating": 5,
+      "title": "Instant activation! Absolutely amazing",
+      "body": "Paid via UPI, got the invitation link immediately. My personal Canva account is now Pro. Highly recommended!",
+      "reviewer_name": "Rahul Sharma",
+      "is_approved": true,
+      "created_at": "2026-08-18T14:17:25.034Z"
+    },
+    {
+      "id": "rev-002",
+      "product_id": "prod-002",
+      "buyer_id": "usr-demo-002",
+      "rating": 5,
+      "title": "Genuine retail key, worked on first try",
+      "body": "Upgraded Windows 11 Home to Pro in 2 minutes without re-installing. Key was delivered instantly on the screen.",
+      "reviewer_name": "Amit Patel",
+      "is_approved": true,
+      "created_at": "2026-08-19T14:17:25.034Z"
+    }
+  ],
+  "processed_payment_ids": [],
+  "exchange_rate_cache": [
+    {
+      "from_currency": "USD",
+      "to_currency": "INR",
+      "rate": 84.5,
+      "fetched_at": "2026-08-21T14:17:25.034Z"
+    }
+  ]
+}
