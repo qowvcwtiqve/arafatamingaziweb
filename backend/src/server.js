@@ -12,6 +12,7 @@ import userRoutes from './routes/user.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import downloadRoutes from './routes/download.routes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
+import { connectMongoDB } from './config/mongodb.js';
 
 // Payment background checkers
 import { processUpiPayments, expireTimedOutOrders } from './services/upi.service.js';
@@ -64,6 +65,9 @@ app.use(errorHandler);
 // =====================================================
 // START SERVER
 // =====================================================
+// Connect to MongoDB Atlas (bot's database)
+connectMongoDB();
+
 app.listen(PORT, () => {
   console.log(`\n🚀 QuantumXD Backend running on http://localhost:${PORT}`);
   console.log(`   ENV: ${process.env.NODE_ENV || 'development'}`);

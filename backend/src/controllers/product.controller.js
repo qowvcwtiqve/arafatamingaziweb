@@ -95,11 +95,7 @@ export const getProduct = async (req, res, next) => {
 // GET /api/products/categories
 export const getCategories = async (req, res, next) => {
   try {
-    const { rows } = await query(`
-      SELECT category, COUNT(*) as count
-      FROM products WHERE status='active' AND category IS NOT NULL
-      GROUP BY category ORDER BY count DESC
-    `);
+    const { rows } = await query('SELECT * FROM categories ORDER BY created_at ASC');
     res.json({ categories: rows });
   } catch (err) { next(err); }
 };

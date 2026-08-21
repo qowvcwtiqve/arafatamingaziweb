@@ -1,0 +1,42 @@
+======================================
+     TELEGRAM BOT VPS SHORTCUTS
+======================================
+
+🟢 BOT KO ON KAISE KAREIN? (Agar naya terminal khola hai)
+1. VPS me login karein:
+   ssh root@162.0.211.112
+   
+2. Puraani screen hata kar nayi banayein:
+   killall screen; screen -S bot
+   
+3. Bot chalu karein:
+   cd ~/telegram_bot && source venv/bin/activate && python3 manager.py
+   
+4. Background me chhodne ke liye (Detach):
+   Dabayein "Ctrl + A" aur phir "D"
+   (Iske baad aap apna terminal close kar sakte hain)
+
+--------------------------------------
+
+🔴 BOT KO OFF KAISE KAREIN? (Agar terminal close kar diya tha)
+1. Pehle VPS me login karein:
+   ssh root@162.0.211.112
+   
+2. Bot ko direct off (aur sabhi background bot process clear) karne ke liye yeh chalayein:
+   killall screen; killall python3
+
+--------------------------------------
+
+👀 BOT CHECK KAISE KAREIN? (Live dekhne ke liye)
+1. VPS me login karein:
+   ssh root@162.0.211.112
+   
+2. Chalte huye bot ki screen ke andar jane ke liye yeh chalayein:
+   screen -r bot
+   (Check karne ke baad bahar aane ke liye wapas: "Ctrl + A" phir "D" dabayein)
+
+--------------------------------------
+
+🔄 NAYA CODE UPLOAD KAISE KAREIN?
+Apne PC ke normal terminal mein (Telegram Store Bot folder ke andar jaa kar, bina VPS me login kiye) yeh chalayein:
+scp -o StrictHostKeyChecking=no admin.py main.py manager.py requirements.txt root@162.0.211.112:~/telegram_bot/

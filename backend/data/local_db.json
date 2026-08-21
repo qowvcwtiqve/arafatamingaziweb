@@ -4,7 +4,7 @@
       "id": "usr-admin-001",
       "name": "QuantumXD Admin",
       "email": "admin@quantumxd.store",
-      "password_hash": "$2a$10$ttu78i0KS2E0iTT0vxnvG.l.uWayBRf7Oal1hIJCTX1hikZzsDYw2",
+      "password_hash": "$2a$10$sK2iUokZUqVho5TyC4cJD.sSNR6OBe5AaJv4zm0ydiSrTiwzdspEy",
       "role": "admin",
       "balance": 5000,
       "currency": "INR",
@@ -15,21 +15,229 @@
       "created_at": "2026-08-21T14:17:24.977Z"
     },
     {
-      "id": "usr-demo-002",
-      "name": "Demo Buyer",
-      "email": "demo@quantumxd.store",
-      "password_hash": "$2a$10$fMYONShsOJP3uWvaW0EHFuGtwqgyPBeuoont7sCH/KF6yMIZZqz.S",
+      "id": "usr-1787327844012",
+      "name": "rakib",
+      "email": "arafatamingazi@gmail.com",
+      "password_hash": "$2a$12$LDbU6x3RdAI0G5Yn4p5atOWRW0rmygthOH8ZtryPJqG.L9AZS58km",
       "role": "buyer",
-      "balance": 1500,
+      "balance": 0,
       "currency": "INR",
-      "all_time_topup": 1500,
+      "all_time_topup": 0,
       "is_verified": true,
       "is_frozen": false,
-      "telegram_username": "@demobuyer",
-      "created_at": "2026-08-21T14:17:25.034Z"
+      "created_at": "2026-08-21T15:57:24.013Z"
     }
   ],
-  "products": [],
+  "products": [
+    {
+      "id": "prod-001",
+      "seller_id": "usr-admin-001",
+      "title": "Canva Pro Lifetime License (Personal Mail)",
+      "slug": "canva-pro-lifetime-license",
+      "short_desc": "Upgrade your personal email to Canva Pro with 100M+ premium photos, templates, magic resize & brand kits.",
+      "description": "Get Canva Pro activated on your own personal email with lifetime validity.\n\nFeatures Included:\n- Unlimited Brand Kits\n- 100M+ Premium Stock Photos, Videos, and Audio\n- Background Remover & Magic Eraser\n- Magic Resize to any format\n- 1TB Cloud Storage\n- Instant automated delivery upon payment.",
+      "price": 999,
+      "sale_price": 299,
+      "category": "software",
+      "tags": [
+        "canva",
+        "design",
+        "pro",
+        "lifetime"
+      ],
+      "thumbnail_url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+      "preview_images": [
+        "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&auto=format&fit=crop&q=80"
+      ],
+      "demo_url": "https://canva.com",
+      "version": "2026.1",
+      "downloads_count": 3420,
+      "views_count": 12500,
+      "rating_avg": 4.9,
+      "rating_count": 284,
+      "status": "active",
+      "is_featured": true,
+      "stock_type": "infinite_key",
+      "is_infinite_stock": true,
+      "infinite_stock_item": "https://canva.com/brand/join?invite=QUANTUMXD_PRO_INVITE_TOKEN_LIFETIME",
+      "created_at": "2026-08-11T17:06:50.394Z"
+    },
+    {
+      "id": "prod-002",
+      "seller_id": "usr-admin-001",
+      "title": "Windows 11 Pro Original Retail Key (Global)",
+      "slug": "windows-11-pro-retail-key",
+      "short_desc": "100% Genuine Retail Digital License Key for Windows 11 Pro (32/64 bit). Lifetime activation for 1 PC.",
+      "description": "Official Microsoft Windows 11 Pro Retail License Key.\n\n- Permanent Lifetime Activation\n- Online One-Click Activation\n- Supports all languages & global regions\n- Upgrade from Home to Pro supported\n- Instant Key delivery upon payment.",
+      "price": 2499,
+      "sale_price": 499,
+      "category": "software",
+      "tags": [
+        "windows",
+        "microsoft",
+        "key",
+        "retail"
+      ],
+      "thumbnail_url": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=800&auto=format&fit=crop&q=80",
+      "preview_images": [
+        "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=800&auto=format&fit=crop&q=80"
+      ],
+      "version": "23H2",
+      "downloads_count": 5120,
+      "views_count": 18900,
+      "rating_avg": 4.8,
+      "rating_count": 412,
+      "status": "active",
+      "is_featured": true,
+      "stock_type": "keys",
+      "stock_keys": [
+        "W11PRO-QX99-8877-ABCD-EF01",
+        "W11PRO-QX99-8877-ABCD-EF02",
+        "W11PRO-QX99-8877-ABCD-EF03",
+        "W11PRO-QX99-8877-ABCD-EF04",
+        "W11PRO-QX99-8877-ABCD-EF05"
+      ],
+      "is_infinite_stock": false,
+      "created_at": "2026-08-13T17:06:50.394Z"
+    },
+    {
+      "id": "prod-003",
+      "seller_id": "usr-admin-001",
+      "title": "ChatGPT Plus Shared Account (GPT-4o & Canvas)",
+      "slug": "chatgpt-plus-shared-account",
+      "short_desc": "Access GPT-4o, DALL-E 3 image generator, Advanced Voice Mode, and Custom GPTs with 1 Month validity.",
+      "description": "Get immediate access to OpenAI ChatGPT Plus with GPT-4o, browsing, plugins, and image generator.\n\n- 1 Month uninterrupted warranty\n- Access to GPT-4o & Sora features\n- Fast response time and zero queue\n- Login credentials delivered instantly after checkout.",
+      "price": 1999,
+      "sale_price": 399,
+      "category": "accounts",
+      "tags": [
+        "ai",
+        "chatgpt",
+        "openai",
+        "gpt4"
+      ],
+      "thumbnail_url": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&auto=format&fit=crop&q=80",
+      "preview_images": [
+        "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&auto=format&fit=crop&q=80"
+      ],
+      "version": "GPT-4o",
+      "downloads_count": 1850,
+      "views_count": 9400,
+      "rating_avg": 4.9,
+      "rating_count": 156,
+      "status": "active",
+      "is_featured": true,
+      "stock_type": "keys",
+      "stock_keys": [
+        "chatgpt_vip_user1@quantumxd.store:QuantumPass@2026",
+        "chatgpt_vip_user2@quantumxd.store:QuantumPass@2026",
+        "chatgpt_vip_user3@quantumxd.store:QuantumPass@2026"
+      ],
+      "is_infinite_stock": false,
+      "created_at": "2026-08-15T17:06:50.394Z"
+    },
+    {
+      "id": "prod-004",
+      "seller_id": "usr-admin-001",
+      "title": "Ultimate Full-Stack E-Commerce Next.js 14 Template",
+      "slug": "ultimate-full-stack-ecommerce-template",
+      "short_desc": "Production-ready digital marketplace source code with payment gateways (UPI, Crypto, Stripe) and Admin Dashboard.",
+      "description": "Complete source code of a modern digital goods marketplace.\n\nTech Stack:\n- Next.js 14 App Router\n- Express / Node.js Backend API\n- PostgreSQL Schema & Prisma\n- Multi-Gateway Payment System (UPI, NowPayments, Binance)\n- Full responsive dark mode UI\n- Instant ZIP file download.",
+      "price": 4999,
+      "sale_price": 999,
+      "category": "templates",
+      "tags": [
+        "nextjs",
+        "react",
+        "ecommerce",
+        "source-code"
+      ],
+      "thumbnail_url": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80",
+      "preview_images": [
+        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80"
+      ],
+      "version": "v3.3.0",
+      "downloads_count": 980,
+      "views_count": 4600,
+      "rating_avg": 5,
+      "rating_count": 88,
+      "status": "active",
+      "is_featured": true,
+      "stock_type": "infinite_key",
+      "is_infinite_stock": true,
+      "infinite_stock_item": "https://github.com/qowvcwtiqve/arafatamingaziweb/archive/refs/heads/main.zip",
+      "created_at": "2026-08-17T17:06:50.394Z"
+    },
+    {
+      "id": "prod-005",
+      "seller_id": "usr-admin-001",
+      "title": "ExpressVPN / NordVPN 1-Year Ultra Fast Key",
+      "slug": "expressvpn-nordvpn-1-year-key",
+      "short_desc": "1 Year Premium VPN Activation Key. 3000+ servers across 90+ countries with unlimited bandwidth.",
+      "description": "Ultra high-speed premium VPN activation code.\n\n- Works on Windows, Mac, Android, iOS\n- Military-grade 256-bit AES encryption\n- Zero logs policy\n- 1 Year full replacement warranty.",
+      "price": 2999,
+      "sale_price": 699,
+      "category": "tools",
+      "tags": [
+        "vpn",
+        "privacy",
+        "security",
+        "proxy"
+      ],
+      "thumbnail_url": "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=80",
+      "preview_images": [
+        "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=80"
+      ],
+      "version": "2026",
+      "downloads_count": 1420,
+      "views_count": 6700,
+      "rating_avg": 4.7,
+      "rating_count": 112,
+      "status": "active",
+      "is_featured": true,
+      "stock_type": "keys",
+      "stock_keys": [
+        "VPN-KEY-2026-QX88-9901",
+        "VPN-KEY-2026-QX88-9902",
+        "VPN-KEY-2026-QX88-9903"
+      ],
+      "is_infinite_stock": false,
+      "created_at": "2026-08-18T17:06:50.394Z"
+    },
+    {
+      "id": "prod-006",
+      "seller_id": "usr-admin-001",
+      "title": "Adobe Creative Cloud All Apps 1-Year Subscription",
+      "slug": "adobe-creative-cloud-all-apps",
+      "short_desc": "Photoshop, Illustrator, Premiere Pro, After Effects + 20 apps with 100GB Adobe Cloud storage.",
+      "description": "Official Adobe Creative Cloud redemption for your own personal Adobe ID.\n\nIncludes:\n- Photoshop 2026\n- Illustrator 2026\n- Premiere Pro & After Effects\n- Generative AI Credits\n- 100GB Adobe Cloud Storage\n- Activated directly on your Adobe account.",
+      "price": 12999,
+      "sale_price": 1999,
+      "category": "software",
+      "tags": [
+        "adobe",
+        "photoshop",
+        "illustrator",
+        "creative-cloud"
+      ],
+      "thumbnail_url": "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=800&auto=format&fit=crop&q=80",
+      "preview_images": [
+        "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=800&auto=format&fit=crop&q=80"
+      ],
+      "version": "2026 CC",
+      "downloads_count": 2150,
+      "views_count": 11200,
+      "rating_avg": 4.9,
+      "rating_count": 194,
+      "status": "active",
+      "is_featured": true,
+      "stock_type": "infinite_key",
+      "is_infinite_stock": true,
+      "infinite_stock_item": "https://redeem.adobe.com/?token=QUANTUMXD_ADOBE_CC_REDEEM_LINK",
+      "created_at": "2026-08-19T17:06:50.394Z"
+    }
+  ],
   "product_variants": [
     {
       "id": "var-001-1",
@@ -120,6 +328,21 @@
       "timeout_at": "2026-08-21T16:26:43.606Z",
       "payment_status": "pending",
       "created_at": "2026-08-21T15:26:43.607Z"
+    },
+    {
+      "id": "ord-1787333941582",
+      "order_number": "QXDMT38HBNY",
+      "buyer_id": "usr-admin-001",
+      "buyer_email": "admin@quantumxd.store",
+      "total_amount": 1999,
+      "discount_amount": 0,
+      "coupon_code": null,
+      "payment_method": "wallet",
+      "unique_amount": "paid",
+      "base_amount": 1999,
+      "timeout_at": "2026-08-21T18:39:01.582Z",
+      "payment_status": "pending",
+      "created_at": "2026-08-21T17:39:01.582Z"
     }
   ],
   "order_items": [
@@ -178,6 +401,20 @@
       "download_count": 0,
       "max_downloads": 5,
       "created_at": "2026-08-21T15:26:43.633Z"
+    },
+    {
+      "id": "item-1787333941596-crht",
+      "order_id": "ord-1787333941582",
+      "product_id": "prod-006",
+      "variant_id": null,
+      "product_title": "Adobe Creative Cloud All Apps 1-Year Subscription",
+      "variant_name": null,
+      "price": 1999,
+      "delivered_content": "https://redeem.adobe.com/?token=QUANTUMXD_ADOBE_CC_REDEEM_LINK",
+      "download_token": "tok_1l2195oa6pu",
+      "download_count": 0,
+      "max_downloads": 5,
+      "created_at": "2026-08-21T17:39:01.596Z"
     }
   ],
   "deposits": [],
@@ -213,6 +450,43 @@
       "to_currency": "INR",
       "rate": 84.5,
       "fetched_at": "2026-08-21T14:17:25.034Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "Software & OS",
+      "slug": "software",
+      "description": "",
+      "created_at": "2026-08-21T17:16:34.866Z"
+    },
+    {
+      "id": "cat-2",
+      "name": "Subscriptions & Accounts",
+      "slug": "accounts",
+      "description": "",
+      "created_at": "2026-08-21T17:16:34.867Z"
+    },
+    {
+      "id": "cat-3",
+      "name": "Developer Tools",
+      "slug": "tools",
+      "description": "",
+      "created_at": "2026-08-21T17:16:34.867Z"
+    },
+    {
+      "id": "cat-4",
+      "name": "Templates & Code",
+      "slug": "templates",
+      "description": "",
+      "created_at": "2026-08-21T17:16:34.867Z"
+    },
+    {
+      "id": "cat-5",
+      "name": "Other",
+      "slug": "other",
+      "description": "",
+      "created_at": "2026-08-21T17:16:34.867Z"
     }
   ]
 }

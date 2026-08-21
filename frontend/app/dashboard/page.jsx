@@ -1,138 +1,375 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
 import api from '../../lib/api';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
-const STATUS_COLORS = { paid: 'success', pending: 'pending', failed: 'failed', expired: 'expired' };
+const STATUS_COLORS = {
+  paid: 'var(--color-success)',
+  pending: 'var(--color-accent)',
+  failed: 'var(--color-error)',
+  expired: 'var(--color-text-faint)'
+};
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, logout, refreshUser } = useAuthStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('orders');
 
+  const searchParams = useSearchParams();
+  const topupStatus = searchParams.get('topup_status');
+  const queryOrderId = searchParams.get('order_id');
+  const initialTab = searchParams.get('tab');
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
   useEffect(() => {
     if (!user) { router.push('/login'); return; }
-    api.get('/users/orders').then(({ data }) => setOrders(data.orders || [])).finally(() => setLoading(false));
-  }, [user]);
+    api.get('/users/orders')
+      .then(({ data }) => setOrders(data.orders || []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [user, router]);
+
+  // Handle Cashfree redirect for Topup
+  useEffect(() => {
+    if (topupStatus === 'check' && queryOrderId) {
+      setActiveTab('wallet');
+      const verifyTopup = async () => {
+        try {
+          const { data } = await api.post('/users/wallet/verify-cashfree', { order_id: queryOrderId });
+          if (data.success) {
+            toast.success('Wallet topped up successfully!');
+            await refreshUser();
+            window.location.href = '/dashboard?tab=wallet';
+          } else {
+            toast.error('Top-up is pending or failed.');
+          }
+        } catch {
+          toast.error('Failed to verify top-up');
+        }
+      };
+      verifyTopup();
+    }
+  }, [topupStatus, queryOrderId, refreshUser]);
 
   if (!user) return null;
 
   return (
-    <div style={{ padding: '100px 0 60px' }}>
+    <div style={{ paddingTop: 'calc(var(--header-height) + 24px)', paddingBottom: 90 }}>
       <div className="container">
-        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 32 }}>
-          {/* Sidebar */}
-          <aside>
-            <div className="card card--elevated" style={{ padding: 20, position: 'sticky', top: 90 }}>
-              {/* Avatar */}
-              <div style={{ textAlign: 'center', marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--color-border)' }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--font-heading)', fontSize: 24, fontWeight: 700, margin: '0 auto 12px' }}>
-                  {user.name?.[0]}
-                </div>
-                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 16 }}>{user.name}</p>
-                <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginTop: 4 }}>{user.email}</p>
+        
+        {/* User Hero Banner */}
+        <div style={{
+          padding: '28px 32px',
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-xl)',
+          marginBottom: 32,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 20,
+          boxShadow: '0 8px 30px rgba(0,0,0,0.3)'
+        }}>
+          {/* User Info */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: '50%',
+              background: 'var(--gradient-primary)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', color: '#fff',
+              fontFamily: 'var(--font-heading)', fontSize: 24, fontWeight: 800,
+              boxShadow: '0 0 25px rgba(110, 58, 255, 0.4)'
+            }}>
+              {(user.name || 'U')[0].toUpperCase()}
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 800, margin: 0 }}>
+                  {user.name}
+                </h1>
+                {user.role === 'admin' && (
+                  <span className="badge badge--featured">Admin</span>
+                )}
               </div>
+              <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: '4px 0 0 0' }}>
+                {user.email}
+              </p>
+            </div>
+          </div>
 
-              {/* Balance */}
-              <div style={{ background: 'var(--gradient-primary-soft)', border: '1px solid rgba(110,58,255,0.2)', borderRadius: 'var(--radius-md)', padding: 14, marginBottom: 20 }}>
-                <div style={{ fontSize: 12, color: 'var(--color-text-faint)', marginBottom: 4 }}>Wallet Balance</div>
-                <div style={{ fontFamily: 'var(--font-heading)', fontSize: 24, fontWeight: 700, color: 'var(--color-accent)' }}>
-                  ₹{parseFloat(user.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </div>
+          {/* Quick Wallet Card */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 20,
+            padding: '12px 20px', background: 'var(--color-surface-2)',
+            borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)'
+          }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Wallet Balance
               </div>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 800, color: 'var(--color-accent)' }}>
+                ₹{parseFloat(user.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </div>
+            </div>
+            <button
+              className="btn btn--primary btn--sm"
+              onClick={() => setActiveTab('wallet')}
+              style={{ gap: 4 }}
+            >
+              <span className="icon icon--sm">add</span>
+              <span>Top Up</span>
+            </button>
+          </div>
+        </div>
 
-              {/* Nav */}
-              {['orders', 'profile', 'support'].map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
+        {/* Dashboard Main Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 32, alignItems: 'start' }}>
+          
+          {/* Sidebar Tabs Navigation */}
+          <aside style={{ position: 'sticky', top: 90 }}>
+            <div style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-xl)',
+              padding: 12,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6
+            }}>
+              {[
+                { id: 'orders', label: 'My Orders & Downloads', icon: 'receipt_long' },
+                { id: 'wallet', label: 'Wallet & Top Up', icon: 'account_balance_wallet' },
+                { id: 'profile', label: 'Profile Settings', icon: 'manage_accounts' },
+                { id: 'support', label: 'Help & 24/7 Support', icon: 'support_agent' },
+              ].map(tab => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: 'var(--radius-md)',
+                      cursor: 'pointer',
+                      border: 'none',
+                      background: isActive ? 'var(--gradient-primary)' : 'transparent',
+                      color: isActive ? '#fff' : 'var(--color-text-muted)',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      transition: 'all 0.2s ease',
+                      textAlign: 'left',
+                      boxShadow: isActive ? 'var(--shadow-glow)' : 'none'
+                    }}
+                  >
+                    <span className="icon icon--sm" style={{ color: isActive ? '#fff' : 'var(--color-cyan)' }}>
+                      {tab.icon}
+                    </span>
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+
+              <div style={{ height: 1, background: 'var(--color-border)', margin: '8px 0' }} />
+
+              {user.role === 'admin' && (
+                <Link
+                  href="/admin"
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-                    padding: '10px 12px', borderRadius: 'var(--radius-md)', cursor: 'pointer', border: 'none',
-                    background: activeTab === tab ? 'rgba(110,58,255,0.1)' : 'transparent',
-                    color: activeTab === tab ? 'var(--color-primary-light)' : 'var(--color-text-muted)',
-                    fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500, transition: 'var(--transition-fast)',
-                    textTransform: 'capitalize',
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 16px', borderRadius: 'var(--radius-md)',
+                    color: 'var(--color-primary-light)', textDecoration: 'none',
+                    fontSize: 14, fontWeight: 700
                   }}
                 >
-                  <span className="icon icon--sm">{tab === 'orders' ? 'receipt' : tab === 'profile' ? 'person' : 'support_agent'}</span>
-                  {tab}
-                </button>
-              ))}
+                  <span className="icon icon--sm">admin_panel_settings</span>
+                  <span>Admin Dashboard</span>
+                </Link>
+              )}
+
+              <button
+                onClick={logout}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+                  padding: '12px 16px', borderRadius: 'var(--radius-md)',
+                  color: 'var(--color-error)', border: 'none', background: 'transparent',
+                  fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'left'
+                }}
+              >
+                <span className="icon icon--sm">logout</span>
+                <span>Sign Out</span>
+              </button>
             </div>
           </aside>
 
-          {/* Content */}
+          {/* Main Tab Content */}
           <div>
-            {/* ORDERS TAB */}
+            
+            {/* 1. ORDERS TAB */}
             {activeTab === 'orders' && (
               <div>
-                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 700, marginBottom: 20 }}>
-                  My Orders
-                </h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, margin: 0 }}>
+                    My Orders &amp; Downloads
+                  </h2>
+                  <span style={{ fontSize: 13, color: 'var(--color-text-faint)' }}>
+                    {orders.length} total purchases
+                  </span>
+                </div>
+
                 {loading ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 80, borderRadius: 12 }} />)}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="skeleton" style={{ height: 110, borderRadius: 'var(--radius-lg)' }} />
+                    ))}
                   </div>
                 ) : orders.length === 0 ? (
-                  <div className="empty-state">
-                    <span className="icon empty-state__icon">receipt_long</span>
-                    <h3 className="empty-state__title">No orders yet</h3>
-                    <p className="empty-state__desc">Your purchases will appear here</p>
-                    <Link href="/products" className="btn btn--primary">Browse Products</Link>
+                  <div style={{
+                    textAlign: 'center', padding: '60px 20px',
+                    background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-xl)'
+                  }}>
+                    <div style={{
+                      width: 64, height: 64, borderRadius: '50%', background: 'rgba(110, 58, 255, 0.1)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto',
+                      color: 'var(--color-primary-light)'
+                    }}>
+                      <span className="icon icon--xl">receipt_long</span>
+                    </div>
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 700, margin: '0 0 8px 0' }}>
+                      No purchases yet
+                    </h3>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: 14, margin: '0 0 20px 0' }}>
+                      Your purchased accounts, keys and download files will be accessible here.
+                    </p>
+                    <Link href="/products" className="btn btn--primary btn--sm" style={{ gap: 6 }}>
+                      <span className="icon icon--sm">storefront</span>
+                      <span>Browse Store</span>
+                    </Link>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     {orders.map(order => (
-                      <div key={order.id} className="card card--elevated" style={{ padding: 20 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                      <div
+                        key={order.id}
+                        style={{
+                          padding: 24,
+                          borderRadius: 'var(--radius-xl)',
+                          background: 'var(--color-surface)',
+                          border: '1px solid var(--color-border)',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                        }}
+                      >
+                        {/* Order Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
                           <div>
-                            <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15 }}>
-                              #{order.order_number}
-                            </p>
-                            <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginTop: 2 }}>
-                              {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: 16, color: 'var(--color-text)' }}>
+                                #{order.order_number || order.id}
+                              </span>
+                              <span style={{
+                                padding: '3px 10px', borderRadius: 'var(--radius-sm)',
+                                background: order.payment_status === 'paid' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                                color: STATUS_COLORS[order.payment_status] || 'var(--color-accent)',
+                                fontSize: 12, fontWeight: 700, textTransform: 'uppercase'
+                              }}>
+                                {order.payment_status}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: 13, color: 'var(--color-text-faint)', marginTop: 4 }}>
+                              {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </div>
                           </div>
+
                           <div style={{ textAlign: 'right' }}>
-                            <span className={`status status--${STATUS_COLORS[order.payment_status] || 'pending'}`}>
-                              {order.payment_status}
-                            </span>
-                            <p style={{ fontSize: 15, fontWeight: 700, marginTop: 6 }}>
+                            <div style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 800, color: 'var(--color-accent)' }}>
                               ₹{parseFloat(order.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 0 })}
-                            </p>
+                            </div>
+                            <div style={{ fontSize: 12, color: 'var(--color-text-faint)', textTransform: 'uppercase' }}>
+                              {order.payment_method || 'Online'}
+                            </div>
                           </div>
                         </div>
 
-                        {/* Items */}
-                        {order.items?.filter(Boolean).map((item, i) => (
-                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderTop: '1px solid var(--color-border)' }}>
-                            <span style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>{item.title}</span>
-                            <div style={{ display: 'flex', gap: 8 }}>
-                              {order.payment_status === 'paid' && item.download_token && (
-                                <a
-                                  href={`${process.env.NEXT_PUBLIC_API_URL}/api/download/${item.download_token}`}
-                                  target="_blank"
-                                  className="btn btn--primary btn--sm"
-                                  rel="noopener noreferrer"
-                                >
-                                  <span className="icon icon--sm">download</span>
-                                  Download
-                                </a>
-                              )}
-                              {order.payment_status === 'paid' && item.delivered_content && !item.download_token && (
-                                <span style={{ fontSize: 13, fontFamily: 'monospace', background: 'var(--color-surface-3)', padding: '4px 10px', borderRadius: 6, color: 'var(--color-accent)' }}>
-                                  {item.delivered_content}
-                                </span>
-                              )}
+                        {/* Items & Deliverables */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid var(--color-border)', paddingTop: 14 }}>
+                          {order.items?.filter(Boolean).map((item, i) => (
+                            <div key={i} style={{
+                              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                              flexWrap: 'wrap', gap: 10, padding: '8px 0'
+                            }}>
+                              <div>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>
+                                  {item.title}
+                                </div>
+                                {item.variant_name && (
+                                  <div style={{ fontSize: 12, color: 'var(--color-cyan)', fontWeight: 600 }}>
+                                    {item.variant_name}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                {/* Direct file download token */}
+                                {order.payment_status === 'paid' && item.download_token && (
+                                  <a
+                                    href={`${process.env.NEXT_PUBLIC_API_URL}/api/download/${item.download_token}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn btn--primary btn--sm"
+                                    style={{ gap: 6 }}
+                                  >
+                                    <span className="icon icon--sm">download</span>
+                                    <span>Download File</span>
+                                  </a>
+                                )}
+
+                                {/* Delivered account credential / key */}
+                                {order.payment_status === 'paid' && item.delivered_content && !item.download_token && (
+                                  <div style={{
+                                    display: 'flex', alignItems: 'center', gap: 8,
+                                    background: 'var(--color-surface-2)', padding: '6px 12px',
+                                    borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)'
+                                  }}>
+                                    <span style={{ fontSize: 13, fontFamily: 'monospace', color: 'var(--color-accent)' }}>
+                                      {item.delivered_content}
+                                    </span>
+                                    <button
+                                      className="btn btn--ghost btn--icon"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(item.delivered_content);
+                                        toast.success('Copied to clipboard');
+                                      }}
+                                      style={{ width: 26, height: 26 }}
+                                      title="Copy to clipboard"
+                                    >
+                                      <span className="icon" style={{ fontSize: 14 }}>content_copy</span>
+                                    </button>
+                                  </div>
+                                )}
+
+                                <Link href={`/dashboard/order/${order.id}`} className="btn btn--outline btn--sm" style={{ gap: 4 }}>
+                                  <span>Details</span>
+                                  <span className="icon icon--sm">chevron_right</span>
+                                </Link>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -140,84 +377,161 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* PROFILE TAB */}
-            {activeTab === 'profile' && <ProfileTab user={user} />}
+            {/* 2. WALLET & TOP UP TAB */}
+            {activeTab === 'wallet' && (
+              <WalletTopup user={user} refreshUser={refreshUser} />
+            )}
 
-            {/* SUPPORT TAB */}
+            {/* 3. PROFILE SETTINGS TAB */}
+            {activeTab === 'profile' && (
+              <ProfileTab user={user} refreshUser={refreshUser} />
+            )}
+
+            {/* 4. HELP & SUPPORT TAB */}
             {activeTab === 'support' && (
               <div>
-                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 700, marginBottom: 20 }}>Support</h2>
-                <div className="grid grid--2" style={{ gap: 16 }}>
-                  {[
-                    { icon: 'send', title: 'Telegram Support', desc: 'Fastest response. Available 24/7.', href: 'https://t.me/your_support_username', label: 'Open Telegram' },
-                    { icon: 'email', title: 'Email Support', desc: 'For detailed issues. Reply within 24h.', href: 'mailto:digitalshoppei@gmail.com', label: 'Send Email' },
-                  ].map(s => (
-                    <div key={s.title} className="card card--elevated" style={{ padding: 24 }}>
-                      <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--gradient-primary-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-primary)', marginBottom: 16 }}>
-                        <span className="icon icon--xl">{s.icon}</span>
-                      </div>
-                      <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, marginBottom: 6 }}>{s.title}</h3>
-                      <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 16 }}>{s.desc}</p>
-                      <a href={s.href} target="_blank" rel="noopener noreferrer" className="btn btn--primary btn--sm">
-                        <span className="icon icon--sm">{s.icon}</span>
-                        {s.label}
-                      </a>
+                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, marginBottom: 20 }}>
+                  24/7 Client Helpdesk &amp; Support
+                </h2>
+
+                <div className="grid grid--2" style={{ gap: 20 }}>
+                  <div style={{
+                    padding: 28, background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)'
+                  }}>
+                    <div style={{
+                      width: 52, height: 52, borderRadius: 'var(--radius-lg)',
+                      background: 'rgba(0, 212, 255, 0.1)', color: 'var(--color-cyan)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16
+                    }}>
+                      <span className="icon icon--lg">send</span>
                     </div>
-                  ))}
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 17, fontWeight: 700, marginBottom: 6 }}>
+                      Telegram Support Channel
+                    </h3>
+                    <p style={{ fontSize: 13, color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
+                      Fastest response time. Direct human support for license issues and inquiries.
+                    </p>
+                    <a
+                      href="https://t.me/your_support_username"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn--primary btn--sm"
+                      style={{ gap: 6 }}
+                    >
+                      <span className="icon icon--sm">send</span>
+                      <span>Open Telegram</span>
+                    </a>
+                  </div>
+
+                  <div style={{
+                    padding: 28, background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)'
+                  }}>
+                    <div style={{
+                      width: 52, height: 52, borderRadius: 'var(--radius-lg)',
+                      background: 'rgba(110, 58, 255, 0.1)', color: 'var(--color-primary-light)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16
+                    }}>
+                      <span className="icon icon--lg">mail</span>
+                    </div>
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 17, fontWeight: 700, marginBottom: 6 }}>
+                      Email Helpdesk
+                    </h3>
+                    <p style={{ fontSize: 13, color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
+                      For detailed business inquiries and bulk order quotations. Response within 24h.
+                    </p>
+                    <a
+                      href="mailto:support@quantumxd.store"
+                      className="btn btn--outline btn--sm"
+                      style={{ gap: 6 }}
+                    >
+                      <span className="icon icon--sm">mail</span>
+                      <span>Send Email</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
+
           </div>
+
         </div>
+
       </div>
     </div>
   );
 }
 
-function ProfileTab({ user }) {
+function ProfileTab({ user, refreshUser }) {
   const [form, setForm] = useState({ name: user.name || '', telegram_username: user.telegram_username || '' });
   const [saving, setSaving] = useState(false);
-  const { refreshUser } = useAuthStore();
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await api.put('/users/profile', form);
       await refreshUser();
-      toast.success('Profile updated');
-    } catch { toast.error('Failed to update'); }
-    setSaving(false);
+      toast.success('Profile details updated successfully');
+    } catch {
+      toast.error('Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div>
-      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 700, marginBottom: 20 }}>Profile Settings</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, alignItems: 'start' }}>
-        <div className="card card--elevated" style={{ padding: 28 }}>
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Personal Details</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div className="form-group">
-              <label className="form-label">Full Name</label>
-              <input className="form-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Email</label>
-              <input className="form-input" value={user.email} disabled style={{ opacity: 0.5, cursor: 'not-allowed' }} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Telegram Username</label>
-              <input className="form-input" placeholder="@yourusername" value={form.telegram_username} onChange={e => setForm(f => ({ ...f, telegram_username: e.target.value }))} />
-            </div>
-            <button className="btn btn--primary" onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
+    <div style={{
+      padding: 32,
+      background: 'var(--color-surface)',
+      border: '1px solid var(--color-border)',
+      borderRadius: 'var(--radius-xl)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+    }}>
+      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, marginBottom: 20 }}>
+        Personal Profile &amp; Settings
+      </h2>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 540 }}>
+        <div className="form-group">
+          <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Full Name</label>
+          <input
+            className="form-input"
+            value={form.name}
+            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            placeholder="Your name"
+          />
         </div>
 
-        {/* Top Up Wallet Section directly in Profile Tab */}
-        <div className="card card--elevated" style={{ padding: 28 }}>
-          <WalletTopup user={user} refreshUser={refreshUser} />
+        <div className="form-group">
+          <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Email Address</label>
+          <input
+            className="form-input"
+            value={user.email}
+            disabled
+            style={{ opacity: 0.6, cursor: 'not-allowed' }}
+          />
         </div>
+
+        <div className="form-group">
+          <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Telegram Username</label>
+          <input
+            className="form-input"
+            placeholder="@yourtelegram"
+            value={form.telegram_username}
+            onChange={e => setForm(f => ({ ...f, telegram_username: e.target.value }))}
+          />
+        </div>
+
+        <button
+          className="btn btn--primary btn--md"
+          onClick={handleSave}
+          disabled={saving}
+          style={{ alignSelf: 'flex-start', gap: 6 }}
+        >
+          <span className="icon icon--sm">save</span>
+          <span>{saving ? 'Saving...' : 'Save Profile Changes'}</span>
+        </button>
       </div>
     </div>
   );
@@ -239,7 +553,6 @@ function WalletTopup({ user, refreshUser }) {
 
     setLoading(true);
     try {
-      // Changed to /users/wallet/topup instead of /api/users/wallet/topup
       const res = await api.post('/users/wallet/topup', {
         amount: num,
         payment_method: paymentMethod,
@@ -247,7 +560,7 @@ function WalletTopup({ user, refreshUser }) {
 
       if (res.data.payment_link) {
         window.open(res.data.payment_link, '_blank');
-        toast.success('Cashfree payment link opened in a new tab!');
+        toast.success('Payment gateway opened in a new tab!');
       } else if (res.data.invoice_url) {
         window.open(res.data.invoice_url, '_blank');
         toast.success('Crypto payment page opened!');
@@ -263,108 +576,104 @@ function WalletTopup({ user, refreshUser }) {
   };
 
   return (
-    <div>
-      <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Top Up Wallet</h3>
-      <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 20 }}>
-        Current Balance: <strong style={{ color: 'var(--color-accent)' }}>₹{(user?.balance || 0).toFixed(2)}</strong>
+    <div style={{
+      padding: 32,
+      background: 'var(--color-surface)',
+      border: '1px solid var(--color-border)',
+      borderRadius: 'var(--radius-xl)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+    }}>
+      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
+        Wallet Balance &amp; Deposit
+      </h2>
+      <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24 }}>
+        Current Balance: <strong style={{ color: 'var(--color-accent)', fontSize: 16 }}>₹{(user?.balance || 0).toFixed(2)}</strong>
       </p>
 
-      {/* Preset Amount Pills */}
-      <div style={{ marginBottom: 18 }}>
-        <label className="form-label" style={{ marginBottom: 8, display: 'block' }}>Choose Amount</label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6, marginBottom: 10 }}>
+      {/* Preset Pills */}
+      <div style={{ marginBottom: 20 }}>
+        <label className="form-label" style={{ fontWeight: 700, marginBottom: 10, display: 'block' }}>Choose Amount</label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: 8, marginBottom: 12 }}>
           {presets.map(p => (
             <button
               key={p}
               type="button"
               onClick={() => setAmount(p)}
               style={{
-                padding: '8px 0', borderRadius: 'var(--radius-sm)',
-                background: amount === p ? 'var(--color-primary)' : 'var(--color-surface-2)',
+                padding: '10px 0', borderRadius: 'var(--radius-md)',
+                background: amount === p ? 'var(--gradient-primary)' : 'var(--color-surface-2)',
                 color: amount === p ? '#fff' : 'var(--color-text)',
-                border: `1px solid ${amount === p ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'var(--transition-fast)'
+                border: `1px solid ${amount === p ? 'transparent' : 'var(--color-border)'}`,
+                fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                boxShadow: amount === p ? 'var(--shadow-glow)' : 'none'
               }}
             >
               ₹{p}
             </button>
           ))}
         </div>
-        <div className="form-group">
-          <input
-            type="number"
-            className="form-input"
-            placeholder="Or enter custom amount in ₹"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-            min="10"
-            style={{ fontSize: 15 }}
-          />
-        </div>
+
+        <input
+          type="number"
+          className="form-input"
+          placeholder="Or enter custom amount in ₹"
+          value={amount}
+          onChange={e => setAmount(e.target.value)}
+          min="10"
+          style={{ fontSize: 15 }}
+        />
       </div>
 
       {/* Payment Gateway Options */}
-      <div style={{ marginBottom: 24 }}>
-        <label className="form-label" style={{ marginBottom: 8, display: 'block' }}>Payment Method</label>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {/* Cashfree */}
+      <div style={{ marginBottom: 28 }}>
+        <label className="form-label" style={{ fontWeight: 700, marginBottom: 10, display: 'block' }}>Payment Method</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          
           <button
             type="button"
             onClick={() => setPaymentMethod('cashfree')}
             style={{
-              display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
-              background: paymentMethod === 'cashfree' ? 'rgba(110,58,255,0.08)' : 'var(--color-surface-2)',
-              border: `1px solid ${paymentMethod === 'cashfree' ? 'var(--color-primary)' : 'var(--color-border)'}`,
-              borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'left'
+              display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px',
+              background: paymentMethod === 'cashfree' ? 'rgba(110, 58, 255, 0.12)' : 'var(--color-surface-2)',
+              border: `1.5px solid ${paymentMethod === 'cashfree' ? 'var(--color-primary)' : 'var(--color-border)'}`,
+              borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left'
             }}
           >
-            <span className="icon icon--md" style={{ color: '#00A0E3' }}>credit_card</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>Cashfree (UPI, Cards)</div>
-            </div>
-            <div style={{
-              width: 16, height: 16, borderRadius: '50%',
-              border: `2px solid ${paymentMethod === 'cashfree' ? 'var(--color-primary)' : 'var(--color-border)'}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              {paymentMethod === 'cashfree' && <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-primary)' }} />}
+            <span className="icon icon--md icon--cyan">account_balance</span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>UPI QR &amp; Cards (Instant)</div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>Google Pay, PhonePe, Paytm, Cards</div>
             </div>
           </button>
-          
-          {/* Crypto */}
+
           <button
             type="button"
             onClick={() => setPaymentMethod('nowpayments')}
             style={{
-              display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
-              background: paymentMethod === 'nowpayments' ? 'rgba(110,58,255,0.08)' : 'var(--color-surface-2)',
-              border: `1px solid ${paymentMethod === 'nowpayments' ? 'var(--color-primary)' : 'var(--color-border)'}`,
-              borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'left'
+              display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px',
+              background: paymentMethod === 'nowpayments' ? 'rgba(110, 58, 255, 0.12)' : 'var(--color-surface-2)',
+              border: `1.5px solid ${paymentMethod === 'nowpayments' ? 'var(--color-primary)' : 'var(--color-border)'}`,
+              borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left'
             }}
           >
-            <span className="icon icon--md" style={{ color: '#F7931A' }}>currency_bitcoin</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>Crypto (NOWPayments)</div>
-            </div>
-            <div style={{
-              width: 16, height: 16, borderRadius: '50%',
-              border: `2px solid ${paymentMethod === 'nowpayments' ? 'var(--color-primary)' : 'var(--color-border)'}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              {paymentMethod === 'nowpayments' && <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-primary)' }} />}
+            <span className="icon icon--md icon--accent">currency_bitcoin</span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>Crypto / USDT / BTC</div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>USDT (TRC20/BEP20), BTC, LTC, SOL</div>
             </div>
           </button>
+
         </div>
       </div>
 
-      <button className="btn btn--primary btn--full" onClick={handleTopup} disabled={loading}>
-        {loading ? (
-          <>
-            <span className="icon icon--sm icon--spin">refresh</span> Processing...
-          </>
-        ) : (
-          `Top Up ₹${parseFloat(amount || 0).toFixed(2)}`
-        )}
+      <button
+        className="btn btn--primary btn--full btn--lg"
+        onClick={handleTopup}
+        disabled={loading}
+        style={{ gap: 8, boxShadow: 'var(--shadow-glow)' }}
+      >
+        <span className="icon icon--md icon--filled">bolt</span>
+        <span>{loading ? 'Processing Gateway...' : `Proceed to Pay ₹${amount || 0}`}</span>
       </button>
     </div>
   );

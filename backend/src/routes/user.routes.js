@@ -1,26 +1,36 @@
 import { Router } from 'express';
 import { query } from '../config/db.js';
 import { protect } from '../middleware/auth.middleware.js';
+import Sale from '../models/sale.model.js';
 
 const router = Router();
 
 // GET /api/users/orders — buyer's order history
 router.get('/orders', protect, async (req, res, next) => {
   try {
-    const { rows } = await query(`
-      SELECT o.id, o.order_number, o.total_amount, o.payment_status, o.payment_method, o.paid_at, o.created_at,
-             json_agg(json_build_object(
-               'title', oi.product_title, 'price', oi.price,
-               'download_token', oi.download_token, 'download_token_expires', oi.download_token_expires,
-               'delivered_content', oi.delivered_content, 'download_count', oi.download_count
-             )) AS items
-      FROM orders o
-      LEFT JOIN order_items oi ON oi.order_id=o.id
-      WHERE o.buyer_id=$1
-      GROUP BY o.id ORDER BY o.created_at DESC
-      LIMIT 50
-    `, [req.user.id]);
-    res.json({ orders: rows });
+    const orders = await Sale.find({ user_id: req.user.id })
+      .sort({ purchase_ts: -1 })
+      .limit(50)
+      .lean();
+
+    // Map to the format the frontend expects (or similar)
+    const formattedOrders = orders.map(o => ({
+      id: o.sale_id,
+      order_number: o.sale_id,
+      total_amount: o.price * o.quantity,
+      payment_status: o.status,
+      payment_method: 'wallet', // Assuming wallet for now, can be updated later if needed
+      paid_at: new Date(o.purchase_ts * 1000).toISOString(),
+      created_at: new Date(o.purchase_ts * 1000).toISOString(),
+      items: [{
+        title: o.product_name,
+        price: o.price,
+        delivered_content: o.credentials,
+        variant_name: o.variant_name
+      }]
+    }));
+
+    res.json({ orders: formattedOrders });
   } catch (err) { next(err); }
 });
 

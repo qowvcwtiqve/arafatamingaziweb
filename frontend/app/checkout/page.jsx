@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCartStore } from '../../store/cartStore';
 import { useAuthStore } from '../../store/authStore';
@@ -56,7 +56,11 @@ export default function CheckoutPage() {
   const [verifying, setVerifying] = useState(false);
   const [status, setStatus] = useState(null); // 'pending' | 'paid'
 
-  const subtotal = items.reduce((s, i) => s + parseFloat(i.price), 0);
+  const searchParams = useSearchParams();
+  const cfStatus = searchParams.get('cf_status');
+  const queryOrderId = searchParams.get('order_id');
+
+  const subtotal = items.reduce((s, i) => s + (parseFloat(i.price) * (i.quantity || 1)), 0);
   const total = Math.max(0, subtotal - couponDiscount);
 
   const [mounted, setMounted] = useState(false);
@@ -67,10 +71,19 @@ export default function CheckoutPage() {
   }, [user]);
 
   useEffect(() => {
-    if (mounted && items.length === 0 && !orderData) {
+    if (mounted && items.length === 0 && !orderData && !cfStatus) {
       router.push('/products');
     }
-  }, [mounted, items, orderData, router]);
+  }, [mounted, items, orderData, cfStatus, router]);
+
+  // Handle redirect from Cashfree
+  useEffect(() => {
+    if (cfStatus === 'check' && queryOrderId && !orderData) {
+      setOrderData({ order_id: queryOrderId });
+      setStatus('pending');
+      setPaymentMethod('cashfree');
+    }
+  }, [cfStatus, queryOrderId, orderData]);
 
   // Poll order status after payment initiated
   useEffect(() => {
@@ -128,7 +141,7 @@ export default function CheckoutPage() {
     setLoading(true);
     try {
       const { data } = await api.post('/payments/initiate', {
-        items: items.map(i => ({ product_id: i.product_id, variant_id: i.variant_id })),
+        items: items.map(i => ({ product_id: i.product_id, variant_id: i.variant_id, quantity: i.quantity || 1 })),
         payment_method: paymentMethod,
         coupon_code: coupon || undefined,
         email,
@@ -434,13 +447,13 @@ export default function CheckoutPage() {
                   <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                     <div style={{ minWidth: 0, paddingRight: 8 }}>
                       <div style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {item.title}
+                        {item.title} {item.quantity > 1 && <span style={{ color: 'var(--color-primary-light)' }}>x{item.quantity}</span>}
                       </div>
                       {item.variant_name && (
                         <div style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>{item.variant_name}</div>
                       )}
                     </div>
-                    <div style={{ fontWeight: 600, flexShrink: 0 }}>₹{parseFloat(item.price).toFixed(2)}</div>
+                    <div style={{ fontWeight: 600, flexShrink: 0 }}>₹{(parseFloat(item.price) * (item.quantity || 1)).toFixed(2)}</div>
                   </div>
                 ))}
               </div>

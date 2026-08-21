@@ -1,151 +1,243 @@
+/**
+ * Payment Controller
+ * Handles purchase flow for website orders.
+ * Uses MongoDB Atlas (bot's database) for products/stock.
+ * Website orders stored in: website_sales MongoDB collection.
+ * Website user balances stored in: local db.js (SQL emulator).
+ */
+
 import { query } from '../config/db.js';
 import { createCryptoInvoice } from '../services/nowpayments.service.js';
 import { processBinanceOrder } from '../services/binance.service.js';
 import { createCashfreeOrder, checkCashfreeStatus } from '../services/cashfree.service.js';
 import { sendOrderConfirmationEmail } from '../services/email.service.js';
+import {
+  getProductById,
+  atomicPopStock,
+  getStockCount,
+} from '../services/botdb.service.js';
+import Sale from '../models/sale.model.js';
+import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
-// GET USD→INR rate (cached in DB, refreshed every hour)
-async function getUsdToInrRate() {
-  const { rows } = await query(
-    "SELECT rate, fetched_at FROM exchange_rate_cache WHERE from_currency='USD' AND to_currency='INR'"
-  );
-  const stale = !rows[0] || (Date.now() - new Date(rows[0].fetched_at).getTime()) > 3600000;
+// ─── Utility ──────────────────────────────────────────────────────────────────
 
-  if (stale) {
-    try {
+function generateSaleId() {
+  return uuidv4().replace(/-/g, '').slice(0, 8).toUpperCase();
+}
+
+async function getUsdToInrRate() {
+  try {
+    const { rows } = await query(
+      "SELECT rate, fetched_at FROM exchange_rate_cache WHERE from_currency='USD' AND to_currency='INR'"
+    );
+    const stale = !rows[0] || Date.now() - new Date(rows[0].fetched_at).getTime() > 3600000;
+    if (stale) {
       const { data } = await axios.get('https://api.exchangerate-api.com/v4/latest/USD', { timeout: 5000 });
       const rate = data.rates?.INR || 84;
       await query(`
-        INSERT INTO exchange_rate_cache (from_currency, to_currency, rate, fetched_at)
+        INSERT INTO exchange_rate_cache (from_currency,to_currency,rate,fetched_at)
         VALUES ('USD','INR',$1,NOW())
         ON CONFLICT (from_currency,to_currency) DO UPDATE SET rate=$1, fetched_at=NOW()
       `, [rate]);
       return rate;
-    } catch { return rows[0]?.rate || 84; }
-  }
-  return parseFloat(rows[0].rate);
+    }
+    return parseFloat(rows[0].rate);
+  } catch { return 84; }
 }
 
-function generateOrderNumber() {
-  return 'QXD' + Date.now().toString(36).toUpperCase();
-}
-
-// POST /api/payments/initiate
-export const initiatePayment = async (req, res, next) => {
+// ─── POST /api/payments/wallet-purchase ───────────────────────────────────────
+// Direct wallet purchase — atomic stock pop from MongoDB
+export const walletPurchase = async (req, res, next) => {
   try {
-    const { items, payment_method, coupon_code, email } = req.body;
-    if (!items?.length || !payment_method) return res.status(400).json({ error: 'Items and payment_method required' });
-    if (!['cashfree', 'nowpayments', 'binance', 'wallet', 'upi'].includes(payment_method)) {
-      return res.status(400).json({ error: 'Invalid payment method' });
+    if (!req.user) return res.status(401).json({ error: 'Please login to purchase' });
+
+    const { product_id, variant_id, quantity = 1 } = req.body;
+    if (!product_id || !variant_id) {
+      return res.status(400).json({ error: 'product_id and variant_id are required' });
+    }
+    const qty = Math.max(1, parseInt(quantity));
+
+    // 1. Fetch product from MongoDB
+    const product = await getProductById(product_id);
+    if (!product || !product.is_active) {
+      return res.status(404).json({ error: 'Product not found or inactive' });
     }
 
-    // Fetch product prices
-    let totalAmount = 0;
-    const orderItems = [];
-    for (const item of items) {
-      let price, title, variantName, deliveredContent, stockKey;
+    // 2. Find variant
+    const variant = product.variants.find((v) => v.id === variant_id);
+    if (!variant) return res.status(404).json({ error: 'Variant not found' });
 
-      if (item.variant_id) {
-        const { rows } = await query(`
-          SELECT pv.*, p.title, p.is_infinite_stock AS p_infinite, p.infinite_stock_item AS p_item
-          FROM product_variants pv JOIN products p ON p.id=pv.product_id
-          WHERE pv.id=$1 AND p.status='active'
-        `, [item.variant_id]);
-        if (!rows[0]) return res.status(404).json({ error: `Variant ${item.variant_id} not found` });
-        const v = rows[0];
-        price = parseFloat(v.price);
-        title = v.title;
-        variantName = v.name;
+    const poolId = variant.pool_id;
+    const isPreorder = variant.is_preorder;
+    const isInfinite = variant.is_infinite;
+    const stockCount = variant.stock;
 
-        // Get stock item
-        if (v.is_infinite_stock && v.infinite_stock_item) {
-          deliveredContent = v.infinite_stock_item;
-        } else if (v.stock_keys?.length) {
-          stockKey = v.stock_keys[0];
-          deliveredContent = stockKey;
-          await query('UPDATE product_variants SET stock_keys=stock_keys[2:] WHERE id=$1', [item.variant_id]);
-        } else {
-          return res.status(400).json({ error: `Out of stock: ${v.name}` });
-        }
-      } else {
-        const { rows } = await query(`
-          SELECT * FROM products WHERE id=$1 AND status='active'
-        `, [item.product_id]);
-        if (!rows[0]) return res.status(404).json({ error: `Product ${item.product_id} not found` });
-        const p = rows[0];
-        price = parseFloat(p.sale_price || p.price);
-        title = p.title;
+    // 3. Check stock
+    if (!isInfinite && !isPreorder && stockCount < qty) {
+      return res.status(400).json({ error: 'Out of stock' });
+    }
 
-        if (p.is_infinite_stock && p.infinite_stock_item) {
-          deliveredContent = p.infinite_stock_item;
-        } else if (p.stock_keys?.length) {
-          deliveredContent = p.stock_keys[0];
-          await query('UPDATE products SET stock_keys=stock_keys[2:] WHERE id=$1', [item.product_id]);
-        }
-      }
+    // 4. Calculate price
+    const unitPrice = variant.price;
+    const totalPrice = parseFloat((unitPrice * qty).toFixed(2));
 
-      totalAmount += price;
-      orderItems.push({
-        product_id: item.product_id,
-        variant_id: item.variant_id || null,
-        product_title: title,
-        variant_name: variantName || null,
-        price,
-        delivered_content: deliveredContent || null,
+    // 5. Check user wallet balance (from local db.js)
+    const { rows: uRows } = await query('SELECT balance FROM users WHERE id=$1', [req.user.id]);
+    const currentBalance = parseFloat(uRows[0]?.balance || 0);
+    if (currentBalance < totalPrice) {
+      return res.status(400).json({
+        error: `Insufficient wallet balance (₹${currentBalance.toFixed(2)}). Need ₹${totalPrice}. Please top up first.`,
       });
     }
 
-    // Coupon validation
+    // 6. Deduct balance atomically (SQL emulator)
+    await query('UPDATE users SET balance=balance-$1 WHERE id=$2', [totalPrice, req.user.id]);
+
+    // 7. Deliver: atomically pop stock from MongoDB
+    const deliveryMethod = variant.delivery_method || 'auto';
+    const isManual = deliveryMethod === 'manual';
+    const deliveredItems = [];
+
+    if (!isPreorder && !isManual) {
+      for (let i = 0; i < qty; i++) {
+        if (isInfinite) {
+          // For infinite stock, we get first item without removing
+          const { rows: pRows } = await query('SELECT 1', []); // dummy
+          // Get the pool's first item without popping
+          const { getProductById: getRaw } = await import('../services/botdb.service.js');
+          // We need raw product to get first infinite item
+          const Product = (await import('../models/product.model.js')).default;
+          const raw = await Product.findById(product_id).lean();
+          const pool = (raw?.stock_pools || {})[poolId] || [];
+          deliveredItems.push(pool[0] || 'Infinite Stock Item');
+        } else {
+          const item = await atomicPopStock(product_id, poolId);
+          if (!item) {
+            // Refund if stock ran out mid-purchase (race condition)
+            await query('UPDATE users SET balance=balance+$1 WHERE id=$2', [unitPrice, req.user.id]);
+            break;
+          }
+          deliveredItems.push(item);
+        }
+      }
+    }
+
+    // 8. Create sale records in website_sales collection
+    const now = Math.floor(Date.now() / 1000);
+    const endTs = variant.duration > 0 ? now + variant.duration * 30 * 24 * 3600 : null;
+    const { rows: userRows } = await query('SELECT name,email FROM users WHERE id=$1', [req.user.id]);
+    const userName = userRows[0]?.name || 'Unknown';
+    const userEmail = userRows[0]?.email || '';
+
+    const createdSales = [];
+    const actualQty = deliveredItems.length || qty;
+
+    for (let i = 0; i < (isPreorder || isManual ? qty : actualQty); i++) {
+      const sale = await Sale.create({
+        sale_id: generateSaleId(),
+        source: 'website',
+        product_id,
+        variant_id,
+        pool_id: poolId,
+        product_name: product.name,
+        variant_name: variant.name,
+        price: unitPrice,
+        original_price: unitPrice,
+        quantity: 1,
+        user_id: req.user.id,
+        user_email: userEmail,
+        user_name: userName,
+        credentials: deliveredItems[i] || '',
+        status: isPreorder ? 'Pre-Order' : isManual ? 'Pending' : 'Delivered',
+        delivery_method: deliveryMethod,
+        purchase_ts: now,
+        end_ts: endTs,
+      });
+      createdSales.push(sale);
+    }
+
+    // 9. Get updated balance
+    const { rows: newBalRows } = await query('SELECT balance FROM users WHERE id=$1', [req.user.id]);
+    const newBalance = parseFloat(newBalRows[0]?.balance || 0);
+
+    return res.status(201).json({
+      success: true,
+      message: isPreorder
+        ? 'Pre-order placed! You will be notified when stock is available.'
+        : isManual
+        ? 'Order placed! It will be delivered manually by admin.'
+        : 'Purchase successful! Your credentials are ready.',
+      orders: createdSales.map((s) => ({
+        sale_id: s.sale_id,
+        status: s.status,
+        credentials: s.credentials,
+        product_name: s.product_name,
+        variant_name: s.variant_name,
+        price: s.price,
+        end_ts: s.end_ts,
+      })),
+      new_balance: newBalance,
+      rules: variant.rules || '',
+      delivery_time: variant.delivery_time || 'Instant',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── POST /api/payments/initiate ─────────────────────────────────────────────
+// For non-wallet payments (Cashfree, Crypto, Binance)
+export const initiatePayment = async (req, res, next) => {
+  try {
+    const { product_id, variant_id, quantity = 1, payment_method, coupon_code, email } = req.body;
+
+    if (!product_id || !variant_id || !payment_method) {
+      return res.status(400).json({ error: 'product_id, variant_id, and payment_method required' });
+    }
+    if (!['cashfree', 'nowpayments', 'binance', 'upi'].includes(payment_method)) {
+      return res.status(400).json({ error: 'Invalid payment method' });
+    }
+
+    const qty = Math.max(1, parseInt(quantity));
+
+    // Fetch product
+    const product = await getProductById(product_id);
+    if (!product || !product.is_active) return res.status(404).json({ error: 'Product not found' });
+
+    const variant = product.variants.find((v) => v.id === variant_id);
+    if (!variant) return res.status(404).json({ error: 'Variant not found' });
+
+    const unitPrice = variant.price;
+    let totalAmount = parseFloat((unitPrice * qty).toFixed(2));
+
+    // Coupon check (local coupons from db.js)
     let discountAmount = 0;
     if (coupon_code) {
-      const { rows } = await query(`
-        SELECT * FROM coupons WHERE code=$1 AND is_active=true
-          AND (expires_at IS NULL OR expires_at > NOW())
-          AND used_count < max_uses
-      `, [coupon_code.toUpperCase()]);
-      if (rows[0]) {
-        const c = rows[0];
-        if (totalAmount >= parseFloat(c.min_order_amount || 0)) {
-          discountAmount = c.discount_type === 'percent'
-            ? totalAmount * (parseFloat(c.discount_value) / 100)
-            : parseFloat(c.discount_value);
+      try {
+        const { rows } = await query(`SELECT * FROM coupons WHERE code=$1`, [coupon_code.toUpperCase()]);
+        if (rows[0]) {
+          const c = rows[0];
+          discountAmount =
+            c.discount_type === 'percent'
+              ? totalAmount * (parseFloat(c.discount_value) / 100)
+              : parseFloat(c.discount_value);
           discountAmount = Math.min(discountAmount, totalAmount);
           await query('UPDATE coupons SET used_count=used_count+1 WHERE id=$1', [c.id]);
         }
-      }
+      } catch (_) {}
     }
 
     const finalAmount = parseFloat((totalAmount - discountAmount).toFixed(2));
     const usdToInr = await getUsdToInrRate();
-    const orderNumber = generateOrderNumber();
-    let timeoutMinutes = 60;
-    let paymentStatus = 'pending';
+    const orderNumber = 'QXD' + Date.now().toString(36).toUpperCase();
 
-    // 1. Check if Wallet Payment
-    if (payment_method === 'wallet') {
-      if (!req.user) return res.status(401).json({ error: 'Please login to pay with wallet balance' });
-      const { rows: uRows } = await query('SELECT balance FROM users WHERE id=$1', [req.user.id]);
-      const currentBalance = parseFloat(uRows[0]?.balance || 0);
-      if (currentBalance < finalAmount) {
-        return res.status(400).json({ error: `Insufficient wallet balance (₹${currentBalance.toFixed(2)}). Please top up first.` });
-      }
-      // Deduct balance
-      await query('UPDATE users SET balance = balance - $1 WHERE id=$2', [finalAmount, req.user.id]);
-      paymentStatus = 'paid';
-    }
-
-    if (payment_method === 'nowpayments') {
-      timeoutMinutes = parseInt(process.env.CRYPTO_TIMEOUT_MINUTES || 180);
-    }
-
-    const timeoutAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
-
-    // Create order in DB
+    // Create pending order record (local db.js orders table)
     const { rows: orderRows } = await query(`
       INSERT INTO orders (order_number, buyer_id, buyer_email, total_amount, discount_amount,
-        coupon_code, payment_method, payment_status, base_amount, timeout_at)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+        coupon_code, payment_method, payment_status, base_amount, timeout_at,
+        meta_product_id, meta_variant_id, meta_qty)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,'pending',$8,$9,$10,$11,$12)
       RETURNING *
     `, [
       orderNumber,
@@ -155,34 +247,23 @@ export const initiatePayment = async (req, res, next) => {
       discountAmount,
       coupon_code || null,
       payment_method,
-      paymentStatus,
       finalAmount,
-      timeoutAt,
+      new Date(Date.now() + 3 * 60 * 60 * 1000),
+      product_id,
+      variant_id,
+      qty,
     ]);
     const order = orderRows[0];
 
-    // Insert order items
-    const createdItems = [];
-    for (const item of orderItems) {
-      const { rows: itemRows } = await query(`
-        INSERT INTO order_items (order_id, product_id, variant_id, product_title, variant_name, price, delivered_content)
-        VALUES ($1,$2,$3,$4,$5,$6,$7)
-        RETURNING *
-      `, [order.id, item.product_id, item.variant_id, item.product_title, item.variant_name, item.price, item.delivered_content]);
-      createdItems.push(itemRows[0]);
-    }
-
-    // Response structure
     const responseData = {
       order_id: order.id,
       order_number: orderNumber,
       total_amount: finalAmount,
       discount_amount: discountAmount,
       payment_method,
-      payment_status: paymentStatus,
+      payment_status: 'pending',
     };
 
-    // 2. Cashfree Payment Gateway (Cards, UPI, NetBanking)
     if (payment_method === 'cashfree') {
       const cfRes = await createCashfreeOrder({
         orderId: order.id,
@@ -192,84 +273,59 @@ export const initiatePayment = async (req, res, next) => {
       if (cfRes.success && cfRes.paymentLink) {
         responseData.payment_link = cfRes.paymentLink;
         await query('UPDATE orders SET gateway_payment_id=$1, invoice_url=$2 WHERE id=$3', [
-          cfRes.orderId,
-          cfRes.paymentLink,
-          order.id,
+          cfRes.orderId, cfRes.paymentLink, order.id,
         ]);
       } else {
-        return res.status(500).json({ error: cfRes.error || 'Failed to initiate Cashfree payment' });
+        return res.status(500).json({ error: cfRes.error || 'Cashfree payment failed' });
       }
-    }
-
-    // 3. NowPayments (Crypto)
-    else if (payment_method === 'nowpayments') {
+    } else if (payment_method === 'nowpayments') {
       const { invoiceUrl, invoiceId } = await createCryptoInvoice({ orderId: order.id, amountINR: finalAmount });
       responseData.invoice_url = invoiceUrl;
-      responseData.timeout_at = timeoutAt;
-      responseData.fee_percent = parseFloat(process.env.CRYPTO_FEE_PERCENT || 5);
+      responseData.timeout_at = new Date(Date.now() + 180 * 60 * 1000);
       await query('UPDATE orders SET gateway_payment_id=$1, invoice_url=$2 WHERE id=$3', [invoiceId, invoiceUrl, order.id]);
-    }
-
-    // 4. Binance Pay
-    else if (payment_method === 'binance') {
+    } else if (payment_method === 'binance') {
       responseData.binance_pay_id = process.env.BINANCE_PAY_ID || '1133813547';
-      responseData.min_usd = parseFloat(process.env.BINANCE_MIN_USD || 1);
       responseData.usd_to_inr = usdToInr;
     }
 
-    // 5. Wallet Direct Payment
-    else if (payment_method === 'wallet') {
-      responseData.message = 'Payment successful from wallet balance!';
-      responseData.items = createdItems;
-    }
-
     res.status(201).json(responseData);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
-// POST /api/payments/cashfree/verify — check Cashfree payment status
+// ─── POST /api/payments/cashfree/verify ──────────────────────────────────────
 export const verifyCashfreePayment = async (req, res, next) => {
   try {
     const { order_id } = req.body;
     if (!order_id) return res.status(400).json({ error: 'order_id is required' });
-
     const statusRes = await checkCashfreeStatus(order_id);
     if (statusRes.isPaid) {
       await query("UPDATE orders SET payment_status='paid', paid_at=NOW() WHERE id=$1", [order_id]);
-      return res.json({ success: true, payment_status: 'paid', message: 'Payment confirmed!' });
+      return res.json({ success: true, payment_status: 'paid' });
     }
     res.json({ success: false, payment_status: statusRes.txStatus || 'pending' });
   } catch (err) { next(err); }
 };
 
-// POST /api/payments/binance/verify — submit tx ID
+// ─── POST /api/payments/binance/verify ───────────────────────────────────────
 export const verifyBinancePayment = async (req, res, next) => {
   try {
     const { order_id, tx_id } = req.body;
     if (!order_id || !tx_id) return res.status(400).json({ error: 'order_id and tx_id required' });
-
     const result = await processBinanceOrder(order_id, tx_id);
     if (!result.success) return res.status(400).json({ error: result.error });
-
     res.json({ message: 'Payment verified', ...result });
   } catch (err) { next(err); }
 };
 
-// GET /api/payments/status/:orderId
+// ─── GET /api/payments/status/:orderId ───────────────────────────────────────
 export const getOrderStatus = async (req, res, next) => {
   try {
-    const { rows } = await query(`
-      SELECT o.id, o.order_number, o.payment_status, o.paid_at,
-             json_agg(json_build_object(
-               'title', oi.product_title,
-               'price', oi.price,
-               'download_token', oi.download_token
-             )) AS items
-      FROM orders o
-      LEFT JOIN order_items oi ON oi.order_id=o.id
-      WHERE o.id=$1
-      GROUP BY o.id
-    `, [req.params.orderId]);
+    const { rows } = await query(
+      'SELECT id, order_number, payment_status, paid_at FROM orders WHERE id=$1',
+      [req.params.orderId]
+    );
     if (!rows[0]) return res.status(404).json({ error: 'Order not found' });
     res.json(rows[0]);
   } catch (err) { next(err); }

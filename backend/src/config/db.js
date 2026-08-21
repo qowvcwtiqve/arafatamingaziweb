@@ -389,7 +389,8 @@ export async function query(sql, params = []) {
 
   // 2. COUNT products
   if (lowerSql.includes('select count(*)') && lowerSql.includes('from products')) {
-    return { rows: [{ count: (db.products || []).length }] };
+    const count = (db.products || []).filter(p => p.status === 'active').length;
+    return { rows: [{ count }] };
   }
 
   // 3. Categories count
@@ -449,6 +450,41 @@ export async function query(sql, params = []) {
     return { rows: user ? [user] : [] };
   }
 
+  // Get all users
+  if (lowerSql.includes('select ') && lowerSql.includes('from users') && !lowerSql.includes('where ') && !lowerSql.includes('count(')) {
+    return { rows: db.users || [] };
+  }
+
+  // Update user freeze
+  if (lowerSql.startsWith('update users') && lowerSql.includes('is_frozen=not is_frozen')) {
+    const id = params[0];
+    const user = (db.users || []).find(u => u.id === id);
+    if (user) {
+      user.is_frozen = !user.is_frozen;
+      writeLocalDb(db);
+      return { rows: [user] };
+    }
+    return { rows: [] };
+  }
+
+  // Update user balance
+  if (lowerSql.startsWith('update users') && lowerSql.includes('balance=')) {
+    const id = params[params.length - 1];
+    const user = (db.users || []).find(u => u.id === id);
+    if (user) {
+      if (lowerSql.includes('balance=0')) {
+        user.balance = 0;
+      } else if (lowerSql.includes('balance=balance+$1')) {
+        user.balance += parseFloat(params[0]);
+      } else if (lowerSql.includes('balance-$1')) {
+        user.balance = Math.max(0, user.balance - parseFloat(params[0]));
+      }
+      writeLocalDb(db);
+      return { rows: [user] };
+    }
+    return { rows: [] };
+  }
+
   // Insert user
   if (lowerSql.startsWith('insert into users')) {
     const [name, email, password_hash] = params;
@@ -473,7 +509,7 @@ export async function query(sql, params = []) {
 
   // 7. Orders
   if (lowerSql.startsWith('insert into orders')) {
-    const [order_number, buyer_id, buyer_email, total_amount, discount_amount, coupon_code, payment_method, unique_amount, base_amount, timeout_at] = params;
+    const [order_number, buyer_id, buyer_email, total_amount, discount_amount, coupon_code, payment_method, payment_status, base_amount, timeout_at] = params;
     const newOrder = {
       id: `ord-${Date.now()}`,
       order_number,
@@ -483,12 +519,12 @@ export async function query(sql, params = []) {
       discount_amount: discount_amount || 0,
       coupon_code,
       payment_method,
-      unique_amount,
+      payment_status: payment_status || 'pending',
       base_amount,
       timeout_at,
-      payment_status: 'pending',
       created_at: new Date().toISOString(),
     };
+    if (payment_status === 'paid') newOrder.paid_at = new Date().toISOString();
     db.orders = db.orders || [];
     db.orders.push(newOrder);
     writeLocalDb(db);
@@ -501,9 +537,28 @@ export async function query(sql, params = []) {
     return { rows: order ? [order] : [] };
   }
 
+  if (lowerSql.includes('from orders') && lowerSql.includes('left join users')) {
+    const limit = params[0] || 20;
+    const offset = params[1] || 0;
+    const statusMatch = lowerSql.match(/payment_status='([^']+)'/);
+    let allOrders = [...(db.orders || [])];
+    if (statusMatch && statusMatch[1]) {
+      allOrders = allOrders.filter(o => o.payment_status === statusMatch[1]);
+    }
+    allOrders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    const paginated = allOrders.slice(offset, offset + limit).map(o => {
+      const u = (db.users || []).find(usr => usr.id === o.buyer_id) || {};
+      return { ...o, buyer_name: u.name || 'Unknown', buyer_email: u.email || o.buyer_email };
+    });
+    return { rows: paginated };
+  }
+
   if (lowerSql.includes('from orders') && lowerSql.includes('where o.buyer_id=$1')) {
     const buyerId = params[0];
-    const userOrders = (db.orders || []).filter(o => o.buyer_id === buyerId);
+    const userOrders = JSON.parse(JSON.stringify((db.orders || []).filter(o => o.buyer_id === buyerId)));
+    userOrders.forEach(o => {
+      o.items = (db.order_items || []).filter(oi => oi.order_id === o.id);
+    });
     return { rows: userOrders };
   }
 
@@ -511,6 +566,25 @@ export async function query(sql, params = []) {
     const id = params[0];
     const order = (db.orders || []).find(o => o.id === id);
     return { rows: order ? [order] : [] };
+  }
+
+  if (lowerSql.startsWith('update orders')) {
+    const id = params[params.length - 1];
+    const order = (db.orders || []).find(o => o.id === id);
+    if (order) {
+      if (lowerSql.includes('payment_status=')) {
+        if (lowerSql.includes("'paid'")) {
+          order.payment_status = 'paid';
+          order.paid_at = new Date().toISOString();
+        }
+      }
+      if (lowerSql.includes('gateway_payment_id=$1')) {
+        order.gateway_payment_id = params[0];
+        order.invoice_url = params[1];
+      }
+      writeLocalDb(db);
+    }
+    return { rows: [], rowCount: order ? 1 : 0 };
   }
 
   // 8. Order items
@@ -601,9 +675,14 @@ export async function query(sql, params = []) {
     return { rows: [{ count: (db.users || []).length }] };
   }
 
+  if (lowerSql.includes('count(*)') && lowerSql.includes('from orders')) {
+    const count = (db.orders || []).filter(o => o.payment_status === 'paid').length;
+    return { rows: [{ count }] };
+  }
+
   if (lowerSql.includes('sum(total_amount)')) {
     const total = (db.orders || []).filter(o => o.payment_status === 'paid').reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0);
-    return { rows: [{ total: total || 14500 }] };
+    return { rows: [{ total: total || 0 }] };
   }
 
   // 11. Deposits
@@ -616,7 +695,49 @@ export async function query(sql, params = []) {
     return { rows: [{ rate: 84.5, fetched_at: new Date().toISOString() }] };
   }
 
-  // 13. Create Product
+  // 13. Categories
+  if (lowerSql.startsWith('insert into categories')) {
+    const [name, slug, description] = params;
+    const newCategory = {
+      id: `cat-${Date.now()}`,
+      name,
+      slug: slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+      description: description || '',
+      created_at: new Date().toISOString(),
+    };
+    db.categories = db.categories || [];
+    db.categories.push(newCategory);
+    writeLocalDb(db);
+    return { rows: [newCategory] };
+  }
+
+  if (lowerSql.startsWith('update categories')) {
+    const id = params[params.length - 1];
+    const cat = (db.categories || []).find(c => c.id === id);
+    if (cat) {
+      if (lowerSql.includes('name=$1')) {
+        cat.name = params[0];
+        cat.slug = params[1];
+        cat.description = params[2];
+      }
+      writeLocalDb(db);
+      return { rows: [cat] };
+    }
+    return { rows: [] };
+  }
+
+  if (lowerSql.startsWith('delete from categories')) {
+    const id = params[0];
+    db.categories = (db.categories || []).filter(c => c.id !== id);
+    writeLocalDb(db);
+    return { rows: [], rowCount: 1 };
+  }
+
+  if (lowerSql.startsWith('select * from categories') || lowerSql.includes('from categories')) {
+    return { rows: db.categories || [] };
+  }
+
+  // 14. Create Product
   if (lowerSql.startsWith('insert into products')) {
     const [seller_id, title, slug, description, short_desc, price, sale_price, category, tags, thumbnail_url, file_url, file_size, file_type, demo_url, version, stock_type, is_infinite_stock, infinite_stock_item] = params;
     const newProduct = {
@@ -651,6 +772,43 @@ export async function query(sql, params = []) {
     db.products.unshift(newProduct);
     writeLocalDb(db);
     return { rows: [newProduct] };
+  }
+
+  // Update Product Feature
+  if (lowerSql.startsWith('update products') && lowerSql.includes('is_featured=not is_featured')) {
+    const id = params[0];
+    const product = (db.products || []).find(p => p.id === id);
+    if (product) {
+      product.is_featured = !product.is_featured;
+      writeLocalDb(db);
+      return { rows: [product] };
+    }
+    return { rows: [] };
+  }
+
+  // Update Product (General Edit)
+  if (lowerSql.startsWith('update products') && lowerSql.includes('updated_at=now()')) {
+    const id = params[params.length - 2];
+    const product = (db.products || []).find(p => p.id === id);
+    if (product) {
+      const setMatches = lowerSql.match(/set (.*?)(?:, updated_at=now\(\))? where/);
+      if (setMatches && setMatches[1]) {
+        const assignments = setMatches[1].split(',');
+        assignments.forEach(assignment => {
+          const parts = assignment.split('=');
+          if (parts.length === 2) {
+            const field = parts[0].trim();
+            const valIndex = parseInt(parts[1].trim().replace('$', '')) - 1;
+            if (valIndex >= 0 && valIndex < params.length) {
+              product[field] = params[valIndex];
+            }
+          }
+        });
+      }
+      writeLocalDb(db);
+      return { rows: [product] };
+    }
+    return { rows: [] };
   }
 
   // 14. Create Variant

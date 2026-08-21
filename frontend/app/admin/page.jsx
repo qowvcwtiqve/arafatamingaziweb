@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { LayoutDashboard, ReceiptText, Box, Users, CreditCard, TicketPercent, Wallet, Settings, Edit, Tags } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '../../store/authStore';
@@ -7,13 +8,40 @@ import api from '../../lib/api';
 import toast from 'react-hot-toast';
 
 const TABS = [
-  { id: 'overview', label: 'Overview', icon: 'dashboard' },
-  { id: 'orders', label: 'Orders', icon: 'receipt' },
-  { id: 'products', label: 'Products', icon: 'inventory_2' },
-  { id: 'users', label: 'Users', icon: 'group' },
-  { id: 'deposits', label: 'Deposits', icon: 'payments' },
-  { id: 'coupons', label: 'Coupons', icon: 'local_offer' },
+  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'orders', label: 'Orders', icon: ReceiptText },
+  { id: 'products', label: 'Products', icon: Box },
+  { id: 'users', label: 'Users', icon: Users },
+  { id: 'deposits', label: 'Deposits', icon: CreditCard },
+  { id: 'coupons', label: 'Coupons', icon: TicketPercent },
+  { id: 'categories', label: 'Categories', icon: Tags },
 ];
+
+function AdminModal({ config, onClose }) {
+  const [val, setVal] = useState('');
+  useEffect(() => { setVal(config?.initialValue || ''); }, [config]);
+  
+  if (!config?.isOpen) return null;
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+      <div className="card card--elevated" style={{ width: 400, maxWidth: '90%', padding: 24, animation: 'fadeIn 0.2s ease', border: '1px solid var(--color-border)' }}>
+        <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{config.title}</h3>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: 14, marginBottom: 20 }}>{config.message}</p>
+        
+        {config.type === 'prompt' && (
+          <input className="form-input" placeholder={config.placeholder} value={val} onChange={e => setVal(e.target.value)} autoFocus style={{ marginBottom: 20 }} />
+        )}
+        
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+          <button className="btn btn--ghost" onClick={onClose}>Cancel</button>
+          <button className={`btn ${config.type === 'confirm' ? 'btn--danger' : 'btn--primary'}`} onClick={() => { config.onConfirm(val); onClose(); }}>
+            {config.confirmText || 'Confirm'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminPage() {
   const router = useRouter();
@@ -22,10 +50,21 @@ export default function AdminPage() {
   const [stats, setStats] = useState(null);
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [users, setUsers] = useState([]);
   const [deposits, setDeposits] = useState([]);
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState({});
+  const [modalConfig, setModalConfig] = useState(null);
+  const [editProductConfig, setEditProductConfig] = useState(null);
+  const [showAddWebProduct, setShowAddWebProduct] = useState(false);
+
+  const openPrompt = (title, message, initialValue, placeholder, onConfirm) => {
+    setModalConfig({ type: 'prompt', title, message, initialValue, placeholder, onConfirm, isOpen: true });
+  };
+  const openConfirm = (title, message, onConfirm) => {
+    setModalConfig({ type: 'confirm', title, message, onConfirm, isOpen: true, confirmText: 'Yes, Delete' });
+  };
 
   useEffect(() => {
     if (!user) { router.push('/login'); return; }
@@ -44,7 +83,7 @@ export default function AdminPage() {
         const { data } = await api.get('/admin/orders?limit=50');
         setOrders(data.orders || []);
       } else if (tab === 'products') {
-        const { data } = await api.get('/admin/products');
+        const { data } = await api.get('/admin/bot/products');
         setProducts(data.products || []);
       } else if (tab === 'users') {
         const { data } = await api.get('/admin/users?limit=50');
@@ -55,6 +94,9 @@ export default function AdminPage() {
       } else if (tab === 'coupons') {
         const { data } = await api.get('/admin/coupons');
         setCoupons(data.coupons || []);
+      } else if (tab === 'categories') {
+        const { data } = await api.get('/products/categories');
+        setCategories(data.categories || []);
       }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to load data');
@@ -63,47 +105,95 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteProduct = async (id, title) => {
-    try {
-      await api.delete(`/admin/products/${id}`);
-      setProducts(ps => ps.filter(p => p.id !== id));
-      toast.success(`Product "${title}" deleted`);
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to delete product');
+  const handleDeleteProduct = (id, title, isWebsiteOnly) => {
+    if (!isWebsiteOnly) {
+      openConfirm('Unsupported Action', `Deleting bot products directly from the website is disabled. Please delete "${title}" via the Telegram Bot.`, () => {});
+      return;
     }
+    openConfirm('Delete Website Product', `Are you sure you want to delete "${title}"?`, async () => {
+      try {
+        await api.delete(`/admin/website-products/${id}`);
+        setProducts(ps => ps.filter(p => p.id !== id));
+        toast.success(`Product deleted`);
+      } catch (err) {
+        toast.error('Failed to delete product');
+      }
+    });
   };
 
-  const handleDeleteCoupon = async (id, code) => {
-    try {
-      await api.delete(`/admin/coupons/${id}`);
-      setCoupons(cs => cs.filter(c => c.id !== id));
-      toast.success(`Coupon "${code}" deleted`);
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to delete coupon');
-    }
+  const handleDeleteCoupon = (id, code) => {
+    openConfirm('Delete Coupon', `Are you sure you want to delete coupon "${code}"?`, async () => {
+      try {
+        await api.delete(`/admin/coupons/${id}`);
+        setCoupons(cs => cs.filter(c => c.id !== id));
+        toast.success(`Coupon "${code}" deleted`);
+      } catch (err) {
+        toast.error(err.response?.data?.error || 'Failed to delete coupon');
+      }
+    });
+  };
+
+  const handleAddCategory = () => {
+    openPrompt('Add Category', 'Enter the name of the new category:', '', 'e.g. Software & OS', async (name) => {
+      if (!name) return;
+      try {
+        const { data } = await api.post('/admin/categories', { name });
+        setCategories(prev => [data, ...prev]);
+        toast.success('Category added');
+      } catch (err) {
+        toast.error(err.response?.data?.error || 'Failed to add category');
+      }
+    });
+  };
+
+  const handleEditCategory = (cat) => {
+    openPrompt('Edit Category', 'Update the category name:', cat.name, 'Category name', async (name) => {
+      if (!name || name === cat.name) return;
+      try {
+        const { data } = await api.put(`/admin/categories/${cat.id}`, { name, slug: cat.slug, description: cat.description });
+        setCategories(prev => prev.map(c => c.id === cat.id ? data : c));
+        toast.success('Category updated');
+      } catch (err) {
+        toast.error(err.response?.data?.error || 'Failed to update category');
+      }
+    });
+  };
+
+  const handleDeleteCategory = (id, name) => {
+    openConfirm('Delete Category', `Are you sure you want to delete the category "${name}"?`, async () => {
+      try {
+        await api.delete(`/admin/categories/${id}`);
+        setCategories(prev => prev.filter(c => c.id !== id));
+        toast.success('Category deleted');
+      } catch (err) {
+        toast.error(err.response?.data?.error || 'Failed to delete category');
+      }
+    });
   };
 
   if (!user || user.role !== 'admin') return null;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', paddingTop: 'var(--header-height)' }}>
+      <AdminModal config={modalConfig} onClose={() => setModalConfig(null)} />
       
       {/* Sidebar */}
-      <aside style={{
+      <aside className="admin-sidebar" style={{
         width: 240, background: 'var(--color-surface)', borderRight: '1px solid var(--color-border)',
         position: 'fixed', top: 'var(--header-height)', bottom: 0, left: 0, padding: 16, zIndex: 100, overflowY: 'auto'
       }}>
-        <div style={{ padding: '12px 12px 16px', marginBottom: 8, borderBottom: '1px solid var(--color-border)' }}>
+        <div className="admin-sidebar-header" style={{ padding: '12px 12px 16px', marginBottom: 8, borderBottom: '1px solid var(--color-border)' }}>
           <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-faint)', marginBottom: 4 }}>
             Store Owner Admin
           </p>
           <p style={{ fontSize: 13, color: 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</p>
         </div>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <nav className="admin-sidebar-nav" style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => loadTab(t.id)}
+              className="admin-sidebar-btn"
               style={{
                 display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
                 borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer',
@@ -113,7 +203,7 @@ export default function AdminPage() {
                 transition: 'var(--transition-fast)', textAlign: 'left', width: '100%',
               }}
             >
-              <span className="icon icon--sm">{t.icon}</span>
+              <t.icon size={20} />
               {t.label}
             </button>
           ))}
@@ -121,7 +211,7 @@ export default function AdminPage() {
       </aside>
 
       {/* Main Content Area */}
-      <main style={{ marginLeft: 240, flex: 1, padding: 32, maxWidth: 'calc(100% - 240px)' }}>
+      <main className="admin-content" style={{ marginLeft: 240, flex: 1, padding: 32, maxWidth: 'calc(100% - 240px)' }}>
         
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
@@ -210,57 +300,81 @@ export default function AdminPage() {
               <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700 }}>
                 Store <span className="text-gradient">Products</span> ({products.length})
               </h1>
-              <Link href="/admin/products/new" className="btn btn--primary btn--sm">
-                <span className="icon icon--sm">add</span> Add New Product
-              </Link>
+              <button 
+                onClick={() => setShowAddWebProduct(true)}
+                className="btn btn--primary btn--sm"
+              >
+                <span className="icon icon--sm">add</span> Add Website Product
+              </button>
+            </div>
+            
+            {/* Drafts Section */}
+            <div style={{ marginBottom: 40 }}>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 700, marginBottom: 16, color: '#f59e0b' }}>
+                <span className="icon" style={{ verticalAlign: 'middle', marginRight: 8 }}>edit_document</span>
+                Drafts (Action Required)
+              </h2>
+              <ProductTable 
+                products={products.filter(p => !p.website_meta?.is_published)} 
+                setProducts={setProducts} 
+                onEditMeta={setEditProductConfig} 
+                onDelete={handleDeleteProduct}
+              />
+            </div>
+
+            {/* Published Section */}
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 700, marginBottom: 16, color: '#10b981' }}>
+                <span className="icon" style={{ verticalAlign: 'middle', marginRight: 8 }}>public</span>
+                Published Products
+              </h2>
+              <ProductTable 
+                products={products.filter(p => p.website_meta?.is_published)} 
+                setProducts={setProducts} 
+                onEditMeta={setEditProductConfig} 
+                onDelete={handleDeleteProduct}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* CATEGORIES */}
+        {activeTab === 'categories' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700 }}>
+                Manage <span className="text-gradient">Categories</span>
+              </h1>
+              <button onClick={handleAddCategory} className="btn btn--primary">
+                <span className="icon icon--sm">add</span> Add Category
+              </button>
             </div>
             <div className="table-wrapper">
               <table className="table">
                 <thead>
-                  <tr><th>Title</th><th>Category</th><th>Price</th><th>Featured</th><th>Status</th><th>Actions</th></tr>
+                  <tr><th>Name</th><th>Slug</th><th>Created At</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
-                  {products.map(p => (
-                    <tr key={p.id}>
-                      <td style={{ maxWidth: 220 }}>
-                        <span style={{ fontSize: 14, fontWeight: 500, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</span>
-                      </td>
-                      <td>
-                        <span style={{ textTransform: 'capitalize', fontSize: 12, padding: '2px 8px', background: 'var(--color-surface-2)', borderRadius: 4 }}>
-                          {p.category || 'General'}
-                        </span>
-                      </td>
-                      <td><span style={{ fontWeight: 700 }}>₹{parseFloat(p.price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></td>
-                      <td>
-                        <button
-                          onClick={async () => {
-                            await api.put(`/admin/products/${p.id}/feature`);
-                            setProducts(ps => ps.map(x => x.id === p.id ? { ...x, is_featured: !x.is_featured } : x));
-                            toast.success(p.is_featured ? 'Removed from featured' : 'Marked as featured');
-                          }}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: p.is_featured ? '#f59e0b' : 'var(--color-text-faint)' }}
-                          title="Toggle featured badge"
-                        >
-                          <span className="icon icon--md" style={{ fontVariationSettings: p.is_featured ? "'FILL' 1" : "'FILL' 0" }}>star</span>
-                        </button>
-                      </td>
-                      <td><span className={`status status--${p.status === 'active' ? 'paid' : 'pending'}`}>{p.status}</span></td>
+                  {categories.map(c => (
+                    <tr key={c.id}>
+                      <td style={{ fontWeight: 500 }}>{c.name}</td>
+                      <td><span style={{ fontSize: 12, padding: '2px 8px', background: 'var(--color-surface-2)', borderRadius: 4 }}>{c.slug}</span></td>
+                      <td style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>{new Date(c.created_at).toLocaleDateString()}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
-                          <Link href={`/products/${p.slug}`} target="_blank" className="btn btn--ghost btn--sm" title="View product in store">
-                            <span className="icon icon--sm">visibility</span>
-                          </Link>
-                          <button
-                            className="btn btn--danger btn--sm"
-                            onClick={() => handleDeleteProduct(p.id, p.title)}
-                            title="Delete this product"
-                          >
+                          <button onClick={() => handleEditCategory(c)} className="btn btn--ghost btn--sm" title="Edit Category">
+                            <Edit size={16} />
+                          </button>
+                          <button onClick={() => handleDeleteCategory(c.id, c.name)} className="btn btn--danger btn--sm" title="Delete Category">
                             <span className="icon icon--sm">delete</span>
                           </button>
                         </div>
                       </td>
                     </tr>
                   ))}
+                  {categories.length === 0 && (
+                    <tr><td colSpan="4" style={{ textAlign: 'center', padding: 20 }}>No categories found.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -287,17 +401,54 @@ export default function AdminPage() {
                       <td style={{ fontWeight: 700, color: 'var(--color-accent)' }}>₹{parseFloat(u.balance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                       <td style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>{new Date(u.created_at).toLocaleDateString()}</td>
                       <td>
-                        <button
-                          className={`btn btn--sm ${u.is_frozen ? 'btn--outline' : 'btn--danger'}`}
-                          onClick={async () => {
-                            await api.put(`/admin/users/${u.id}/freeze`);
-                            setUsers(us => us.map(x => x.id === u.id ? { ...x, is_frozen: !x.is_frozen } : x));
-                            toast.success(u.is_frozen ? 'User unfrozen' : 'User frozen');
-                          }}
-                        >
-                          <span className="icon icon--sm">{u.is_frozen ? 'lock_open' : 'block'}</span>
-                          {u.is_frozen ? 'Unfreeze' : 'Freeze'}
-                        </button>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            className={`btn btn--sm ${u.is_frozen ? 'btn--outline' : 'btn--danger'}`}
+                            onClick={async () => {
+                              try {
+                                await api.put(`/admin/users/${u.id}/freeze`);
+                                setUsers(us => us.map(x => x.id === u.id ? { ...x, is_frozen: !x.is_frozen } : x));
+                                toast.success(u.is_frozen ? 'User unfrozen' : 'User frozen');
+                              } catch (err) {
+                                toast.error(err.response?.data?.error || 'Action failed');
+                              }
+                            }}
+                          >
+                            <span className="icon icon--sm">{u.is_frozen ? 'lock_open' : 'block'}</span>
+                            {u.is_frozen ? 'Unfreeze' : 'Freeze'}
+                          </button>
+                          <button
+                            className="btn btn--ghost btn--sm"
+                            onClick={() => {
+                              openPrompt('Edit Balance', `Add (+ve) or Deduct (-ve) balance for ${u.name}. Or type 'reset' to set to 0.`, '', 'e.g. 500, -100, reset', async (input) => {
+                                if (!input) return;
+                                let action = 'add';
+                                let amount = parseFloat(input);
+                                
+                                if (input.toLowerCase().trim() === 'reset') {
+                                  action = 'reset';
+                                  amount = 0;
+                                } else if (amount < 0) {
+                                  action = 'deduct';
+                                  amount = Math.abs(amount);
+                                } else if (isNaN(amount) || amount === 0) {
+                                  return toast.error('Invalid amount');
+                                }
+
+                                try {
+                                  const { data } = await api.put(`/admin/users/${u.id}/balance`, { action, amount });
+                                  setUsers(us => us.map(x => x.id === u.id ? { ...x, balance: data.balance } : x));
+                                  toast.success('Balance updated');
+                                } catch (err) {
+                                  toast.error(err.response?.data?.error || 'Failed to update balance');
+                                }
+                              });
+                            }}
+                          >
+                            <span className="icon icon--sm">account_balance_wallet</span>
+                            Balance
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -347,6 +498,245 @@ export default function AdminPage() {
         )}
 
       </main>
+
+      {/* Edit Product Meta Modal */}
+      {editProductConfig && (
+        <EditProductMetaModal 
+          product={editProductConfig} 
+          onClose={() => setEditProductConfig(null)} 
+          onUpdate={(updated) => {
+            setProducts(ps => ps.map(p => p.id === updated.id ? updated : p));
+            setEditProductConfig(null);
+          }} 
+        />
+      )}
+
+      {/* Add Website Product Modal */}
+      {showAddWebProduct && (
+        <AddWebProductModal 
+          onClose={() => setShowAddWebProduct(false)}
+          onAdd={(newProd) => {
+            setProducts(ps => [newProd, ...ps]);
+            setShowAddWebProduct(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ProductTable({ products, setProducts, onEditMeta, onDelete }) {
+  if (products.length === 0) return <div style={{ padding: 20, textAlign: 'center', color: 'var(--color-text-faint)' }}>No products in this category.</div>;
+  return (
+    <div className="table-wrapper">
+      <table className="table">
+        <thead>
+          <tr><th>Source</th><th>Website Title</th><th>Price Range</th><th>Featured</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {products.map(p => {
+            const minPrice = p.variants?.length ? Math.min(...p.variants.map(v => v.price)) : (p.website_meta?.min_price || 0);
+            return (
+              <tr key={p.id}>
+                <td style={{ maxWidth: 120 }}>
+                  {p.is_website_only ? (
+                    <span style={{ fontSize: 12, padding: '4px 8px', borderRadius: 4, background: 'var(--color-surface-2)', color: 'var(--color-accent)', fontWeight: 600 }}>Web</span>
+                  ) : (
+                    <span style={{ fontSize: 12, padding: '4px 8px', borderRadius: 4, background: '#3b82f633', color: '#60a5fa', fontWeight: 600 }}>Bot</span>
+                  )}
+                  {!p.is_website_only && <span style={{ fontSize: 12, color: 'var(--color-text-faint)', display: 'block', marginTop: 4 }}>{p.name}</span>}
+                </td>
+                <td style={{ maxWidth: 220 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, display: 'block' }}>{p.website_meta?.title || p.name || 'Not Set'}</span>
+                  {p.website_meta?.compare_price && (
+                    <span style={{ fontSize: 12, color: 'var(--color-text-faint)', textDecoration: 'line-through' }}>₹{p.website_meta.compare_price}</span>
+                  )}
+                </td>
+                <td><span style={{ fontWeight: 700 }}>₹{minPrice.toLocaleString('en-IN')}</span></td>
+                <td>
+                  <button
+                    onClick={async () => {
+                      const isF = p.website_meta?.is_featured;
+                      await api.put(`/admin/bot/products/${p.id}/website-meta`, { is_featured: !isF });
+                      setProducts(ps => ps.map(x => x.id === p.id ? { ...x, website_meta: { ...x.website_meta, is_featured: !isF } } : x));
+                      toast.success(isF ? 'Removed from featured' : 'Marked as featured');
+                    }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: p.website_meta?.is_featured ? '#f59e0b' : 'var(--color-text-faint)' }}
+                  >
+                    <span className="icon icon--md" style={{ fontVariationSettings: p.website_meta?.is_featured ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                  </button>
+                </td>
+                <td>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {p.website_meta?.is_published && (
+                      <Link href={`/products/${p.id}`} target="_blank" className="btn btn--ghost btn--sm" title="View product in store">
+                        <span className="icon icon--sm">visibility</span>
+                      </Link>
+                    )}
+                    <button onClick={() => onEditMeta(p)} className="btn btn--ghost btn--sm" title="Edit Website Meta">
+                      <Edit size={16} /> Edit
+                    </button>
+                    {p.is_website_only && (
+                      <button onClick={() => onDelete(p.id, p.name, true)} className="btn btn--danger btn--sm" title="Delete Website Product">
+                        <span className="icon icon--sm">delete</span>
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function AddWebProductModal({ onClose, onAdd }) {
+  const [form, setForm] = useState({ name: '', description: '', price: '', category_id: '', images: '', compare_price: '' });
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = {
+        ...form,
+        images: form.images.split('\n').map(s => s.trim()).filter(Boolean)
+      };
+      const { data } = await api.post('/admin/website-products', payload);
+      // Map it immediately so it looks like the others in the table
+      const newP = data.product;
+      const mapped = {
+        id: newP._id, name: newP.name, is_website_only: true, variants: [],
+        website_meta: {
+          title: newP.name, description: newP.description, images: newP.images,
+          compare_price: newP.compare_price, is_published: newP.is_published, badge: newP.badge
+        }
+      };
+      onAdd(mapped);
+      toast.success('Website product added');
+    } catch (err) {
+      toast.error('Failed to add product');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+      <div className="card card--elevated" style={{ width: 500, maxWidth: '90%', padding: 32 }}>
+        <h2 style={{ marginBottom: 20 }}>Add Website Product</h2>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="form-group">
+            <label className="form-label">Product Name</label>
+            <input className="form-input" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Price (₹)</label>
+            <input type="number" required className="form-input" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Compare Price (Optional)</label>
+            <input type="number" className="form-input" value={form.compare_price} onChange={e => setForm(f => ({ ...f, compare_price: e.target.value }))} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Description</label>
+            <textarea className="form-input" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+          </div>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 12 }}>
+            <button type="button" className="btn btn--ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn--primary" disabled={saving}>Add Product</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function EditProductMetaModal({ product, onClose, onUpdate }) {
+  const [form, setForm] = useState({
+    title: product.website_meta?.title || product.name,
+    description: product.website_meta?.description || product.description || '',
+    images: (product.website_meta?.images || []).join('\n'),
+    badge: product.website_meta?.badge || '',
+    compare_price: product.website_meta?.compare_price || '',
+    is_published: product.website_meta?.is_published || false,
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = {
+        ...form,
+        images: form.images.split('\n').map(s => s.trim()).filter(Boolean),
+        compare_price: form.compare_price ? parseFloat(form.compare_price) : null
+      };
+      await api.put(`/admin/bot/products/${product.id}/website-meta`, payload);
+      
+      const updatedProduct = { ...product, website_meta: { ...product.website_meta, ...payload } };
+      onUpdate(updatedProduct);
+      toast.success('Website meta updated');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Update failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+      <div className="card card--elevated" style={{ width: 600, maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', padding: 32, animation: 'fadeIn 0.2s ease', border: '1px solid var(--color-border)' }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Edit Website Meta</h2>
+        <div style={{ marginBottom: 20, padding: 12, background: 'var(--color-surface-2)', borderRadius: 8, fontSize: 13, color: 'var(--color-text-muted)' }}>
+          Editing <strong>{product.name}</strong>. These fields are for the website only and do not affect the Telegram bot.
+        </div>
+        
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="form-group">
+            <label className="form-label">Display Title</label>
+            <input className="form-input" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Description (Markdown/HTML supported)</label>
+            <textarea className="form-input" rows={4} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+          </div>
+
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Compare Price (Old Price ₹)</label>
+              <input type="number" className="form-input" value={form.compare_price} onChange={e => setForm(f => ({ ...f, compare_price: e.target.value }))} />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Badge (e.g. Hot, Sale)</label>
+              <input className="form-input" value={form.badge} onChange={e => setForm(f => ({ ...f, badge: e.target.value }))} />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Images URLs (One per line)</label>
+            <textarea className="form-input" rows={3} placeholder="https://..." value={form.images} onChange={e => setForm(f => ({ ...f, images: e.target.value }))} />
+          </div>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '12px', background: 'var(--color-surface-2)', borderRadius: 8, border: '1px solid var(--color-border)' }}>
+            <input type="checkbox" checked={form.is_published} onChange={e => setForm(f => ({ ...f, is_published: e.target.checked }))} style={{ width: 18, height: 18 }} />
+            <div>
+              <div style={{ fontWeight: 600 }}>Publish on Website</div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>If unchecked, this product will remain in Drafts.</div>
+            </div>
+          </label>
+
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 12 }}>
+            <button type="button" className="btn btn--ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn--primary" disabled={saving}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -12,17 +12,27 @@ export const useCartStore = create(
       toggleCart: () => set(s => ({ isOpen: !s.isOpen })),
 
       addItem: (item) => {
-        const existing = get().items.find(i =>
-          i.product_id === item.product_id && i.variant_id === item.variant_id
-        );
+        const existingId = `${item.product_id}-${item.variant_id || 'default'}`;
+        const existing = get().items.find(i => i.id === existingId);
+        
         if (!existing) {
           set(s => ({
-            items: [...s.items, { ...item, id: `${item.product_id}-${item.variant_id || 'default'}` }],
+            items: [...s.items, { ...item, id: existingId, quantity: item.quantity || 1 }],
             isOpen: true,
           }));
         } else {
-          set({ isOpen: true });
+          set(s => ({
+            items: s.items.map(i => i.id === existingId ? { ...i, quantity: i.quantity + (item.quantity || 1) } : i),
+            isOpen: true,
+          }));
         }
+      },
+
+      updateQuantity: (id, qty) => {
+        if (qty < 1) return;
+        set(s => ({
+          items: s.items.map(i => i.id === id ? { ...i, quantity: qty } : i)
+        }));
       },
 
       removeItem: (id) => set(s => ({ items: s.items.filter(i => i.id !== id) })),
@@ -30,7 +40,7 @@ export const useCartStore = create(
       clearCart: () => set({ items: [] }),
 
       get total() {
-        return get().items.reduce((sum, i) => sum + parseFloat(i.price), 0);
+        return get().items.reduce((sum, i) => sum + (parseFloat(i.price) * (i.quantity || 1)), 0);
       },
     }),
     { name: 'quantumxd-cart' }

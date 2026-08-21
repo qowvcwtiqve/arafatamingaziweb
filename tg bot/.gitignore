@@ -1,0 +1,8 @@
+__pycache__/
+venv/
+env/
+.env
+web_users.json
+db.json
+*.pid
+*.json
