@@ -15,15 +15,21 @@ const STATUS_COLORS = {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, logout, refreshUser } = useAuthStore();
+  const { user, logout, refreshUser, _hasHydrated } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('orders');
+  const [liveBalance, setLiveBalance] = useState(null); // fresh from server
 
   const searchParams = useSearchParams();
   const topupStatus = searchParams.get('topup_status');
   const queryOrderId = searchParams.get('order_id');
   const initialTab = searchParams.get('tab');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (initialTab) {
@@ -32,12 +38,33 @@ export default function DashboardPage() {
   }, [initialTab]);
 
   useEffect(() => {
-    if (!user) { router.push('/login'); return; }
+    if (!mounted) return;
+
+    let currentUser = user;
+    if (!currentUser && typeof window !== 'undefined') {
+      try {
+        const stored = JSON.parse(localStorage.getItem('quantumxd-auth') || '{}');
+        currentUser = stored?.state?.user;
+      } catch {}
+    }
+
+    if (!currentUser) {
+      if (_hasHydrated) {
+        router.push('/login');
+      }
+      return;
+    }
+
     api.get('/users/orders')
       .then(({ data }) => setOrders(data.orders || []))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [user, router]);
+
+    // Always fetch fresh profile (balance) from server — localStorage is stale
+    api.get('/users/profile')
+      .then(({ data }) => setLiveBalance(parseFloat(data.user?.balance || 0)))
+      .catch(() => {});
+  }, [user, mounted, _hasHydrated, router]);
 
   // Handle Cashfree redirect for Topup
   useEffect(() => {
@@ -61,7 +88,25 @@ export default function DashboardPage() {
     }
   }, [topupStatus, queryOrderId, refreshUser]);
 
-  if (!user) return null;
+  const displayUser = mounted
+    ? (user || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('quantumxd-auth') || '{}')?.state?.user : null))
+    : null;
+
+  // Always show server-fresh balance, fallback to store if not yet loaded
+  const displayBalance = liveBalance !== null ? liveBalance : parseFloat(displayUser?.balance || 0);
+
+  const handleRefreshBalance = async () => {
+    try {
+      const { data } = await api.get('/users/profile');
+      setLiveBalance(parseFloat(data.user?.balance || 0));
+      await refreshUser();
+      toast.success('Balance refreshed!');
+    } catch {
+      toast.error('Failed to refresh balance');
+    }
+  };
+
+  if (!mounted || !displayUser) return null;
 
   return (
     <div style={{ paddingTop: 'calc(var(--header-height) + 24px)', paddingBottom: 90 }}>
@@ -118,9 +163,17 @@ export default function DashboardPage() {
                 Wallet Balance
               </div>
               <div style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 800, color: 'var(--color-accent)' }}>
-                ₹{parseFloat(user.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                ₹{displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </div>
             </div>
+            <button
+              className="btn btn--ghost btn--icon"
+              onClick={handleRefreshBalance}
+              title="Refresh balance"
+              style={{ width: 34, height: 34 }}
+            >
+              <span className="icon icon--sm">refresh</span>
+            </button>
             <button
               className="btn btn--primary btn--sm"
               onClick={() => setActiveTab('wallet')}
@@ -147,7 +200,7 @@ export default function DashboardPage() {
               gap: 6
             }}>
               {[
-                { id: 'orders', label: 'My Orders & Downloads', icon: 'receipt_long' },
+                { id: 'orders', label: 'My Orders', icon: 'receipt_long' },
                 { id: 'wallet', label: 'Wallet & Top Up', icon: 'account_balance_wallet' },
                 { id: 'profile', label: 'Profile Settings', icon: 'manage_accounts' },
                 { id: 'support', label: 'Help & 24/7 Support', icon: 'support_agent' },
@@ -224,7 +277,7 @@ export default function DashboardPage() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, margin: 0 }}>
-                    My Orders &amp; Downloads
+                    My Orders
                   </h2>
                   <span style={{ fontSize: 13, color: 'var(--color-text-faint)' }}>
                     {orders.length} total purchases
@@ -379,12 +432,26 @@ export default function DashboardPage() {
 
             {/* 2. WALLET & TOP UP TAB */}
             {activeTab === 'wallet' && (
-              <WalletTopup user={user} refreshUser={refreshUser} />
+              <WalletTopup
+                user={{ ...user, balance: displayBalance }}
+                refreshUser={async () => {
+                  await refreshUser();
+                  const { data } = await api.get('/users/profile').catch(() => ({ data: { user: {} } }));
+                  setLiveBalance(parseFloat(data.user?.balance || 0));
+                }}
+              />
             )}
 
             {/* 3. PROFILE SETTINGS TAB */}
             {activeTab === 'profile' && (
-              <ProfileTab user={user} refreshUser={refreshUser} />
+              <ProfileTab
+                user={{ ...user, balance: displayBalance }}
+                refreshUser={async () => {
+                  await refreshUser();
+                  const { data } = await api.get('/users/profile').catch(() => ({ data: { user: {} } }));
+                  setLiveBalance(parseFloat(data.user?.balance || 0));
+                }}
+              />
             )}
 
             {/* 4. HELP & SUPPORT TAB */}
@@ -466,6 +533,16 @@ export default function DashboardPage() {
 function ProfileTab({ user, refreshUser }) {
   const [form, setForm] = useState({ name: user.name || '', telegram_username: user.telegram_username || '' });
   const [saving, setSaving] = useState(false);
+  const [liveUser, setLiveUser] = useState(null);
+
+  useEffect(() => {
+    // Fetch full fresh profile from server
+    api.get('/users/profile')
+      .then(({ data }) => setLiveUser(data.user))
+      .catch(() => {});
+  }, []);
+
+  const profile = liveUser || user;
 
   const handleSave = async () => {
     setSaving(true);
@@ -481,61 +558,138 @@ function ProfileTab({ user, refreshUser }) {
   };
 
   return (
-    <div style={{
-      padding: 32,
-      background: 'var(--color-surface)',
-      border: '1px solid var(--color-border)',
-      borderRadius: 'var(--radius-xl)',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-    }}>
-      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, marginBottom: 20 }}>
-        Personal Profile &amp; Settings
-      </h2>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 540 }}>
-        <div className="form-group">
-          <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Full Name</label>
-          <input
-            className="form-input"
-            value={form.name}
-            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-            placeholder="Your name"
-          />
+      {/* Account Stats Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+        {[
+          {
+            label: 'Wallet Balance',
+            value: `₹${parseFloat(profile.balance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+            icon: 'account_balance_wallet',
+            color: 'var(--color-accent)',
+          },
+          {
+            label: 'All-Time Topup',
+            value: `₹${parseFloat(profile.all_time_topup || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+            icon: 'savings',
+            color: '#10b981',
+          },
+          {
+            label: 'Member Since',
+            value: new Date(profile.created_at || Date.now()).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
+            icon: 'calendar_month',
+            color: '#a855f7',
+          },
+        ].map(k => (
+          <div key={k.label} style={{
+            background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-xl)', padding: '20px 18px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            display: 'flex', alignItems: 'center', gap: 14,
+          }}>
+            <div style={{
+              width: 46, height: 46, borderRadius: 'var(--radius-lg)',
+              background: `${k.color}18`, display: 'flex',
+              alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <span className="icon icon--md" style={{ color: k.color }}>{k.icon}</span>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-faint)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
+                {k.label}
+              </div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: k.color, fontFamily: 'var(--font-heading)' }}>
+                {k.value}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Profile Edit Form */}
+      <div style={{
+        padding: 32,
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-xl)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+      }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
+          Personal Profile &amp; Settings
+        </h2>
+        <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginBottom: 24 }}>
+          Update your display name and contact information.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 540 }}>
+          <div className="form-group">
+            <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Full Name</label>
+            <input
+              className="form-input"
+              value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="Your name"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Email Address</label>
+            <input
+              className="form-input"
+              value={profile.email}
+              disabled
+              style={{ opacity: 0.6, cursor: 'not-allowed' }}
+            />
+            <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginTop: 4 }}>Email cannot be changed. Contact support if needed.</div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Telegram Username</label>
+            <input
+              className="form-input"
+              placeholder="@yourtelegram"
+              value={form.telegram_username}
+              onChange={e => setForm(f => ({ ...f, telegram_username: e.target.value }))}
+            />
+            <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginTop: 4 }}>Link your Telegram for faster support and order notifications.</div>
+          </div>
+
+          {/* Account Read-Only Info */}
+          <div style={{
+            background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-lg)', padding: 16,
+            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
+          }}>
+            {[
+              { label: 'User ID', value: `#${profile.id}` },
+              { label: 'Role', value: profile.role || 'User' },
+              { label: 'Currency', value: profile.currency || 'INR' },
+              { label: 'Account Status', value: profile.is_frozen ? '🔒 Frozen' : '✅ Active' },
+            ].map(f => (
+              <div key={f.label}>
+                <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginBottom: 2 }}>{f.label}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', textTransform: 'capitalize' }}>{f.value}</div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            className="btn btn--primary btn--md"
+            onClick={handleSave}
+            disabled={saving}
+            style={{ alignSelf: 'flex-start', gap: 6 }}
+          >
+            <span className="icon icon--sm">save</span>
+            <span>{saving ? 'Saving...' : 'Save Profile Changes'}</span>
+          </button>
         </div>
-
-        <div className="form-group">
-          <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Email Address</label>
-          <input
-            className="form-input"
-            value={user.email}
-            disabled
-            style={{ opacity: 0.6, cursor: 'not-allowed' }}
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Telegram Username</label>
-          <input
-            className="form-input"
-            placeholder="@yourtelegram"
-            value={form.telegram_username}
-            onChange={e => setForm(f => ({ ...f, telegram_username: e.target.value }))}
-          />
-        </div>
-
-        <button
-          className="btn btn--primary btn--md"
-          onClick={handleSave}
-          disabled={saving}
-          style={{ alignSelf: 'flex-start', gap: 6 }}
-        >
-          <span className="icon icon--sm">save</span>
-          <span>{saving ? 'Saving...' : 'Save Profile Changes'}</span>
-        </button>
       </div>
     </div>
   );
 }
+
+
 
 function WalletTopup({ user, refreshUser }) {
   const [amount, setAmount] = useState('500');

@@ -96,13 +96,15 @@ export default function ProductDetailPage() {
   }
 
   const price = parseFloat(selectedVariant?.price || product.min_price || 0);
-  const comparePrice = parseFloat(product.compare_price || 0);
+  const comparePrice = parseFloat(selectedVariant?.compare_price || product.compare_price || 0);
   const discount = comparePrice && comparePrice > price
     ? Math.round((1 - price / comparePrice) * 100)
     : null;
 
-  const isPreorder = selectedVariant?.is_preorder || product.is_preorder || product.badge?.toLowerCase().includes('pre-order') || product.badge?.toLowerCase().includes('preorder');
-  const inStock = selectedVariant ? selectedVariant.in_stock : product.in_stock;
+  const isPreorder = selectedVariant
+    ? Boolean(selectedVariant.is_preorder)
+    : Boolean(product.is_preorder);
+  const inStock = selectedVariant ? Boolean(selectedVariant.in_stock) : Boolean(product.in_stock);
   const isOutOfStock = !inStock && !isPreorder;
 
   const deliveryMethodText = (selectedVariant?.delivery_method || product.delivery_process) === 'manual'
@@ -314,9 +316,9 @@ export default function ProductDetailPage() {
                   <span style={{ fontWeight: 600 }}>5.0 Top Rated</span>
                 </div>
               )}
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-text-faint)' }}>
-                <span className="icon icon--sm">download</span>
-                {(product.downloads_count || 0).toLocaleString()} sold
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-cyan)', fontWeight: 600 }}>
+                <span className="icon icon--sm icon--cyan icon--filled">bolt</span>
+                Instant Delivery
               </span>
             </div>
 
@@ -524,27 +526,54 @@ export default function ProductDetailPage() {
 
             {/* CTA Container */}
             <div className="product-cta-container">
-              <div className="product-qty-selector">
-                <button className="product-qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))} aria-label="Decrease quantity">
-                  <span className="icon">remove</span>
+              {!isOutOfStock && (
+                <div className="product-qty-selector">
+                  <button className="product-qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))} aria-label="Decrease quantity">
+                    <span className="icon">remove</span>
+                  </button>
+                  <span className="product-qty-value">{quantity}</span>
+                  <button className="product-qty-btn" onClick={() => setQuantity(quantity + 1)} aria-label="Increase quantity">
+                    <span className="icon">add</span>
+                  </button>
+                </div>
+              )}
+
+              {isPreorder ? (
+                <button
+                  className="btn btn--primary product-btn-buy"
+                  onClick={handleBuyNow}
+                  style={{
+                    flex: 1,
+                    background: 'linear-gradient(135deg, #6E3AFF 0%, #00D4FF 100%)',
+                    boxShadow: '0 0 25px rgba(110, 58, 255, 0.4)',
+                    height: 52,
+                    fontSize: 16,
+                    fontWeight: 700
+                  }}
+                >
+                  <span className="icon icon--md">rocket_launch</span>
+                  <span>Pre-Order Now (₹{(price * quantity).toLocaleString('en-IN')})</span>
                 </button>
-                <span className="product-qty-value">{quantity}</span>
-                <button className="product-qty-btn" onClick={() => setQuantity(quantity + 1)} aria-label="Increase quantity">
-                  <span className="icon">add</span>
+              ) : isOutOfStock ? (
+                <button className="btn btn--outline" disabled style={{ flex: 1, opacity: 0.6, height: 52 }}>
+                  <span className="icon icon--md">do_not_disturb</span>
+                  <span>Currently Out of Stock</span>
                 </button>
-              </div>
-              <button className="btn btn--ghost product-btn-cart" onClick={handleAddToCart} disabled={isOutOfStock}>
-                <span className="icon icon--md">shopping_cart</span>
-                <span>{isPreorder ? 'Pre-Order Cart' : 'Add to Cart'}</span>
-              </button>
-              <button
-                className="btn btn--primary product-btn-buy"
-                onClick={handleBuyNow}
-                disabled={isOutOfStock}
-              >
-                <span className="icon icon--md icon--filled">bolt</span>
-                <span>{isPreorder ? 'Pre-Order Now' : 'Buy Now'}</span>
-              </button>
+              ) : (
+                <>
+                  <button className="btn btn--ghost product-btn-cart" onClick={handleAddToCart}>
+                    <span className="icon icon--md">shopping_cart</span>
+                    <span>Add to Cart</span>
+                  </button>
+                  <button
+                    className="btn btn--primary product-btn-buy"
+                    onClick={handleBuyNow}
+                  >
+                    <span className="icon icon--md icon--filled">bolt</span>
+                    <span>Buy Now</span>
+                  </button>
+                </>
+              )}
             </div>
 
           </div>

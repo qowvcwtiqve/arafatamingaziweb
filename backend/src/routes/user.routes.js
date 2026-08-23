@@ -5,6 +5,8 @@ import Sale from '../models/sale.model.js';
 
 const router = Router();
 
+import Product from '../models/product.model.js';
+
 // GET /api/users/orders — buyer's order history
 router.get('/orders', protect, async (req, res, next) => {
   try {
@@ -17,9 +19,11 @@ router.get('/orders', protect, async (req, res, next) => {
     const formattedOrders = orders.map(o => ({
       id: o.sale_id,
       order_number: o.sale_id,
-      total_amount: o.price * o.quantity,
+      total_amount: o.price * (o.quantity || 1),
       payment_status: o.status,
-      payment_method: 'wallet', // Assuming wallet for now, can be updated later if needed
+      status: o.status,
+      payment_method: 'wallet',
+      credentials: o.credentials || '',
       paid_at: new Date(o.purchase_ts * 1000).toISOString(),
       created_at: new Date(o.purchase_ts * 1000).toISOString(),
       items: [{
@@ -31,6 +35,65 @@ router.get('/orders', protect, async (req, res, next) => {
     }));
 
     res.json({ orders: formattedOrders });
+  } catch (err) { next(err); }
+});
+
+// GET /api/users/orders/:id — single order receipt & credentials detail
+router.get('/orders/:id', protect, async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+    const sale = await Sale.findOne({ sale_id: orderId }).lean();
+    if (!sale) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Ensure authorized user (or admin)
+    if (sale.user_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Unauthorized to view this order' });
+    }
+
+    // Fetch live product for rules and media
+    const product = await Product.findById(sale.product_id).lean();
+    const rules = product?.rules || sale.admin_notes || 'Follow all standard login guidelines.';
+
+    const formatted = {
+      order_id: sale.sale_id,
+      id: sale.sale_id,
+      product_id: sale.product_id,
+      product_name: sale.product_name,
+      variant_name: sale.variant_name,
+      pool_id: sale.pool_id,
+      status: sale.status,
+      price: sale.price,
+      quantity: sale.quantity || 1,
+      total_amount: sale.price * (sale.quantity || 1),
+      credentials: sale.credentials || '',
+      rules: rules,
+      purchase_ts: sale.purchase_ts,
+      purchase_date: new Date(sale.purchase_ts * 1000).toLocaleString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      end_ts: sale.end_ts,
+      expiry_date: sale.end_ts
+        ? new Date(sale.end_ts * 1000).toLocaleString('en-IN', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })
+        : 'Lifetime / Non-expiring',
+      user_email: sale.user_email || req.user.email,
+      user_name: sale.user_name || req.user.name,
+      images: product?.website_meta?.images || [],
+      delivery_process: product?.delivery_process || 'auto',
+      delivery_time: product?.delivery_time || 'Instant',
+      support_username: 'qxdbotowner',
+    };
+
+    res.json({ success: true, order: formatted });
   } catch (err) { next(err); }
 });
 

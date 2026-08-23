@@ -1,8 +1,16 @@
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Logo from './Logo';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  // Hide website footer completely on the admin panel
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   const links = {
     Store: [
       { href: '/products', label: 'All Products' },

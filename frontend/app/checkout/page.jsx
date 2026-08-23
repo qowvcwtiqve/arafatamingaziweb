@@ -140,7 +140,11 @@ export default function CheckoutPage() {
 
     setLoading(true);
     try {
+      const first = items[0] || {};
       const { data } = await api.post('/payments/initiate', {
+        product_id: first.product_id,
+        variant_id: first.variant_id,
+        quantity: first.quantity || 1,
         items: items.map(i => ({ product_id: i.product_id, variant_id: i.variant_id, quantity: i.quantity || 1 })),
         payment_method: paymentMethod,
         coupon_code: coupon || undefined,
@@ -203,10 +207,10 @@ export default function CheckoutPage() {
           <p style={{ color: 'var(--color-text-muted)', marginBottom: 32 }}>
             Your digital product has been unlocked and delivered to <strong>{email}</strong>.
           </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            <Link href="/dashboard" className="btn btn--primary">
-              <span className="icon icon--sm">folder</span>
-              View My Downloads
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href={orderData?.order_id ? `/dashboard/order/${orderData.order_id}` : '/dashboard'} className="btn btn--primary" style={{ gap: 6 }}>
+              <span className="icon icon--sm">receipt_long</span>
+              <span>View in My Orders</span>
             </Link>
             <Link href="/products" className="btn btn--ghost">
               Continue Shopping

@@ -112,11 +112,11 @@ export default function ProductCard({ product: p }) {
             {p.description}
           </p>
 
-          {/* Meta (Rating & Downloads) */}
+          {/* Meta (Rating & Category / Verification) */}
           <div className="product-card__meta">
             <span className="product-card__meta-item">
-              <span className="icon icon--sm icon--muted">download</span>
-              {(p.downloads_count || 0).toLocaleString()} sold
+              <span className="icon icon--sm icon--cyan icon--filled">verified</span>
+              <span>Verified Asset</span>
             </span>
             {p.rating_count > 0 && (
               <span className="product-card__meta-item">

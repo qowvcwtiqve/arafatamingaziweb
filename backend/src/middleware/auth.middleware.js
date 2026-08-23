@@ -1,12 +1,14 @@
 import jwt from 'jsonwebtoken';
 import { query } from '../config/db.js';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'quantumxd_store_secret_jwt_key_2026_super_secure_auth';
+
 export const protect = async (req, res, next) => {
   try {
     const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ error: 'Not authenticated' });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     const { rows } = await query('SELECT id, name, email, role, is_frozen FROM users WHERE id=$1', [decoded.id]);
     if (!rows[0]) return res.status(401).json({ error: 'User not found' });
     if (rows[0].is_frozen) return res.status(403).json({ error: 'Account frozen by admin' });
@@ -32,10 +34,11 @@ export const optionalAuth = async (req, res, next) => {
   try {
     const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
     if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       const { rows } = await query('SELECT id, name, email, role FROM users WHERE id=$1', [decoded.id]);
       if (rows[0]) req.user = rows[0];
     }
   } catch { /* silent */ }
   next();
 };
+

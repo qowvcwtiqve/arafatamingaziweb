@@ -8,11 +8,19 @@ const nextConfig = {
       { protocol: 'https', hostname: 'fastly.picsum.photos' }
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:5000/api/:path*',
+      },
+    ];
+  },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
     NEXT_PUBLIC_STORE_NAME: process.env.NEXT_PUBLIC_STORE_NAME || 'QuantumXD Store',
     NEXT_PUBLIC_UPI_QR_URL: process.env.NEXT_PUBLIC_UPI_QR_URL || '',
   },
 };
 
 export default nextConfig;
+

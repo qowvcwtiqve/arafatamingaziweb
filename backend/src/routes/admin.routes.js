@@ -10,11 +10,25 @@ import {
   updateCategoryMeta,
   getProductById,
   createWebsiteProduct,
-  deleteWebsiteProduct
+  deleteWebsiteProduct,
+  toggleProductActive,
+  updateProductGeneral,
+  addStockToPool,
+  clearStockPool,
+  toggleInfinitePool,
+  togglePreorderPool,
+  updatePoolRules,
+  createStockPool,
+  deleteStockPool,
+  saveVariant,
+  deleteVariant,
+  createBotProduct,
+  deleteBotProduct,
 } from '../services/botdb.service.js';
 import Product from '../models/product.model.js';
 import Category from '../models/category.model.js';
-
+import WebsiteProduct from '../models/websiteProduct.model.js';
+import { getFilteredOrders, updateOrderStatus, fulfillWebsitePreorders } from '../services/orders.service.js';
 
 const router = Router();
 
@@ -24,35 +38,60 @@ router.use(protect, requireAdmin);
 // GET /api/admin/stats
 router.get('/stats', async (req, res, next) => {
   try {
-    const [orders, users, products, revenue] = await Promise.all([
-      query("SELECT COUNT(*) FROM orders WHERE payment_status='paid'"),
-      query('SELECT COUNT(*) FROM users'),
-      query("SELECT COUNT(*) FROM products WHERE status='active'"),
-      query("SELECT COALESCE(SUM(total_amount),0) AS total FROM orders WHERE payment_status='paid'"),
+    const [allBotProducts, totalCategories, ordersResult, usersResult, webSales] = await Promise.all([
+      Product.find({}).lean(),
+      Category.countDocuments({}),
+      query("SELECT COUNT(*) FROM orders WHERE payment_status='paid'").catch(() => ({ rows: [{ count: 0 }] })),
+      query('SELECT COUNT(*) FROM users').catch(() => ({ rows: [{ count: 0 }] })),
+      Sale.find({}).lean().catch(() => []),
     ]);
+
+    const botActiveCount = allBotProducts.filter(p => {
+      if (p.is_active === false) return false;
+      const stockSum = Object.values(p.stock_pools || {}).reduce((s, a) => s + (Array.isArray(a) ? a.length : 0), 0);
+      const isInf = Object.values(p.infinite_pools || {}).some(Boolean);
+      return stockSum > 0 || isInf;
+    }).length;
+
+    const totalBotProducts = allBotProducts.length;
+    const pgPaidOrders = parseInt(ordersResult.rows[0]?.count || 0);
+    const totalUsers = parseInt(usersResult.rows[0]?.count || 0);
+
+    const webDelivered = (webSales || []).filter(s => s.status === 'Delivered');
+    const webPaidOrders = webDelivered.length;
+    const webRevenue = webDelivered.reduce((sum, s) => sum + ((parseFloat(s.price) || 0) * (s.quantity || 1)), 0);
+
     res.json({
-      paid_orders: parseInt(orders.rows[0]?.count ?? 12),
-      total_users: parseInt(users.rows[0]?.count ?? 2),
-      active_products: parseInt(products.rows[0]?.count ?? 6),
-      total_revenue: parseFloat(revenue.rows[0]?.total ?? 14500),
+      paid_orders: pgPaidOrders + webPaidOrders,
+      total_users: totalUsers,
+      active_products: botActiveCount,
+      total_products: totalBotProducts,
+      total_categories: totalCategories,
+      total_revenue: webRevenue,
     });
   } catch (err) { next(err); }
 });
 
-// GET /api/admin/orders
+// GET /api/admin/orders — Unified orders with Pre-Orders, Delivered, Pending, Refunded, Canceled filters
 router.get('/orders', async (req, res, next) => {
   try {
-    const { page = 1, limit = 20, status } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-    const cond = status ? `WHERE o.payment_status='${status}'` : '';
-    const { rows } = await query(`
-      SELECT o.*, u.name AS buyer_name, u.email AS buyer_email
-      FROM orders o LEFT JOIN users u ON u.id=o.buyer_id
-      ${cond} ORDER BY o.created_at DESC LIMIT $1 OFFSET $2
-    `, [parseInt(limit), offset]);
-    res.json({ orders: rows });
+    const result = await getFilteredOrders(req.query);
+    res.json(result);
   } catch (err) { next(err); }
 });
+
+// PUT /api/admin/orders/:id/status & PUT /api/admin/orders/:id — Update order status and/or credentials
+const handleOrderUpdate = async (req, res, next) => {
+  try {
+    const { status, credentials, admin_notes } = req.body;
+    if (!status) return res.status(400).json({ error: 'Status is required' });
+    const result = await updateOrderStatus(req.params.id, status, credentials, admin_notes);
+    res.json(result);
+  } catch (err) { next(err); }
+};
+
+router.put('/orders/:id/status', handleOrderUpdate);
+router.put('/orders/:id', handleOrderUpdate);
 
 // GET /api/admin/users
 router.get('/users', async (req, res, next) => {
@@ -93,6 +132,93 @@ router.put('/users/:id/balance', async (req, res, next) => {
     res.json(rows[0]);
   } catch (err) { next(err); }
 });
+
+// GET /api/admin/users/:id — Full user detail: profile + orders + deposits
+router.get('/users/:id', async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+
+    // 1. User profile from Postgres
+    const { rows: userRows } = await query(
+      'SELECT id,name,email,role,balance,currency,all_time_topup,telegram_username,is_frozen,created_at,updated_at FROM users WHERE id=$1',
+      [userId]
+    );
+    if (!userRows[0]) return res.status(404).json({ error: 'User not found' });
+    const user = userRows[0];
+
+    // 2. Website orders from MongoDB (website_sales)
+    const Sale = (await import('../models/sale.model.js')).default;
+    const orders = await Sale.find({ user_id: userId })
+      .sort({ purchase_ts: -1 })
+      .limit(50)
+      .lean();
+
+    // 3. Deposit history from Postgres
+    let deposits = [];
+    try {
+      const { rows: depRows } = await query(
+        'SELECT * FROM deposits WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50',
+        [userId]
+      );
+      deposits = depRows;
+    } catch (_) { /* deposits table optional */ }
+
+    res.json({
+      user,
+      orders: orders.map(o => ({
+        id: o.sale_id,
+        product_name: o.product_name,
+        variant_name: o.variant_name,
+        price: o.price,
+        quantity: o.quantity,
+        status: o.status,
+        credentials: o.credentials,
+        purchase_ts: o.purchase_ts,
+        created_at: new Date(o.purchase_ts * 1000).toISOString(),
+        pool_id: o.pool_id,
+        coupon_code: o.coupon_code,
+        coupon_discount: o.coupon_discount,
+      })),
+      deposits,
+      summary: {
+        total_orders: orders.length,
+        delivered_orders: orders.filter(o => o.status === 'Delivered').length,
+        preorders: orders.filter(o => o.status === 'Pre-Order').length,
+        total_spent: orders.filter(o => o.status === 'Delivered').reduce((s, o) => s + (o.price * (o.quantity || 1)), 0),
+        total_deposited: deposits.reduce((s, d) => s + parseFloat(d.amount || 0), 0),
+      }
+    });
+  } catch (err) { next(err); }
+});
+
+// GET /api/admin/users/:id/orders — User's website orders (paginated)
+router.get('/users/:id/orders', async (req, res, next) => {
+  try {
+    const { page = 1, limit = 20, status } = req.query;
+    const filter = { user_id: req.params.id };
+    if (status && status !== 'all') filter.status = status;
+    const Sale = (await import('../models/sale.model.js')).default;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const [orders, total] = await Promise.all([
+      Sale.find(filter).sort({ purchase_ts: -1 }).skip(skip).limit(parseInt(limit)).lean(),
+      Sale.countDocuments(filter),
+    ]);
+    res.json({ orders, total, page: parseInt(page), totalPages: Math.ceil(total / parseInt(limit)) });
+  } catch (err) { next(err); }
+});
+
+// GET /api/admin/users/:id/deposits — User deposit history
+router.get('/users/:id/deposits', async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      'SELECT * FROM deposits WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100',
+      [req.params.id]
+    );
+    res.json({ deposits: rows });
+  } catch (err) { next(err); }
+});
+
+
 
 // GET /api/admin/products
 router.get('/products', async (req, res, next) => {
@@ -295,8 +421,17 @@ router.get('/bot/products', async (req, res, next) => {
       name: p.name,
       category_id: p.category_id,
       description: p.description,
-      is_active: true,
+      is_active: p.is_active,
       variants: p.variants || [],
+      total_stock: p.total_stock,
+      in_stock: p.in_stock,
+      is_infinite: p.is_infinite,
+      is_preorder: p.is_preorder,
+      preorder_pools: p.preorder_pools || {},
+      infinite_pools: p.infinite_pools || {},
+      stock_pools: p.stock_pools || {},
+      min_price: p.min_price,
+      max_price: p.max_price,
       pools: {},
       is_website_only: p.is_website_only,
       website_meta: {
@@ -325,7 +460,7 @@ router.get('/bot/products/:id', async (req, res, next) => {
 // PUT /api/admin/bot/products/:id/website-meta — update product website_meta
 router.put('/bot/products/:id/website-meta', async (req, res, next) => {
   try {
-    const allowed = ['title', 'description', 'images', 'badge', 'is_featured', 'is_published', 'compare_price'];
+    const allowed = ['title', 'description', 'images', 'badge', 'is_featured', 'is_published', 'compare_price', 'variants'];
     const update = {};
     allowed.forEach((k) => { if (req.body[k] !== undefined) update[k] = req.body[k]; });
     if (!Object.keys(update).length) return res.status(400).json({ error: 'Nothing to update' });
@@ -335,10 +470,10 @@ router.put('/bot/products/:id/website-meta', async (req, res, next) => {
 });
 
 // PUT /api/admin/bot/products/:id/variants/:vid/meta — update variant website_meta
-// Supports: rules, description, delivery_time, delivery_method
+// Supports: rules, description, delivery_time, delivery_method, compare_price
 router.put('/bot/products/:id/variants/:vid/meta', async (req, res, next) => {
   try {
-    const allowed = ['rules', 'description', 'delivery_time', 'delivery_method'];
+    const allowed = ['rules', 'description', 'delivery_time', 'delivery_method', 'compare_price'];
     const update = {};
     allowed.forEach((k) => { if (req.body[k] !== undefined) update[k] = req.body[k]; });
     if (!Object.keys(update).length) return res.status(400).json({ error: 'Nothing to update' });
@@ -358,6 +493,145 @@ router.put('/bot/categories/:id/meta', async (req, res, next) => {
     res.json({ success: true });
   } catch (err) { next(err); }
 });
+
+// POST /api/admin/bot/products — Create brand new bot product in MongoDB
+router.post('/bot/products', async (req, res, next) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Product name is required' });
+    const newProd = await createBotProduct(req.body);
+    res.status(201).json({ success: true, product: newProd });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/admin/bot/products/:id — Delete bot product
+router.delete('/bot/products/:id', async (req, res, next) => {
+  try {
+    await deleteBotProduct(req.params.id);
+    res.json({ success: true, message: 'Product deleted' });
+  } catch (err) { next(err); }
+});
+
+// PUT /api/admin/bot/products/:id/toggle-active — Toggle Bot Active status
+router.put('/bot/products/:id/toggle-active', async (req, res, next) => {
+  try {
+    const nextVal = await toggleProductActive(req.params.id);
+    res.json({ success: true, is_active: nextVal });
+  } catch (err) { next(err); }
+});
+
+// PUT /api/admin/bot/products/:id/general — Update general product info & rules
+router.put('/bot/products/:id/general', async (req, res, next) => {
+  try {
+    await updateProductGeneral(req.params.id, req.body);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/bot/products/:id/pools/:poolId/add-stock — Add stock + Auto-fulfill Pre-Orders (bot-style FIFO)
+router.post('/bot/products/:id/pools/:poolId/add-stock', async (req, res, next) => {
+  try {
+    const { stock_items } = req.body;
+    const items = (Array.isArray(stock_items) ? stock_items : [stock_items]).map(s => String(s).trim()).filter(Boolean);
+
+    // 1. Auto-fulfill pending website Pre-Orders first (FIFO, bot-style)
+    const remainingItems = await fulfillWebsitePreorders(req.params.id, req.params.poolId, items);
+    const preordersFullfilled = items.length - remainingItems.length;
+
+    // 2. Add remaining stock (not used for pre-orders) to the pool
+    if (remainingItems.length > 0) {
+      await addStockToPool(req.params.id, req.params.poolId, remainingItems);
+    }
+
+    res.json({
+      success: true,
+      preorders_fulfilled: preordersFullfilled,
+      stock_added_to_pool: remainingItems.length,
+      message: preordersFullfilled > 0
+        ? `✅ ${preordersFullfilled} pre-order(s) auto-delivered! ${remainingItems.length} item(s) added to pool.`
+        : `✅ ${remainingItems.length} item(s) added to pool.`,
+    });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/bot/products/:id/pools/:poolId/clear-stock — Clear a stock pool
+router.post('/bot/products/:id/pools/:poolId/clear-stock', async (req, res, next) => {
+  try {
+    await clearStockPool(req.params.id, req.params.poolId);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// PUT /api/admin/bot/products/:id/pools/:poolId/toggle-infinite — Toggle infinite stock
+router.put('/bot/products/:id/pools/:poolId/toggle-infinite', async (req, res, next) => {
+  try {
+    const isInfinite = await toggleInfinitePool(req.params.id, req.params.poolId);
+    res.json({ success: true, is_infinite: isInfinite });
+  } catch (err) { next(err); }
+});
+
+// PUT /api/admin/bot/products/:id/pools/:poolId/toggle-preorder — Toggle preorder
+router.put('/bot/products/:id/pools/:poolId/toggle-preorder', async (req, res, next) => {
+  try {
+    const isPreorder = await togglePreorderPool(req.params.id, req.params.poolId);
+    res.json({ success: true, is_preorder: isPreorder });
+  } catch (err) { next(err); }
+});
+
+// PUT /api/admin/bot/products/:id/pools/:poolId/rules — Update pool rules
+router.put('/bot/products/:id/pools/:poolId/rules', async (req, res, next) => {
+  try {
+    const { rules } = req.body;
+    await updatePoolRules(req.params.id, req.params.poolId, rules || '');
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/bot/products/:id/pools/new — Create new stock pool
+router.post('/bot/products/:id/pools/new', async (req, res, next) => {
+  try {
+    const { pool_id, rules, is_infinite } = req.body;
+    if (!pool_id) return res.status(400).json({ error: 'Pool ID is required' });
+    await createStockPool(req.params.id, pool_id, rules || '', !!is_infinite);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/admin/bot/products/:id/pools/:poolId — Delete stock pool
+router.delete('/bot/products/:id/pools/:poolId', async (req, res, next) => {
+  try {
+    await deleteStockPool(req.params.id, req.params.poolId);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/bot/products/:id/variants — Add new variant
+router.post('/bot/products/:id/variants', async (req, res, next) => {
+  try {
+    const { name, price, pool_id, duration } = req.body;
+    if (!name || price === undefined) return res.status(400).json({ error: 'Name and price required' });
+    const vid = await saveVariant(req.params.id, null, { name, price, pool_id: pool_id || 'default', duration: duration || 0 });
+    res.json({ success: true, variant_id: vid });
+  } catch (err) { next(err); }
+});
+
+// PUT /api/admin/bot/products/:id/variants/:vid — Edit variant
+router.put('/bot/products/:id/variants/:vid', async (req, res, next) => {
+  try {
+    const { name, price, pool_id, duration } = req.body;
+    await saveVariant(req.params.id, req.params.vid, { name, price, pool_id: pool_id || 'default', duration: duration || 0 });
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/admin/bot/products/:id/variants/:vid — Delete variant
+router.delete('/bot/products/:id/variants/:vid', async (req, res, next) => {
+  try {
+    await deleteVariant(req.params.id, req.params.vid);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
 
 // GET /api/admin/bot/categories — all categories with website_meta
 router.get('/bot/categories', async (req, res, next) => {

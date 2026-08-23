@@ -52,7 +52,13 @@ export const walletPurchase = async (req, res, next) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'Please login to purchase' });
 
-    const { product_id, variant_id, quantity = 1 } = req.body;
+    let { product_id, variant_id, quantity = 1, items } = req.body;
+    if (items && Array.isArray(items) && items.length > 0) {
+      product_id = product_id || items[0].product_id;
+      variant_id = variant_id || items[0].variant_id;
+      quantity = quantity || items[0].quantity || 1;
+    }
+
     if (!product_id || !variant_id) {
       return res.status(400).json({ error: 'product_id and variant_id are required' });
     }
@@ -72,9 +78,11 @@ export const walletPurchase = async (req, res, next) => {
     const isPreorder = variant.is_preorder;
     const isInfinite = variant.is_infinite;
     const stockCount = variant.stock;
+    const deliveryMethod = variant.delivery_method || product.delivery_process || 'auto';
+    const isManual = deliveryMethod === 'manual';
 
-    // 3. Check stock
-    if (!isInfinite && !isPreorder && stockCount < qty) {
+    // 3. Check stock (only for automated instant delivery)
+    if (!isInfinite && !isPreorder && !isManual && stockCount < qty) {
       return res.status(400).json({ error: 'Out of stock' });
     }
 
@@ -95,8 +103,6 @@ export const walletPurchase = async (req, res, next) => {
     await query('UPDATE users SET balance=balance-$1 WHERE id=$2', [totalPrice, req.user.id]);
 
     // 7. Deliver: atomically pop stock from MongoDB
-    const deliveryMethod = variant.delivery_method || 'auto';
-    const isManual = deliveryMethod === 'manual';
     const deliveredItems = [];
 
     if (!isPreorder && !isManual) {
@@ -158,25 +164,17 @@ export const walletPurchase = async (req, res, next) => {
     }
 
     // 9. Get updated balance
-    const { rows: newBalRows } = await query('SELECT balance FROM users WHERE id=$1', [req.user.id]);
-    const newBalance = parseFloat(newBalRows[0]?.balance || 0);
+    const { rows: newURows } = await query('SELECT balance FROM users WHERE id=$1', [req.user.id]);
+    const newBalance = parseFloat(newURows[0]?.balance || 0);
 
-    return res.status(201).json({
+    return res.json({
       success: true,
-      message: isPreorder
-        ? 'Pre-order placed! You will be notified when stock is available.'
-        : isManual
-        ? 'Order placed! It will be delivered manually by admin.'
-        : 'Purchase successful! Your credentials are ready.',
-      orders: createdSales.map((s) => ({
-        sale_id: s.sale_id,
-        status: s.status,
-        credentials: s.credentials,
-        product_name: s.product_name,
-        variant_name: s.variant_name,
-        price: s.price,
-        end_ts: s.end_ts,
-      })),
+      payment_status: 'paid',
+      sale_ids: createdSales.map((s) => s.sale_id),
+      order_id: createdSales[0]?.sale_id,
+      credentials: deliveredItems.join('\n\n'),
+      is_preorder: isPreorder,
+      is_manual: isManual,
       new_balance: newBalance,
       rules: variant.rules || '',
       delivery_time: variant.delivery_time || 'Instant',
@@ -187,15 +185,28 @@ export const walletPurchase = async (req, res, next) => {
 };
 
 // ─── POST /api/payments/initiate ─────────────────────────────────────────────
-// For non-wallet payments (Cashfree, Crypto, Binance)
+// For non-wallet payments (Cashfree, Crypto, Binance) or wallet delegation
 export const initiatePayment = async (req, res, next) => {
   try {
-    const { product_id, variant_id, quantity = 1, payment_method, coupon_code, email } = req.body;
+    let { product_id, variant_id, quantity = 1, payment_method, coupon_code, email, items } = req.body;
+
+    if (items && Array.isArray(items) && items.length > 0) {
+      product_id = product_id || items[0].product_id;
+      variant_id = variant_id || items[0].variant_id;
+      quantity = quantity || items[0].quantity || 1;
+    }
+
+    if (payment_method === 'wallet') {
+      req.body.product_id = product_id;
+      req.body.variant_id = variant_id;
+      req.body.quantity = quantity;
+      return walletPurchase(req, res, next);
+    }
 
     if (!product_id || !variant_id || !payment_method) {
       return res.status(400).json({ error: 'product_id, variant_id, and payment_method required' });
     }
-    if (!['cashfree', 'nowpayments', 'binance', 'upi'].includes(payment_method)) {
+    if (!['cashfree', 'nowpayments', 'binance', 'upi', 'wallet'].includes(payment_method)) {
       return res.status(400).json({ error: 'Invalid payment method' });
     }
 

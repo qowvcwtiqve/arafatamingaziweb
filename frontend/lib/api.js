@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api`,
+  baseURL: '/api',
   withCredentials: true,
 });
 
-// Attach token from localStorage if present
+// Attach token dynamically
 api.interceptors.request.use(config => {
   if (typeof window !== 'undefined') {
     try {

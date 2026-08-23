@@ -20,8 +20,8 @@ const router = Router();
 // ── GET /api/products ───────────────────────────────────────────────────────
 router.get('/', async (req, res, next) => {
   try {
-    const { page = 1, limit = 24, category, search, sort = 'priority' } = req.query;
-    const result = await getActiveProducts({ categoryId: category, search, sort, page, limit });
+    const { page = 1, limit = 24, category, search, sort = 'priority', min_price, max_price, stock_status, featured } = req.query;
+    const result = await getActiveProducts({ categoryId: category, search, sort, min_price, max_price, stock_status, featured, page, limit });
     res.json(result);
   } catch (err) {
     next(err);

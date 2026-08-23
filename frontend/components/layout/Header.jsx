@@ -11,6 +11,12 @@ import api from '../../lib/api';
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
+
+  // Completely hide store header on the Admin Panel
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -342,8 +348,8 @@ export default function Header() {
             <nav className="mobile-drawer__nav">
               <Link href="/dashboard" className="mobile-drawer__link" onClick={() => setMobileMenuOpen(false)}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span className="icon icon--sm">download</span>
-                  <span>My Orders &amp; Downloads</span>
+                  <span className="icon icon--sm">receipt_long</span>
+                  <span>My Orders</span>
                 </div>
                 <span className="icon icon--sm icon--muted">chevron_right</span>
               </Link>
