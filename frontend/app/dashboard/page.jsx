@@ -113,157 +113,136 @@ export default function DashboardPage() {
       <div className="container">
         
         {/* User Hero Banner */}
-        <div style={{
-          padding: '28px 32px',
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-xl)',
-          marginBottom: 32,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 20,
-          boxShadow: '0 8px 30px rgba(0,0,0,0.3)'
-        }}>
+        <div className="dashboard-hero-banner">
           {/* User Info */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{
-              width: 64, height: 64, borderRadius: '50%',
+              width: 52, height: 52, borderRadius: '50%',
               background: 'var(--gradient-primary)', display: 'flex',
               alignItems: 'center', justifyContent: 'center', color: '#fff',
-              fontFamily: 'var(--font-heading)', fontSize: 24, fontWeight: 800,
-              boxShadow: '0 0 25px rgba(110, 58, 255, 0.4)'
+              fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800,
+              boxShadow: '0 0 20px rgba(110, 58, 255, 0.4)', flexShrink: 0
             }}>
               {(user.name || 'U')[0].toUpperCase()}
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 800, margin: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 800, margin: 0 }}>
                   {user.name}
                 </h1>
                 {user.role === 'admin' && (
-                  <span className="badge badge--featured">Admin</span>
+                  <span className="badge badge--featured" style={{ fontSize: 10 }}>Admin</span>
                 )}
               </div>
-              <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: '4px 0 0 0' }}>
+              <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', margin: '3px 0 0 0' }}>
                 {user.email}
               </p>
             </div>
           </div>
 
           {/* Quick Wallet Card */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 20,
-            padding: '12px 20px', background: 'var(--color-surface-2)',
-            borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)'
-          }}>
+          <div className="dashboard-wallet-card">
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Wallet Balance
               </div>
-              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 800, color: 'var(--color-accent)' }}>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, color: 'var(--color-accent)' }}>
                 ₹{displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </div>
             </div>
-            <button
-              className="btn btn--ghost btn--icon"
-              onClick={handleRefreshBalance}
-              title="Refresh balance"
-              style={{ width: 34, height: 34 }}
-            >
-              <span className="icon icon--sm">refresh</span>
-            </button>
-            <button
-              className="btn btn--primary btn--sm"
-              onClick={() => setActiveTab('wallet')}
-              style={{ gap: 4 }}
-            >
-              <span className="icon icon--sm">add</span>
-              <span>Top Up</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                className="btn btn--ghost btn--icon"
+                onClick={handleRefreshBalance}
+                title="Refresh balance"
+                style={{ width: 32, height: 32 }}
+              >
+                <span className="icon icon--sm">refresh</span>
+              </button>
+              <button
+                className="btn btn--primary btn--sm"
+                onClick={() => setActiveTab('wallet')}
+                style={{ gap: 4, padding: '6px 12px', fontSize: 12 }}
+              >
+                <span className="icon icon--sm" style={{ fontSize: 14 }}>add</span>
+                <span>Top Up</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Dashboard Main Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 32, alignItems: 'start' }}>
+        <div className="dashboard-layout-grid">
           
           {/* Sidebar Tabs Navigation */}
-          <aside style={{ position: 'sticky', top: 90 }}>
-            <div style={{
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-xl)',
-              padding: 12,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 6
-            }}>
+          <aside className="dashboard-sidebar-aside">
+            <div className="dashboard-tabs-card">
               {[
                 { id: 'orders', label: 'My Orders', icon: 'receipt_long' },
                 { id: 'wallet', label: 'Wallet & Top Up', icon: 'account_balance_wallet' },
                 { id: 'profile', label: 'Profile Settings', icon: 'manage_accounts' },
-                { id: 'support', label: 'Help & 24/7 Support', icon: 'support_agent' },
+                { id: 'support', label: 'Help & Support', icon: 'support_agent' },
               ].map(tab => {
                 const isActive = activeTab === tab.id;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
+                    className="dashboard-tab-btn"
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 12,
+                      gap: 10,
                       width: '100%',
-                      padding: '12px 16px',
+                      padding: '12px 14px',
                       borderRadius: 'var(--radius-md)',
                       cursor: 'pointer',
                       border: 'none',
                       background: isActive ? 'var(--gradient-primary)' : 'transparent',
                       color: isActive ? '#fff' : 'var(--color-text-muted)',
                       fontFamily: 'var(--font-body)',
-                      fontSize: 14,
+                      fontSize: 13.5,
                       fontWeight: 600,
                       transition: 'all 0.2s ease',
                       textAlign: 'left',
                       boxShadow: isActive ? 'var(--shadow-glow)' : 'none'
                     }}
                   >
-                    <span className="icon icon--sm" style={{ color: isActive ? '#fff' : 'var(--color-cyan)' }}>
+                    <span className="icon icon--sm" style={{ color: isActive ? '#fff' : 'var(--color-cyan)', fontSize: 16 }}>
                       {tab.icon}
                     </span>
-                    <span>{tab.label}</span>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tab.label}</span>
                   </button>
                 );
               })}
 
-              <div style={{ height: 1, background: 'var(--color-border)', margin: '8px 0' }} />
-
               {user.role === 'admin' && (
                 <Link
                   href="/admin"
+                  className="dashboard-tab-btn"
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 16px', borderRadius: 'var(--radius-md)',
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '12px 14px', borderRadius: 'var(--radius-md)',
                     color: 'var(--color-primary-light)', textDecoration: 'none',
-                    fontSize: 14, fontWeight: 700
+                    fontSize: 13.5, fontWeight: 700
                   }}
                 >
-                  <span className="icon icon--sm">admin_panel_settings</span>
-                  <span>Admin Dashboard</span>
+                  <span className="icon icon--sm" style={{ fontSize: 16 }}>admin_panel_settings</span>
+                  <span style={{ whiteSpace: 'nowrap' }}>Admin Panel</span>
                 </Link>
               )}
 
               <button
                 onClick={logout}
+                className="dashboard-tab-btn"
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-                  padding: '12px 16px', borderRadius: 'var(--radius-md)',
+                  display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                  padding: '12px 14px', borderRadius: 'var(--radius-md)',
                   color: 'var(--color-error)', border: 'none', background: 'transparent',
-                  fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'left'
+                  fontSize: 13.5, fontWeight: 600, cursor: 'pointer', textAlign: 'left'
                 }}
               >
-                <span className="icon icon--sm">logout</span>
+                <span className="icon icon--sm" style={{ fontSize: 16 }}>logout</span>
                 <span>Sign Out</span>
               </button>
             </div>
@@ -275,12 +254,12 @@ export default function DashboardPage() {
             {/* 1. ORDERS TAB */}
             {activeTab === 'orders' && (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, margin: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+                  <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 800, margin: 0 }}>
                     My Orders
                   </h2>
-                  <span style={{ fontSize: 13, color: 'var(--color-text-faint)' }}>
-                    {orders.length} total purchases
+                  <span style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>
+                    {orders.length} purchases
                   </span>
                 </div>
 
@@ -461,22 +440,19 @@ export default function DashboardPage() {
                   24/7 Client Helpdesk &amp; Support
                 </h2>
 
-                <div className="grid grid--2" style={{ gap: 20 }}>
-                  <div style={{
-                    padding: 28, background: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)'
-                  }}>
+                <div className="grid grid--2" style={{ gap: 16 }}>
+                  <div className="dashboard-content-card" style={{ padding: 24 }}>
                     <div style={{
-                      width: 52, height: 52, borderRadius: 'var(--radius-lg)',
+                      width: 44, height: 44, borderRadius: 'var(--radius-lg)',
                       background: 'rgba(0, 212, 255, 0.1)', color: 'var(--color-cyan)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12
                     }}>
-                      <span className="icon icon--lg">send</span>
+                      <span className="icon icon--md">send</span>
                     </div>
-                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 17, fontWeight: 700, marginBottom: 6 }}>
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
                       Telegram Support Channel
                     </h3>
-                    <p style={{ fontSize: 13, color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
+                    <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
                       Fastest response time. Direct human support for license issues and inquiries.
                     </p>
                     <a
@@ -491,21 +467,18 @@ export default function DashboardPage() {
                     </a>
                   </div>
 
-                  <div style={{
-                    padding: 28, background: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)'
-                  }}>
+                  <div className="dashboard-content-card" style={{ padding: 24 }}>
                     <div style={{
-                      width: 52, height: 52, borderRadius: 'var(--radius-lg)',
+                      width: 44, height: 44, borderRadius: 'var(--radius-lg)',
                       background: 'rgba(110, 58, 255, 0.1)', color: 'var(--color-primary-light)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12
                     }}>
-                      <span className="icon icon--lg">mail</span>
+                      <span className="icon icon--md">mail</span>
                     </div>
-                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 17, fontWeight: 700, marginBottom: 6 }}>
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
                       Email Helpdesk
                     </h3>
-                    <p style={{ fontSize: 13, color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
+                    <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
                       For detailed business inquiries and bulk order quotations. Response within 24h.
                     </p>
                     <a
@@ -561,7 +534,7 @@ function ProfileTab({ user, refreshUser }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {/* Account Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+      <div className="dashboard-stats-grid">
         {[
           {
             label: 'Wallet Balance',
@@ -582,24 +555,22 @@ function ProfileTab({ user, refreshUser }) {
             color: '#a855f7',
           },
         ].map(k => (
-          <div key={k.label} style={{
-            background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-xl)', padding: '20px 18px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-            display: 'flex', alignItems: 'center', gap: 14,
-          }}>
-            <div style={{
-              width: 46, height: 46, borderRadius: 'var(--radius-lg)',
-              background: `${k.color}18`, display: 'flex',
-              alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
+          <div key={k.label} className="dashboard-stat-card">
+            <div
+              className="dashboard-stat-icon"
+              style={{
+                width: 44, height: 44, borderRadius: 'var(--radius-lg)',
+                background: `${k.color}18`, display: 'flex',
+                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}
+            >
               <span className="icon icon--md" style={{ color: k.color }}>{k.icon}</span>
             </div>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-faint)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
+            <div style={{ minWidth: 0 }}>
+              <div className="dashboard-stat-label" style={{ fontSize: 11, color: 'var(--color-text-faint)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
                 {k.label}
               </div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: k.color, fontFamily: 'var(--font-heading)' }}>
+              <div className="dashboard-stat-value" style={{ fontSize: 18, fontWeight: 800, color: k.color, fontFamily: 'var(--font-heading)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {k.value}
               </div>
             </div>
@@ -608,23 +579,17 @@ function ProfileTab({ user, refreshUser }) {
       </div>
 
       {/* Profile Edit Form */}
-      <div style={{
-        padding: 32,
-        background: 'var(--color-surface)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-xl)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-      }}>
+      <div className="dashboard-content-card">
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
           Personal Profile &amp; Settings
         </h2>
-        <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginBottom: 24 }}>
+        <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginBottom: 20 }}>
           Update your display name and contact information.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 540 }}>
-          <div className="form-group">
-            <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Full Name</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 540 }}>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ fontWeight: 700, marginBottom: 6, display: 'block', fontSize: 12.5 }}>Full Name</label>
             <input
               className="form-input"
               value={form.name}
@@ -633,8 +598,8 @@ function ProfileTab({ user, refreshUser }) {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Email Address</label>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ fontWeight: 700, marginBottom: 6, display: 'block', fontSize: 12.5 }}>Email Address</label>
             <input
               className="form-input"
               value={profile.email}
@@ -644,8 +609,8 @@ function ProfileTab({ user, refreshUser }) {
             <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginTop: 4 }}>Email cannot be changed. Contact support if needed.</div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block' }}>Telegram Username</label>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ fontWeight: 700, marginBottom: 6, display: 'block', fontSize: 12.5 }}>Telegram Username</label>
             <input
               className="form-input"
               placeholder="@yourtelegram"
@@ -658,8 +623,8 @@ function ProfileTab({ user, refreshUser }) {
           {/* Account Read-Only Info */}
           <div style={{
             background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-lg)', padding: 16,
-            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
+            borderRadius: 'var(--radius-lg)', padding: 14,
+            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
           }}>
             {[
               { label: 'User ID', value: `#${profile.id}` },
@@ -668,17 +633,17 @@ function ProfileTab({ user, refreshUser }) {
               { label: 'Account Status', value: profile.is_frozen ? '🔒 Frozen' : '✅ Active' },
             ].map(f => (
               <div key={f.label}>
-                <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginBottom: 2 }}>{f.label}</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', textTransform: 'capitalize' }}>{f.value}</div>
+                <div style={{ fontSize: 10.5, color: 'var(--color-text-faint)', marginBottom: 2 }}>{f.label}</div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-text)', textTransform: 'capitalize', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.value}</div>
               </div>
             ))}
           </div>
 
           <button
-            className="btn btn--primary btn--md"
+            className="btn btn--primary btn--md dashboard-save-btn"
             onClick={handleSave}
             disabled={saving}
-            style={{ alignSelf: 'flex-start', gap: 6 }}
+            style={{ gap: 6 }}
           >
             <span className="icon icon--sm">save</span>
             <span>{saving ? 'Saving...' : 'Save Profile Changes'}</span>
@@ -730,13 +695,7 @@ function WalletTopup({ user, refreshUser }) {
   };
 
   return (
-    <div style={{
-      padding: 32,
-      background: 'var(--color-surface)',
-      border: '1px solid var(--color-border)',
-      borderRadius: 'var(--radius-xl)',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-    }}>
+    <div className="dashboard-content-card">
       <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
         Wallet Balance &amp; Deposit
       </h2>
@@ -746,19 +705,19 @@ function WalletTopup({ user, refreshUser }) {
 
       {/* Preset Pills */}
       <div style={{ marginBottom: 20 }}>
-        <label className="form-label" style={{ fontWeight: 700, marginBottom: 10, display: 'block' }}>Choose Amount</label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: 8, marginBottom: 12 }}>
+        <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block', fontSize: 12.5 }}>Choose Amount</label>
+        <div className="wallet-presets-row">
           {presets.map(p => (
             <button
               key={p}
               type="button"
               onClick={() => setAmount(p)}
               style={{
-                padding: '10px 0', borderRadius: 'var(--radius-md)',
+                padding: '9px 0', borderRadius: 'var(--radius-md)',
                 background: amount === p ? 'var(--gradient-primary)' : 'var(--color-surface-2)',
                 color: amount === p ? '#fff' : 'var(--color-text)',
                 border: `1px solid ${amount === p ? 'transparent' : 'var(--color-border)'}`,
-                fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                fontSize: 13.5, fontWeight: 700, cursor: 'pointer',
                 boxShadow: amount === p ? 'var(--shadow-glow)' : 'none'
               }}
             >

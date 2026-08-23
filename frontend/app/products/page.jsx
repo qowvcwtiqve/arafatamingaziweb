@@ -377,18 +377,7 @@ function ProductsContent() {
       <div className="container">
         
         {/* HERO STORE HEADER */}
-        <div
-          style={{
-            padding: '32px 28px',
-            borderRadius: 'var(--radius-xl)',
-            background: 'radial-gradient(ellipse at 50% 0%, rgba(110, 58, 255, 0.22) 0%, rgba(13, 17, 23, 0.95) 75%)',
-            border: '1px solid var(--color-border)',
-            marginBottom: 28,
-            boxShadow: '0 8px 30px rgba(0,0,0,0.35)',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
+        <div className="store-hero-banner">
           <div
             style={{
               position: 'absolute',
@@ -412,7 +401,7 @@ function ProductsContent() {
                 fontSize: 12,
                 fontWeight: 700,
                 color: 'var(--color-cyan)',
-                marginBottom: 10,
+                marginBottom: 8,
               }}
             >
               <span className="icon icon--sm icon--cyan icon--filled">bolt</span>
@@ -422,10 +411,9 @@ function ProductsContent() {
             <h1
               style={{
                 fontFamily: 'var(--font-heading)',
-                fontSize: 'clamp(26px, 4vw, 38px)',
                 fontWeight: 800,
                 margin: '0 0 8px 0',
-                lineHeight: 1.15,
+                lineHeight: 1.2,
               }}
             >
               {filters.category ? (
@@ -439,66 +427,25 @@ function ProductsContent() {
               )}
             </h1>
 
-            <p style={{ color: 'var(--color-text-muted)', fontSize: 14, lineHeight: 1.5, margin: 0 }}>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: 13.5, lineHeight: 1.5, margin: 0 }}>
               Browse verified software licenses, OTT subscriptions, AI accounts, and developer tools with automated instant credential dispatch.
             </p>
           </div>
         </div>
 
         {/* 2-COLUMN MAIN STORE LAYOUT (LEFT SIDEBAR + PRODUCTS GRID) */}
-        <div style={{ display: 'flex', gap: 28, alignItems: 'flex-start' }}>
+        <div className="store-main-layout">
           
           {/* DESKTOP LEFT SIDEBAR */}
-          <aside
-            style={{
-              width: 280,
-              minWidth: 280,
-              position: 'sticky',
-              top: 'calc(var(--header-height) + 20px)',
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-xl)',
-              padding: 20,
-              boxShadow: 'var(--shadow-sm)',
-            }}
-            className="store-sidebar-desktop"
-          >
+          <aside className="store-sidebar-desktop">
             <FilterSidebarContent />
           </aside>
 
           {/* RIGHT PRODUCTS MAIN CONTENT */}
-          <main style={{ flex: 1, minWidth: 0 }}>
+          <main className="store-main-content">
             
             {/* TOP CONTROLS & SEARCH TOOLBAR */}
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 12,
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: 20,
-                padding: '12px 18px',
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-sm)',
-              }}
-            >
-              {/* Mobile Filter Toggle Button */}
-              <button
-                type="button"
-                onClick={() => setMobileFilterOpen(true)}
-                className="btn btn--secondary btn--sm store-mobile-filter-btn"
-                style={{ gap: 6, display: 'none' }}
-              >
-                <span className="icon icon--sm">tune</span>
-                <span>Filters & Categories</span>
-                {hasActiveFilters && (
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-cyan)' }} />
-                )}
-              </button>
-
+            <div className="store-toolbar-container">
               {/* Search Bar */}
               <div
                 style={{
@@ -508,7 +455,7 @@ function ProductsContent() {
                   flex: '1 1 240px',
                   minWidth: 200,
                   background: 'var(--color-surface-2)',
-                  padding: '7px 12px',
+                  padding: '8px 14px',
                   borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--color-border)',
                 }}
@@ -520,7 +467,7 @@ function ProductsContent() {
                     border: 'none',
                     outline: 'none',
                     color: 'var(--color-text)',
-                    fontSize: 13,
+                    fontSize: 13.5,
                     width: '100%',
                   }}
                   placeholder="Search in store (e.g. Canva, ChatGPT, Netflix)..."
@@ -541,23 +488,62 @@ function ProductsContent() {
                 )}
               </div>
 
-              {/* Count & Sort */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ fontSize: 13, color: 'var(--color-text-faint)', whiteSpace: 'nowrap' }}>
-                  <strong>{total}</strong> products found
+              {/* Toolbar Actions Row (Filters + Sort + Desktop Count) */}
+              <div className="store-toolbar-actions-row" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {/* Mobile Filter Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setMobileFilterOpen(true)}
+                  className="btn btn--secondary btn--sm store-mobile-filter-btn"
+                  style={{ gap: 6, display: 'none' }}
+                >
+                  <span className="icon icon--sm">tune</span>
+                  <span>Filters</span>
+                  {hasActiveFilters && (
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--color-cyan)' }} />
+                  )}
+                </button>
+
+                {/* Count (Desktop only) */}
+                <div className="store-product-count-desktop" style={{ fontSize: 13, color: 'var(--color-text-faint)', whiteSpace: 'nowrap' }}>
+                  <strong>{total}</strong> products
                 </div>
 
-                <CustomDropdown
-                  options={SORT_OPTIONS}
-                  value={filters.sort}
-                  onChange={(val) => {
-                    setFilters((f) => ({ ...f, sort: val }));
-                    setPage(1);
-                  }}
-                  icon="sort"
-                  minWidth={170}
-                />
+                {/* Sort Dropdown */}
+                <div className="store-toolbar-sort-wrap">
+                  <CustomDropdown
+                    options={SORT_OPTIONS}
+                    value={filters.sort}
+                    onChange={(val) => {
+                      setFilters((f) => ({ ...f, sort: val }));
+                      setPage(1);
+                    }}
+                    icon="sort"
+                    minWidth={160}
+                  />
+                </div>
               </div>
+            </div>
+
+            {/* QUICK HORIZONTAL CATEGORY PILLS BAR */}
+            <div className="store-category-pills-bar">
+              {categories.map((c) => {
+                const isActive = (!filters.category && !c.id) || filters.category === c.id;
+                return (
+                  <button
+                    key={c.id || 'all'}
+                    type="button"
+                    onClick={() => {
+                      setFilters((f) => ({ ...f, category: c.id }));
+                      setPage(1);
+                    }}
+                    className={`store-cat-pill ${isActive ? 'store-cat-pill--active' : ''}`}
+                  >
+                    {c.icon && <span className="icon icon--sm" style={{ fontSize: 14 }}>{c.icon}</span>}
+                    <span>{c.name}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* ACTIVE FILTER BADGES STRIP */}

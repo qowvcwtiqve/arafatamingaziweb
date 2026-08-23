@@ -11,6 +11,7 @@ import { createCryptoInvoice } from '../services/nowpayments.service.js';
 import { processBinanceOrder } from '../services/binance.service.js';
 import { createCashfreeOrder, checkCashfreeStatus } from '../services/cashfree.service.js';
 import { sendOrderConfirmationEmail } from '../services/email.service.js';
+import { getPaymentSettings, getPublicPaymentMethods } from '../services/paymentSettings.service.js';
 import {
   getProductById,
   atomicPopStock,
@@ -86,9 +87,27 @@ export const walletPurchase = async (req, res, next) => {
       return res.status(400).json({ error: 'Out of stock' });
     }
 
-    // 4. Calculate price
+    // 4. Calculate price & apply coupon if provided
     const unitPrice = variant.price;
-    const totalPrice = parseFloat((unitPrice * qty).toFixed(2));
+    const baseTotal = parseFloat((unitPrice * qty).toFixed(2));
+    let discountAmount = 0;
+
+    let { coupon_code } = req.body;
+    if (coupon_code) {
+      try {
+        const { rows } = await query('SELECT * FROM coupons WHERE code=$1', [String(coupon_code).trim().toUpperCase()]);
+        const c = rows[0];
+        if (c && c.is_active !== false && (!c.expires_at || new Date(c.expires_at) > new Date()) && (!c.max_uses || c.used_count < c.max_uses) && (!c.min_order_amount || baseTotal >= parseFloat(c.min_order_amount))) {
+          discountAmount = c.discount_type === 'percent'
+            ? (baseTotal * parseFloat(c.discount_value)) / 100
+            : parseFloat(c.discount_value);
+          discountAmount = Math.min(discountAmount, baseTotal);
+          await query('UPDATE coupons SET used_count=used_count+1 WHERE id=$1', [c.id]);
+        }
+      } catch (_) {}
+    }
+
+    const totalPrice = parseFloat((baseTotal - discountAmount).toFixed(2));
 
     // 5. Check user wallet balance (from local db.js)
     const { rows: uRows } = await query('SELECT balance FROM users WHERE id=$1', [req.user.id]);
@@ -184,8 +203,78 @@ export const walletPurchase = async (req, res, next) => {
   }
 };
 
+// ─── POST /api/payments/coupon/validate ─────────────────────────────────────
+export const validateCoupon = async (req, res, next) => {
+  try {
+    const { code, cart_total = 0 } = req.body;
+    if (!code || !String(code).trim()) {
+      return res.status(400).json({ error: 'Please enter a coupon code' });
+    }
+
+    const cleanCode = String(code).trim().toUpperCase();
+    const { rows } = await query('SELECT * FROM coupons WHERE code=$1', [cleanCode]);
+    const coupon = rows[0];
+
+    if (!coupon) {
+      return res.status(404).json({ error: `Coupon code "${cleanCode}" does not exist` });
+    }
+
+    if (coupon.is_active === false) {
+      return res.status(400).json({ error: `Coupon code "${cleanCode}" is no longer active` });
+    }
+
+    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+      return res.status(400).json({ error: `Coupon code "${cleanCode}" has expired` });
+    }
+
+    if (coupon.max_uses && coupon.used_count >= coupon.max_uses) {
+      return res.status(400).json({ error: `Coupon code "${cleanCode}" has reached its maximum usage limit` });
+    }
+
+    const orderAmount = parseFloat(cart_total) || 0;
+    if (coupon.min_order_amount && orderAmount < parseFloat(coupon.min_order_amount)) {
+      return res.status(400).json({
+        error: `Minimum order amount of ₹${parseFloat(coupon.min_order_amount).toFixed(2)} required for coupon "${cleanCode}"`,
+      });
+    }
+
+    let discountAmount = 0;
+    if (coupon.discount_type === 'percent') {
+      discountAmount = (orderAmount * parseFloat(coupon.discount_value)) / 100;
+    } else {
+      discountAmount = parseFloat(coupon.discount_value);
+    }
+    discountAmount = Math.min(discountAmount, orderAmount);
+    discountAmount = parseFloat(discountAmount.toFixed(2));
+
+    const finalAmount = Math.max(0, parseFloat((orderAmount - discountAmount).toFixed(2)));
+
+    res.json({
+      valid: true,
+      code: coupon.code,
+      discount_type: coupon.discount_type,
+      discount_value: parseFloat(coupon.discount_value),
+      discount_amount: discountAmount,
+      final_total: finalAmount,
+      message: `Coupon "${coupon.code}" applied! You save ₹${discountAmount.toFixed(2)}`,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── GET /api/payments/methods ──────────────────────────────────────────────
+export const getActivePaymentMethods = async (req, res, next) => {
+  try {
+    const methods = await getPublicPaymentMethods();
+    res.json({ success: true, methods });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ─── POST /api/payments/initiate ─────────────────────────────────────────────
-// For non-wallet payments (Cashfree, Crypto, Binance) or wallet delegation
+// For non-wallet payments (Cashfree, Crypto, Binance, UPI) or wallet delegation
 export const initiatePayment = async (req, res, next) => {
   try {
     let { product_id, variant_id, quantity = 1, payment_method, coupon_code, email, items } = req.body;
@@ -206,8 +295,17 @@ export const initiatePayment = async (req, res, next) => {
     if (!product_id || !variant_id || !payment_method) {
       return res.status(400).json({ error: 'product_id, variant_id, and payment_method required' });
     }
-    if (!['cashfree', 'nowpayments', 'binance', 'upi', 'wallet'].includes(payment_method)) {
+    if (!['cashfree', 'nowpayments', 'binance', 'upi', 'upi_qr', 'wallet'].includes(payment_method)) {
       return res.status(400).json({ error: 'Invalid payment method' });
+    }
+
+    // Check if payment method is enabled in Admin settings
+    const settings = await getPaymentSettings();
+    const settingKey = (payment_method === 'upi' || payment_method === 'upi_qr') ? 'upi_qr' : payment_method;
+    if (settings[settingKey] && settings[settingKey].enabled === false) {
+      return res.status(400).json({
+        error: `${settings[settingKey].title || payment_method} is currently disabled by administrator.`
+      });
     }
 
     const qty = Math.max(1, parseInt(quantity));
@@ -295,11 +393,46 @@ export const initiatePayment = async (req, res, next) => {
       responseData.timeout_at = new Date(Date.now() + 180 * 60 * 1000);
       await query('UPDATE orders SET gateway_payment_id=$1, invoice_url=$2 WHERE id=$3', [invoiceId, invoiceUrl, order.id]);
     } else if (payment_method === 'binance') {
-      responseData.binance_pay_id = process.env.BINANCE_PAY_ID || '1133813547';
+      const binanceCfg = settings.binance || {};
+      responseData.binance_pay_id = binanceCfg.binance_pay_id || process.env.BINANCE_PAY_ID || '1133813547';
       responseData.usd_to_inr = usdToInr;
+    } else if (payment_method === 'upi' || payment_method === 'upi_qr') {
+      const upiCfg = settings.upi_qr || {};
+      responseData.upi_id = upiCfg.upi_id || 'quantumxd@upi';
+      responseData.merchant_name = upiCfg.merchant_name || 'QuantumXD Store';
+      responseData.qr_image_url = upiCfg.qr_image_url || '/upi-qr.png';
+      responseData.instructions = upiCfg.instructions || 'Scan QR code or pay to UPI ID, then submit your 12-digit UTR.';
     }
 
     res.status(201).json(responseData);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── POST /api/payments/upi/submit ───────────────────────────────────────────
+export const submitUpiPayment = async (req, res, next) => {
+  try {
+    const { order_id, utr_number } = req.body;
+    if (!order_id || !utr_number) {
+      return res.status(400).json({ error: 'order_id and utr_number are required' });
+    }
+    const cleanUtr = String(utr_number).trim();
+    if (cleanUtr.length < 6) {
+      return res.status(400).json({ error: 'Please enter a valid 12-digit UPI UTR / Reference ID' });
+    }
+
+    await query(
+      "UPDATE orders SET gateway_payment_id=$1, payment_status='under_review' WHERE id=$2",
+      [cleanUtr, order_id]
+    );
+
+    res.json({
+      success: true,
+      message: 'UPI Reference ID submitted successfully. Order is under verification.',
+      payment_status: 'under_review',
+      utr: cleanUtr,
+    });
   } catch (err) {
     next(err);
   }
@@ -341,3 +474,4 @@ export const getOrderStatus = async (req, res, next) => {
     res.json(rows[0]);
   } catch (err) { next(err); }
 };
+

@@ -14,12 +14,17 @@ export const metadata = {
   openGraph: {
     type: 'website',
     title: 'QuantumXD Store — Digital Marketplace',
-    description: 'Premium digital products with instant delivery',
-    siteName: 'QuantumXD Store',
+    icons: {
+      icon: '/favicon.svg',
+    },
   },
-  icons: {
-    icon: '/favicon.svg',
-  },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#07090E',
 };
 
 const themeScript = `

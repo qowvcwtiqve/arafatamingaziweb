@@ -16,13 +16,13 @@
     },
     {
       "id": "usr-1787327844012",
-      "name": "rakib",
+      "name": "Arafat Admin",
       "email": "arafatamingazi@gmail.com",
-      "password_hash": "$2a$12$LDbU6x3RdAI0G5Yn4p5atOWRW0rmygthOH8ZtryPJqG.L9AZS58km",
-      "role": "buyer",
-      "balance": 0,
+      "password_hash": "$2a$10$2ZExlhr9ZvPkACkcCqILe.KvUfaQU4v48wgOHQ36EqaWo1Svtx8iu",
+      "role": "admin",
+      "balance": 10000,
       "currency": "INR",
-      "all_time_topup": 0,
+      "all_time_topup": 10000,
       "is_verified": true,
       "is_frozen": false,
       "created_at": "2026-08-21T15:57:24.013Z"
@@ -56,10 +56,50 @@
   ],
   "products": [],
   "product_variants": [],
-  "orders": [],
+  "orders": [
+    {
+      "id": "ord-1787502638839",
+      "order_number": "QXDMT60X3AU",
+      "buyer_id": "usr-1787327844012",
+      "buyer_email": "arafatamingazi@gmail.com",
+      "total_amount": 10,
+      "discount_amount": 0,
+      "coupon_code": null,
+      "payment_method": "binance",
+      "payment_status": 10,
+      "base_amount": "2026-08-23T19:30:38.838Z",
+      "timeout_at": "p-test01",
+      "created_at": "2026-08-23T16:30:38.839Z"
+    }
+  ],
   "order_items": [],
   "deposits": [],
-  "coupons": [],
+  "coupons": [
+    {
+      "id": "coup-1787502944017",
+      "code": "OFFER20",
+      "discount_type": "percent",
+      "discount_value": 20,
+      "min_order_amount": 100,
+      "max_uses": 50,
+      "used_count": 0,
+      "expires_at": null,
+      "is_active": true,
+      "created_at": "2026-08-23T16:35:44.017Z"
+    },
+    {
+      "id": "coup-1787502770973",
+      "code": "TEST10",
+      "discount_type": "percent",
+      "discount_value": 10,
+      "min_order_amount": 0,
+      "max_uses": 100,
+      "used_count": 0,
+      "expires_at": null,
+      "is_active": true,
+      "created_at": "2026-08-23T16:32:50.973Z"
+    }
+  ],
   "reviews": [],
   "processed_payment_ids": [],
   "exchange_rate_cache": [
@@ -69,5 +109,59 @@
       "rate": 84.5,
       "fetched_at": "2026-08-21T14:17:25.045Z"
     }
-  ]
+  ],
+  "payment_settings": {
+    "upi_qr": {
+      "enabled": false,
+      "title": "UPI / QR Code",
+      "desc": "Instant UPI (Google Pay, PhonePe, Paytm, BHIM)",
+      "icon": "qr_code_2",
+      "color": "#10B981",
+      "upi_id": "quantumxd@upi",
+      "merchant_name": "QuantumXD Store",
+      "qr_image_url": "/upi-qr.png",
+      "instructions": "Scan QR code or pay to UPI ID, then enter your 12-digit UTR / Reference ID."
+    },
+    "cashfree": {
+      "enabled": true,
+      "title": "Cashfree PG",
+      "desc": "UPI (GPay/PhonePe), Cards & NetBanking",
+      "icon": "credit_card",
+      "color": "#00A0E3",
+      "client_id": "13189604096003c23c53718d3280698131",
+      "client_secret": "cfsk_ma_prod_a02505b8be151e6c5f2187e1d147ec61_da93f571",
+      "env": "PRODUCTION",
+      "instructions": "Instant automated payment via Cashfree secure gateway."
+    },
+    "binance": {
+      "enabled": true,
+      "title": "Binance Pay",
+      "desc": "Direct crypto transfer via Binance App (0% fee)",
+      "icon": "payments",
+      "color": "#F0B90B",
+      "binance_pay_id": "1133813547",
+      "api_key": "ro9eZ6iormcws7AlPp1zLY5noQ4N5nvPNFlYtjTe7Y4hrgcKzEmITpLi0JcJs924",
+      "api_secret": "v6JSV4DeUdNZnnerDL1kfIdeO1kffB8NTeTQQK6deEu5xth7to3S4zHRNwVpXrYU",
+      "instructions": "Send USDT/crypto via Binance Pay ID, then submit your Binance Transaction / Order ID."
+    },
+    "nowpayments": {
+      "enabled": true,
+      "title": "Crypto (NOWPayments)",
+      "desc": "BTC, ETH, USDT, SOL + 100 cryptocurrencies",
+      "icon": "currency_bitcoin",
+      "color": "#F7931A",
+      "api_key": "J45CWSZ-DPRMVXQ-H1MG92T-R3KEBQP",
+      "ipn_secret": "",
+      "sandbox": false,
+      "instructions": "Automated crypto invoice with 100+ supported coins."
+    },
+    "wallet": {
+      "enabled": true,
+      "title": "Account Wallet Balance",
+      "desc": "1-Click Instant Automated Checkout",
+      "icon": "account_balance_wallet",
+      "color": "#8B5CF6",
+      "instructions": "Deducted directly from your QuantumXD account balance."
+    }
+  }
 }

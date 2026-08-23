@@ -35,104 +35,90 @@ export default function Footer() {
     <footer className="footer" style={{
       borderTop: '1px solid var(--color-border)',
       background: 'var(--color-surface)',
-      paddingTop: 64,
-      paddingBottom: 32
+      paddingTop: 48,
+      paddingBottom: 28,
+      position: 'relative'
     }}>
       <div className="container">
-        <div className="footer__grid" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: 40,
-          marginBottom: 48
-        }}>
-          
-          {/* Brand Info */}
-          <div style={{ maxWidth: 360 }}>
-            <div style={{ marginBottom: 16 }}>
-              <Logo size="large" />
-            </div>
+        
+        {/* Top Header Row with Logo & Quick Help */}
+        <div className="footer-top-row">
+          <div>
+            <Logo size="large" />
             <p style={{
-              fontSize: 14,
+              fontSize: 13,
               color: 'var(--color-text-muted)',
-              lineHeight: 1.65,
-              margin: '0 0 24px 0'
+              margin: '8px 0 0 0',
+              maxWidth: 420
             }}>
-              Premium digital assets and software licenses marketplace. Instant automated credential dispatch, multi-method payment verification, and 24/7 client support.
+              Instant automated delivery for premium digital software, subscriptions & licenses.
             </p>
+          </div>
+          <a
+            href="https://t.me/your_support_username"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-support-pill"
+          >
+            <span className="icon icon--sm icon--cyan">support_agent</span>
+            <span>24/7 Telegram Support</span>
+            <span className="icon icon--sm">arrow_forward</span>
+          </a>
+        </div>
 
-            {/* Payment Method Badges with Google Icons */}
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 10 }}>
-                Accepted Payment Gateways
+        {/* Main Columns Grid */}
+        <div className="footer-main-grid">
+          
+          {/* Brand & Payment Gateways */}
+          <div className="footer-brand-section">
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 10 }}>
+              Payment Methods
+            </div>
+            <div className="footer-payment-badges">
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '5px 10px', background: 'var(--color-surface-2)',
+                borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)'
+              }}>
+                <span className="icon icon--sm icon--cyan">account_balance</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>UPI Auto QR</span>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                {/* UPI */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 12px', background: 'var(--color-surface-2)',
-                  borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)'
-                }}>
-                  <span className="icon icon--sm icon--cyan">account_balance</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>UPI Auto QR</span>
-                </div>
-                {/* Crypto */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 12px', background: 'var(--color-surface-2)',
-                  borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)'
-                }}>
-                  <span className="icon icon--sm icon--accent">currency_bitcoin</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>Crypto</span>
-                </div>
-                {/* Binance */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 12px', background: 'var(--color-surface-2)',
-                  borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)'
-                }}>
-                  <span className="icon icon--sm" style={{ color: '#F0B90B' }}>account_balance_wallet</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>Binance Pay</span>
-                </div>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '5px 10px', background: 'var(--color-surface-2)',
+                borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)'
+              }}>
+                <span className="icon icon--sm icon--accent">currency_bitcoin</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>Crypto</span>
+              </div>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '5px 10px', background: 'var(--color-surface-2)',
+                borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)'
+              }}>
+                <span className="icon icon--sm" style={{ color: '#F0B90B' }}>account_balance_wallet</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>Binance Pay</span>
               </div>
             </div>
-
           </div>
 
-          {/* Link Columns */}
+          {/* Links Columns */}
           {Object.entries(links).map(([heading, items]) => (
             <div key={heading}>
-              <div style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: 14,
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: 'var(--color-text)',
-                marginBottom: 16
-              }}>
+              <div className="footer-links-group-title">
                 {heading}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="footer-links-list">
                 {items.map(item => (
                   <Link
                     key={item.label}
                     href={item.href}
                     target={item.external ? '_blank' : undefined}
                     rel={item.external ? 'noopener noreferrer' : undefined}
-                    style={{
-                      fontSize: 14,
-                      color: 'var(--color-text-muted)',
-                      textDecoration: 'none',
-                      transition: 'color 0.2s ease',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 4
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'var(--color-cyan)'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                    className="footer-link-item"
                   >
                     <span>{item.label}</span>
-                    {item.external && <span className="icon icon--sm" style={{ fontSize: 14 }}>open_in_new</span>}
+                    {item.external && <span className="icon icon--sm" style={{ fontSize: 11, color: 'var(--color-cyan)' }}>open_in_new</span>}
                   </Link>
                 ))}
               </div>
@@ -142,28 +128,18 @@ export default function Footer() {
         </div>
 
         {/* Bottom Copyright Strip */}
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
-          paddingTop: 24,
-          borderTop: '1px solid var(--color-border)',
-          fontSize: 13,
-          color: 'var(--color-text-faint)'
-        }}>
+        <div className="footer-legal-bar">
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className="icon icon--sm icon--cyan">verified_user</span>
             <span>&copy; {new Date().getFullYear()} QuantumXD Store. All rights reserved.</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <span className="icon icon--sm icon--cyan icon--filled">bolt</span>
-              <span>Automated 24/7 System</span>
+              <span>Automated 24/7 Delivery</span>
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <span className="icon icon--sm icon--accent">shield</span>
               <span>100% Encrypted</span>
             </span>

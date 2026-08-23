@@ -139,6 +139,7 @@ export default function Header() {
                 <span className="icon icon--sm search__icon">search</span>
                 <input
                   className="search__input"
+                  style={{ paddingLeft: 44 }}
                   placeholder="Search products, licenses, tools..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}

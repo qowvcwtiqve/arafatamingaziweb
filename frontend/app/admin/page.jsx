@@ -12,6 +12,7 @@ import {
   TicketPercent,
   Edit,
   Tags,
+  Wallet,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
@@ -26,12 +27,14 @@ import CreateProductModal from '../../components/admin/CreateProductModal';
 import OrdersManagementTab from '../../components/admin/OrdersManagementTab';
 import CouponsTab from '../../components/admin/CouponsTab';
 import UserDetailModal from '../../components/admin/UserDetailModal';
+import PaymentSettingsTab from '../../components/admin/PaymentSettingsTab';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'orders', label: 'Orders', icon: ReceiptText },
   { id: 'products', label: 'Products', icon: Box },
   { id: 'users', label: 'Users', icon: Users },
+  { id: 'payments', label: 'Payment Settings', icon: Wallet },
   { id: 'deposits', label: 'Deposits', icon: CreditCard },
   { id: 'coupons', label: 'Coupons', icon: TicketPercent },
   { id: 'categories', label: 'Categories', icon: Tags },
@@ -55,6 +58,7 @@ export default function AdminPage() {
   const [editProductConfig, setEditProductConfig] = useState(null);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
@@ -145,6 +149,7 @@ export default function AdminPage() {
 
   const loadTab = async (tab) => {
     setActiveTab(tab);
+    setMobileSidebarOpen(false);
     setLoading(l => ({ ...l, [tab]: true }));
     try {
       if (tab === 'overview') {
@@ -259,25 +264,97 @@ export default function AdminPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg)', position: 'relative' }}>
       <AdminModal config={modalConfig} onClose={() => setModalConfig(null)} />
       
+      {/* Mobile Top Header (only on <= 992px) */}
+      <div
+        className="admin-mobile-topbar"
+        style={{
+          display: 'none',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 56,
+          background: 'var(--color-surface)',
+          borderBottom: '1px solid var(--color-border)',
+          zIndex: 90,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 16px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="btn btn--ghost btn--icon"
+            style={{ padding: 6 }}
+            aria-label="Open menu"
+          >
+            <span className="icon icon--md">menu</span>
+          </button>
+          <Logo size="small" showTag={false} />
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 800,
+              padding: '2px 6px',
+              borderRadius: 6,
+              background: 'rgba(124, 58, 237, 0.15)',
+              color: 'var(--color-primary-light)',
+            }}
+          >
+            ADMIN
+          </span>
+        </div>
+
+        <button
+          onClick={toggleTheme}
+          className="btn btn--ghost btn--icon"
+          style={{ padding: 6 }}
+          aria-label="Toggle theme"
+        >
+          <span className="icon icon--sm">
+            {theme === 'light' ? 'dark_mode' : 'light_mode'}
+          </span>
+        </button>
+      </div>
+
+      {/* Mobile Overlay Backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          onClick={() => setMobileSidebarOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 95,
+          }}
+        />
+      )}
+
       {/* Standalone Clean Admin Sidebar */}
-      <aside className="admin-sidebar" style={{
-        width: 250,
-        background: 'var(--color-surface)',
-        borderRight: '1px solid var(--color-border)',
-        position: 'fixed',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        padding: '20px 16px',
-        zIndex: 100,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        overflowY: 'auto'
-      }}>
+      <aside
+        className={`admin-sidebar ${mobileSidebarOpen ? 'admin-sidebar--mobile-open' : ''}`}
+        style={{
+          width: 250,
+          background: 'var(--color-surface)',
+          borderRight: '1px solid var(--color-border)',
+          position: 'fixed',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          padding: '20px 16px',
+          zIndex: 100,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          overflowY: 'auto',
+          transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
         <div>
           {/* Brand Logo & Store Link */}
           <div style={{ padding: '0 4px 18px', borderBottom: '1px solid var(--color-border)', marginBottom: 16 }}>
@@ -641,6 +718,11 @@ export default function AdminPage() {
               </table>
             </div>
           </div>
+        )}
+
+        {/* PAYMENT GATEWAY SETTINGS */}
+        {activeTab === 'payments' && (
+          <PaymentSettingsTab />
         )}
 
         {/* COUPONS */}

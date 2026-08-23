@@ -766,5 +766,27 @@ router.get('/website-stats', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ════════════════════════════════════════════════════════════════════════════
+// PAYMENT GATEWAYS & SETTINGS
+// ════════════════════════════════════════════════════════════════════════════
+
+// GET /api/admin/payment-settings
+router.get('/payment-settings', async (req, res, next) => {
+  try {
+    const { getPaymentSettings } = await import('../services/paymentSettings.service.js');
+    const settings = await getPaymentSettings();
+    res.json({ success: true, settings });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/payment-settings
+router.post('/payment-settings', async (req, res, next) => {
+  try {
+    const { savePaymentSettings } = await import('../services/paymentSettings.service.js');
+    const updated = await savePaymentSettings(req.body.settings || req.body);
+    res.json({ success: true, settings: updated, message: 'Payment settings saved successfully' });
+  } catch (err) { next(err); }
+});
+
 export default router;
 

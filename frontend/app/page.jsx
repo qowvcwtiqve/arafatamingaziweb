@@ -5,6 +5,32 @@ import api from '../lib/api';
 import ProductCard from '../components/product/ProductCard';
 import HeroBanner from '../components/home/HeroBanner';
 
+function getCategoryVisual(name = '', id = '') {
+  const lower = (name + ' ' + id).toLowerCase();
+  if (lower.includes('ps5') || lower.includes('game') || lower.includes('gaming') || lower.includes('playstation') || lower.includes('xbox')) {
+    return { icon: 'sports_esports', color: '#A78BFA', bg: 'rgba(139, 92, 246, 0.15)', label: 'Keys & Accounts' };
+  }
+  if (lower.includes('stream') || lower.includes('netflix') || lower.includes('prime') || lower.includes('spotify') || lower.includes('music') || lower.includes('ott')) {
+    return { icon: 'smart_display', color: '#F472B6', bg: 'rgba(236, 72, 153, 0.15)', label: 'Subscriptions' };
+  }
+  if (lower.includes('vpn') || lower.includes('proxy') || lower.includes('shield') || lower.includes('security')) {
+    return { icon: 'vpn_lock', color: '#22D3EE', bg: 'rgba(6, 182, 212, 0.15)', label: 'Fast & Secure' };
+  }
+  if (lower.includes('ai') || lower.includes('chatgpt') || lower.includes('bot') || lower.includes('claude') || lower.includes('midjourney')) {
+    return { icon: 'psychology', color: '#00FFCC', bg: 'rgba(0, 255, 204, 0.15)', label: 'AI Subscriptions' };
+  }
+  if (lower.includes('edu') || lower.includes('tool') || lower.includes('software') || lower.includes('canva') || lower.includes('adobe') || lower.includes('course')) {
+    return { icon: 'school', color: '#FBBF24', bg: 'rgba(245, 158, 11, 0.15)', label: 'Pro & Student' };
+  }
+  if (lower.includes('free') || lower.includes('freebie') || lower.includes('gift') || lower.includes('giveaway')) {
+    return { icon: 'card_giftcard', color: '#34D399', bg: 'rgba(16, 185, 129, 0.15)', label: 'Claim Free' };
+  }
+  if (lower.includes('paid') || lower.includes('legal') || lower.includes('service') || lower.includes('license') || lower.includes('official')) {
+    return { icon: 'verified_user', color: '#60A5FA', bg: 'rgba(59, 130, 246, 0.15)', label: 'Official Access' };
+  }
+  return { icon: 'category', color: 'var(--color-cyan)', bg: 'var(--gradient-primary-soft)', label: 'Instant Delivery' };
+}
+
 export default function HomePage() {
   const [featured, setFeatured] = useState([]);
   const [latest, setLatest] = useState([]);
@@ -50,63 +76,38 @@ export default function HomePage() {
           </div>
 
           {categories.length > 0 ? (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-              gap: 14
-            }}>
-              {categories.map(cat => (
-                <Link
-                  key={cat.id}
-                  href={`/products?category=${cat.id}`}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 12,
-                    padding: '24px 16px',
-                    background: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-lg)',
-                    transition: 'all 0.25s ease',
-                    cursor: 'pointer',
-                    textDecoration: 'none',
-                    textAlign: 'center'
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = 'var(--color-border-glow)';
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 12px 24px -6px rgba(110, 58, 255, 0.25)';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = 'var(--color-border)';
-                    e.currentTarget.style.transform = '';
-                    e.currentTarget.style.boxShadow = '';
-                  }}
-                >
-                  <div style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 'var(--radius-md)',
-                    background: 'var(--gradient-primary-soft)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--color-cyan)'
-                  }}>
-                    <span className="icon icon--lg">{cat.icon || 'category'}</span>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)', lineHeight: 1.2 }}>
-                      {cat.name}
+            <div className="home-categories-grid">
+              {categories.map(cat => {
+                const visual = getCategoryVisual(cat.name, cat.id);
+                return (
+                  <Link
+                    key={cat.id}
+                    href={`/products?category=${cat.id}`}
+                    className="home-category-card"
+                  >
+                    <div
+                      className="home-category-card__icon-box"
+                      style={{
+                        background: visual.bg,
+                        color: visual.color,
+                        boxShadow: `0 4px 14px ${visual.bg}`
+                      }}
+                    >
+                      <span className="icon icon--lg" style={{ color: visual.color }}>
+                        {visual.icon}
+                      </span>
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginTop: 4 }}>
-                      Instant Delivery
+                    <div>
+                      <div className="home-category-card__name">
+                        {cat.name}
+                      </div>
+                      <div className="home-category-card__sub">
+                        {visual.label}
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-faint)' }}>
@@ -201,7 +202,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid--4">
+          <div className="home-features-grid">
             {[
               { icon: 'bolt', title: 'Instant Dispatch', desc: 'Credentials and licenses delivered automatically within seconds of payment.' },
               { icon: 'lock', title: 'Encrypted Payments', desc: 'Direct UPI QR, Binance Pay, and Crypto with real-time automatic verification.' },
@@ -210,36 +211,109 @@ export default function HomePage() {
             ].map(f => (
               <div
                 key={f.title}
-                className="card"
-                style={{
-                  padding: 28,
-                  textAlign: 'left',
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-lg)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 12
-                }}
+                className="home-feature-card"
               >
-                <div style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--gradient-primary-soft)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--color-cyan)'
-                }}>
+                <div className="home-feature-card__icon-box">
                   <span className="icon icon--lg">{f.icon}</span>
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>
-                  {f.title}
-                </h3>
-                <p style={{ fontSize: 13, color: 'var(--color-text-muted)', lineHeight: 1.6, margin: 0 }}>
-                  {f.desc}
-                </p>
+                <div className="home-feature-card__content">
+                  <h3 className="home-feature-card__title">
+                    {f.title}
+                  </h3>
+                  <p className="home-feature-card__desc">
+                    {f.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. VERIFIED CUSTOMER REVIEWS & LIVE PROOF */}
+      <section className="section section--sm" style={{ paddingBottom: 90, borderTop: '1px solid var(--color-border)', background: 'linear-gradient(180deg, transparent 0%, rgba(124, 58, 237, 0.04) 100%)' }}>
+        <div className="container">
+          <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto 40px auto' }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '6px 14px', borderRadius: 'var(--radius-full)',
+              background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)',
+              marginBottom: 16
+            }}>
+              <span className="icon icon--sm icon--filled" style={{ color: '#F59E0B' }}>star</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#F59E0B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                4.9 / 5.0 Rated Marketplace
+              </span>
+            </div>
+            <h2 className="section-title">
+              Loved by <span className="text-gradient">3,500+ Buyers</span>
+            </h2>
+            <p className="section-subtitle" style={{ margin: '8px auto 0 auto' }}>
+              Real feedback from verified purchasers who rely on our instant digital asset deliveries daily.
+            </p>
+          </div>
+
+          <div className="home-testimonials-grid">
+            {[
+              {
+                name: 'Rahul Sharma',
+                loc: 'Mumbai, IN',
+                stars: 5,
+                title: 'Instant activation, key worked on first try! ⚡',
+                text: 'Purchased Canva & Tool access. Got login details in less than 30 seconds right inside the dashboard. 100% genuine.',
+                product: 'Canva Pro Lifetime'
+              },
+              {
+                name: 'Aman Verma',
+                loc: 'Delhi, IN',
+                stars: 5,
+                title: 'Telegram support solved my query in 2 mins',
+                text: 'Had a quick question on login steps and the admin helped me instantly on Telegram. Exceptional support and unbeatable pricing.',
+                product: 'Digital Subscription'
+              },
+              {
+                name: 'Vikram Patel',
+                loc: 'Ahmedabad, IN',
+                stars: 5,
+                title: 'Best automated store with seamless UPI QR',
+                text: 'Payment verified instantly and credentials were ready immediately. Saved over 70% compared to official pricing.',
+                product: 'Premium License'
+              }
+            ].map(r => (
+              <div
+                key={r.name}
+                className="home-testimonial-card"
+              >
+                <div className="home-testimonial-card__header">
+                  <div className="home-testimonial-card__stars">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <span key={s} className="icon icon--filled" style={{ fontSize: 14, color: '#F59E0B' }}>star</span>
+                    ))}
+                  </div>
+                  <span className="home-testimonial-card__verified-badge">
+                    <span className="icon icon--sm" style={{ fontSize: 11 }}>verified</span>
+                    Verified Buyer
+                  </span>
+                </div>
+
+                <div>
+                  <h4 className="home-testimonial-card__title">
+                    {r.title}
+                  </h4>
+                  <p className="home-testimonial-card__quote" style={{ marginTop: 6 }}>
+                    "{r.text}"
+                  </p>
+                </div>
+
+                <div className="home-testimonial-card__footer">
+                  <div className="home-testimonial-card__avatar">
+                    {r.name[0]}
+                  </div>
+                  <div>
+                    <div className="home-testimonial-card__name">{r.name}</div>
+                    <div className="home-testimonial-card__meta">{r.loc} • {r.product}</div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

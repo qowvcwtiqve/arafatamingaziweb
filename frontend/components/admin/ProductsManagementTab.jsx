@@ -367,18 +367,32 @@ export default function ProductsManagementTab({
                   <tr key={p.id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <img
-                          src={img}
-                          alt={p.name}
+                        <div
                           style={{
                             width: 44,
                             height: 44,
                             borderRadius: 'var(--radius-md)',
-                            objectFit: 'cover',
-                            background: 'var(--color-surface-2)',
+                            background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.18) 0%, rgba(0, 212, 255, 0.12) 100%)',
                             border: '1px solid var(--color-border)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'var(--color-cyan)',
+                            flexShrink: 0,
                           }}
-                        />
+                        >
+                          <span className="icon icon--md icon--filled">
+                            {p.category_id?.includes('ott') || p.category_id?.includes('stream') ? 'tv' :
+                             p.category_id?.includes('ai') ? 'smart_toy' :
+                             p.category_id?.includes('design') ? 'palette' :
+                             p.category_id?.includes('vpn') ? 'shield_lock' :
+                             p.category_id?.includes('software') ? 'desktop_windows' :
+                             p.category_id?.includes('game') ? 'sports_esports' :
+                             p.category_id?.includes('code') ? 'terminal' :
+                             p.category_id?.includes('telegram') ? 'rocket_launch' :
+                             'deployed_code'}
+                          </span>
+                        </div>
                         <div>
                           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
                             {p.website_meta?.title || p.name}

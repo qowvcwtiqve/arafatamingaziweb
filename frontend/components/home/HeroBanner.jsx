@@ -162,32 +162,33 @@ export default function HeroBanner() {
               background: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-lg)',
-              padding: '6px 8px 6px 18px',
+              padding: '6px 8px 6px 16px',
               boxShadow: '0 12px 32px -8px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05)',
-              marginBottom: 36,
+              marginBottom: 32,
               transition: 'border-color 0.25s ease'
             }}
           >
-            <span className="icon icon--md" style={{ color: 'var(--color-text-faint)', marginRight: 10 }}>search</span>
+            <span className="icon icon--md" style={{ color: 'var(--color-text-faint)', marginRight: 8 }}>search</span>
             <input
               type="text"
-              placeholder="Search software, tools, accounts, licenses..."
+              placeholder="Search software, accounts, licenses..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 flex: 1,
+                minWidth: 0,
                 background: 'transparent',
                 border: 'none',
                 outline: 'none',
                 color: 'var(--color-text)',
-                fontSize: 15,
+                fontSize: 14,
                 padding: '8px 0'
               }}
             />
             <button
               type="submit"
               className="btn btn--primary btn--sm"
-              style={{ padding: '10px 20px', borderRadius: 'var(--radius-md)', gap: 6 }}
+              style={{ padding: '9px 16px', borderRadius: 'var(--radius-md)', gap: 6, flexShrink: 0 }}
             >
               <span className="icon icon--sm">search</span>
               <span>Search</span>
@@ -195,11 +196,11 @@ export default function HeroBanner() {
           </form>
 
           {/* Action Buttons Row */}
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 50 }}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 44 }}>
             <Link
               href="/products"
               className="btn btn--primary btn--lg"
-              style={{ padding: '14px 28px', gap: 8, boxShadow: 'var(--shadow-glow)' }}
+              style={{ padding: '12px 24px', gap: 8, boxShadow: 'var(--shadow-glow)' }}
             >
               <span className="icon icon--md">storefront</span>
               <span>Browse All Products</span>
@@ -208,45 +209,21 @@ export default function HeroBanner() {
             <Link
               href="/products?featured=true"
               className="btn btn--ghost btn--lg"
-              style={{ padding: '14px 24px', gap: 8, border: '1px solid var(--color-border)' }}
+              style={{ padding: '12px 20px', gap: 8, border: '1px solid var(--color-border)' }}
             >
               <span className="icon icon--md icon--cyan">star</span>
               <span>Featured Picks</span>
             </Link>
           </div>
 
-          {/* 4 Feature Highlights Grid (No emojis, Pure Google Font Icons) */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: 16,
-            width: '100%',
-            marginBottom: 44
-          }}>
+          {/* 4 Feature Highlights Grid (Responsive 2x2 on mobile) */}
+          <div className="hero-features-grid">
             {featureCards.map((feat) => (
               <div
                 key={feat.title}
                 className="hero-feature-card"
-                style={{
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: 20,
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 10
-                }}
               >
-                <div style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--gradient-primary-soft)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
+                <div className="hero-feature-icon-box">
                   <span className={`icon icon--lg ${feat.colorClass}`}>{feat.icon}</span>
                 </div>
                 <h3 style={{
@@ -271,36 +248,17 @@ export default function HeroBanner() {
           </div>
 
           {/* Stats Bar */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-            gap: 20,
-            width: '100%',
-            padding: '20px 24px',
-            background: 'var(--color-surface-2)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-xl)'
-          }}>
+          <div className="hero-stats-bar">
             {stats.map((s) => (
-              <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center' }}>
-                <div style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(110, 58, 255, 0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--color-cyan)',
-                  flexShrink: 0
-                }}>
+              <div key={s.label} className="hero-stat-item">
+                <div className="hero-stat-item__icon">
                   <span className="icon icon--md">{s.icon}</span>
                 </div>
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-text)', lineHeight: 1.1 }}>
+                  <div className="hero-stat-item__value">
                     {s.value}
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--color-text-faint)', marginTop: 2 }}>
+                  <div className="hero-stat-item__label">
                     {s.label}
                   </div>
                 </div>

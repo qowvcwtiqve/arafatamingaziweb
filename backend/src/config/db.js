@@ -23,6 +23,20 @@ const INITIAL_SEED = {
   users: [
     {
       id: 'usr-admin-001',
+      name: 'Arafat Admin',
+      email: 'arafatamingazi@gmail.com',
+      password_hash: bcrypt.hashSync('Arafat@1213', 10),
+      role: 'admin',
+      balance: 10000.0,
+      currency: 'INR',
+      all_time_topup: 10000.0,
+      is_verified: true,
+      is_frozen: false,
+      telegram_username: '@arafatamingazi',
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 'usr-admin-002',
       name: 'QuantumXD Admin',
       email: 'admin@quantumxd.store',
       password_hash: DEFAULT_ADMIN_HASH,
@@ -437,9 +451,22 @@ export async function query(sql, params = []) {
     return { rows: [], rowCount: 1 };
   }
 
+  if (lowerSql.startsWith('update coupons')) {
+    if (lowerSql.includes('used_count=used_count+1')) {
+      const coupId = params[0];
+      const coupon = (db.coupons || []).find(c => c.id === coupId || c.code === coupId);
+      if (coupon) {
+        coupon.used_count = (coupon.used_count || 0) + 1;
+        writeLocalDb(db);
+        return { rows: [coupon] };
+      }
+    }
+    return { rows: [] };
+  }
+
   if (lowerSql.includes('from coupons') && lowerSql.includes('where code=$1')) {
     const code = params[0]?.toUpperCase();
-    const coupon = (db.coupons || []).find(c => c.code === code && c.is_active);
+    const coupon = (db.coupons || []).find(c => c.code === code && (c.is_active !== false));
     return { rows: coupon ? [coupon] : [] };
   }
 
