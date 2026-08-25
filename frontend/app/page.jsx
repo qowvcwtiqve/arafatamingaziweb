@@ -4,6 +4,12 @@ import Link from 'next/link';
 import api from '../lib/api';
 import ProductCard from '../components/product/ProductCard';
 import HeroBanner from '../components/home/HeroBanner';
+import LiveTicker from '../components/home/LiveTicker';
+import LiveSalesNotification from '../components/home/LiveSalesNotification';
+import CategoryShowcase from '../components/home/CategoryShowcase';
+import HowItWorksSection from '../components/home/HowItWorksSection';
+import HomeFaqSection from '../components/home/HomeFaqSection';
+import TelegramCommunityBanner from '../components/home/TelegramCommunityBanner';
 
 function getCategoryVisual(name = '', id = '') {
   const lower = (name + ' ' + id).toLowerCase();
@@ -54,7 +60,10 @@ export default function HomePage() {
       {/* 1. HERO BANNER */}
       <HeroBanner />
 
-      {/* 2. BROWSE CATEGORIES */}
+      {/* 2. LIVE ANNOUNCEMENT MARQUEE TICKER */}
+      <LiveTicker />
+
+      {/* 3. BROWSE CATEGORIES CARDS */}
       <section className="section section--sm" style={{ borderTop: '1px solid var(--color-border)' }}>
         <div className="container">
           <div className="section-header" style={{ marginBottom: 28 }}>
@@ -117,7 +126,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. FEATURED PRODUCTS */}
+      {/* 4. DYNAMIC INTERACTIVE TABBED CATALOG SHOWCASE */}
+      <CategoryShowcase initialCategories={categories} />
+
+      {/* 5. FEATURED PRODUCTS (CURATED PICKS) */}
       {(loading || featured.length > 0) && (
         <section className="section section--sm" style={{ borderTop: '1px solid var(--color-border)' }}>
           <div className="container">
@@ -149,7 +161,10 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 4. LATEST ARRIVALS */}
+      {/* 6. HOW IT WORKS IN 3 STEPS */}
+      <HowItWorksSection />
+
+      {/* 7. LATEST ARRIVALS */}
       <section className="section section--sm" style={{ borderTop: '1px solid var(--color-border)' }}>
         <div className="container">
           <div className="section-header" style={{ marginBottom: 28 }}>
@@ -179,8 +194,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. WHY US / TRUST SECTION */}
-      <section className="section section--sm" style={{ paddingBottom: 90, borderTop: '1px solid var(--color-border)' }}>
+      {/* 8. WHY US / TRUST SECTION */}
+      <section className="section section--sm" style={{ paddingBottom: 60, borderTop: '1px solid var(--color-border)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto 48px auto' }}>
             <div style={{
@@ -230,8 +245,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. VERIFIED CUSTOMER REVIEWS & LIVE PROOF */}
-      <section className="section section--sm" style={{ paddingBottom: 90, borderTop: '1px solid var(--color-border)', background: 'linear-gradient(180deg, transparent 0%, rgba(124, 58, 237, 0.04) 100%)' }}>
+      {/* 9. TELEGRAM COMMUNITY VIP BANNER */}
+      <TelegramCommunityBanner />
+
+      {/* 10. VERIFIED CUSTOMER REVIEWS & LIVE PROOF */}
+      <section className="section section--sm" style={{ paddingBottom: 60, borderTop: '1px solid var(--color-border)', background: 'linear-gradient(180deg, transparent 0%, rgba(124, 58, 237, 0.04) 100%)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto 40px auto' }}>
             <div style={{
@@ -319,6 +337,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 11. FAQ ACCORDION SECTION */}
+      <HomeFaqSection />
+
+      {/* 12. FLOATING LIVE SALES POPUP PROOF */}
+      <LiveSalesNotification />
     </>
   );
 }
@@ -326,7 +350,7 @@ export default function HomePage() {
 function ProductCardSkeleton() {
   return (
     <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-      <div className="skeleton" style={{ width: '100%', paddingTop: '56.25%' }} />
+      <div className="skeleton" style={{ width: '100%', aspectRatio: '1 / 1' }} />
       <div style={{ padding: 16 }}>
         <div className="skeleton" style={{ height: 14, width: '60%', marginBottom: 10 }} />
         <div className="skeleton" style={{ height: 16, width: '90%', marginBottom: 6 }} />
