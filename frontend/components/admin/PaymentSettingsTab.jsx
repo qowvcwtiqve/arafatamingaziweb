@@ -77,15 +77,39 @@ export default function PaymentSettingsTab() {
     fetchSettings();
   }, []);
 
-  const handleToggle = (gatewayKey, e) => {
-    e?.stopPropagation();
-    setSettings((prev) => ({
-      ...prev,
+  const handleToggle = async (gatewayKey, e) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    const currentVal = Boolean(settings[gatewayKey]?.enabled);
+    const nextEnabled = !currentVal;
+    
+    const newSettings = {
+      ...settings,
       [gatewayKey]: {
-        ...prev[gatewayKey],
-        enabled: !prev[gatewayKey]?.enabled,
+        ...settings[gatewayKey],
+        enabled: nextEnabled,
       },
-    }));
+    };
+    
+    setSettings(newSettings);
+    
+    try {
+      await api.post('/admin/payment-settings', { settings: newSettings });
+      const gatewayName = GATEWAYS.find(g => g.key === gatewayKey)?.name || gatewayKey;
+      toast.success(`${gatewayName} is now ${nextEnabled ? 'ON' : 'OFF'}`);
+    } catch (err) {
+      console.error('Failed to toggle gateway:', err);
+      toast.error('Failed to update status');
+      // Rollback
+      setSettings(prev => ({
+        ...prev,
+        [gatewayKey]: {
+          ...prev[gatewayKey],
+          enabled: currentVal,
+        },
+      }));
+    }
   };
 
   const handleFieldChange = (gatewayKey, field, value) => {
@@ -266,19 +290,10 @@ export default function PaymentSettingsTab() {
                   </div>
                 </div>
 
-                {/* Right: Toggle & Expand */}
+                {/* Right: Toggle Switch & Expand */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }} onClick={(e) => e.stopPropagation()}>
-                  {/* Status Indicator & Checkbox */}
-                  <div
-                    onClick={(e) => handleToggle(g.key, e)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      cursor: 'pointer',
-                      userSelect: 'none',
-                    }}
-                  >
+                  {/* Status Indicator & Animated Slider Switch */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span
                       style={{
                         fontSize: 11,
@@ -287,19 +302,39 @@ export default function PaymentSettingsTab() {
                         letterSpacing: '0.02em',
                       }}
                     >
-                      {isEnabled ? 'ACTIVE' : 'DISABLED'}
+                      {isEnabled ? 'ON' : 'OFF'}
                     </span>
-                    <input
-                      type="checkbox"
-                      checked={isEnabled}
-                      onChange={(e) => handleToggle(g.key, e)}
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={isEnabled}
+                      onClick={(e) => handleToggle(g.key, e)}
                       style={{
-                        width: 36,
-                        height: 20,
+                        width: 44,
+                        height: 24,
+                        borderRadius: 999,
+                        background: isEnabled ? (g.color || '#10B981') : 'rgba(255,255,255,0.12)',
+                        position: 'relative',
+                        border: 'none',
                         cursor: 'pointer',
-                        accentColor: g.color,
+                        transition: 'background 0.2s ease',
+                        padding: 2,
+                        display: 'flex',
+                        alignItems: 'center',
                       }}
-                    />
+                    >
+                      <div
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: '50%',
+                          background: '#FFFFFF',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                          transform: isEnabled ? 'translateX(20px)' : 'translateX(0px)',
+                          transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }}
+                      />
+                    </button>
                   </div>
 
                   {/* Expand Chevron (if editable) */}
