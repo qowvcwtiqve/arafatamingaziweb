@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { query, readLocalDb, updateUserBalance, toggleUserFreeze } from './config/db.js';
+import { connectMongoDB } from './config/mongodb.js';
 import Product from './models/product.model.js';
 import Sale from './models/sale.model.js';
 import { fulfillPaidOrder } from './controllers/payment.controller.js';
@@ -21,10 +22,12 @@ export async function runFullSiteAudit() {
 
   try {
     // 1. MongoDB Check
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/quantumxd');
+    await connectMongoDB();
+    if (mongoose.connection.readyState === 1) {
+      addCheck('MongoDB Atlas Connection', 'PASS', 'Connected to telegram_store_bot Atlas database');
+    } else {
+      addCheck('MongoDB Atlas Connection', 'FAIL', 'Could not establish MongoDB connection');
     }
-    addCheck('MongoDB Connection', 'PASS', 'Connected to quantumxd database');
 
     // 2. SQL / Local DB Check
     const { rows: userCheck } = await query('SELECT count(*) as count FROM users');
