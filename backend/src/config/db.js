@@ -109,6 +109,70 @@ export function writeLocalDb(data) {
   }
 }
 
+export async function updateUserBalance(userId, action, amount) {
+  const numAmount = Math.abs(parseFloat(amount || 0));
+  const db = readLocalDb();
+  db.users = db.users || [];
+  const user = db.users.find(u => u.id === userId);
+  if (!user) return null;
+
+  user.balance = parseFloat(user.balance || 0);
+  user.all_time_topup = parseFloat(user.all_time_topup || 0);
+
+  if (action === 'add') {
+    user.balance += numAmount;
+    user.all_time_topup += numAmount;
+  } else if (action === 'deduct') {
+    user.balance = Math.max(0, user.balance - numAmount);
+  } else if (action === 'set') {
+    user.balance = Math.max(0, numAmount);
+  } else if (action === 'reset') {
+    user.balance = 0;
+  }
+
+  user.updated_at = new Date().toISOString();
+  writeLocalDb(db);
+
+  if (pgPool) {
+    try {
+      await pgPool.query('UPDATE users SET balance=$1, all_time_topup=$2, updated_at=NOW() WHERE id=$3', [user.balance, user.all_time_topup, userId]);
+    } catch {}
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    balance: parseFloat(user.balance || 0),
+    is_frozen: Boolean(user.is_frozen)
+  };
+}
+
+export async function toggleUserFreeze(userId) {
+  const db = readLocalDb();
+  db.users = db.users || [];
+  const user = db.users.find(u => u.id === userId);
+  if (!user) return null;
+
+  user.is_frozen = !user.is_frozen;
+  user.updated_at = new Date().toISOString();
+  writeLocalDb(db);
+
+  if (pgPool) {
+    try {
+      await pgPool.query('UPDATE users SET is_frozen=$1, updated_at=NOW() WHERE id=$2', [user.is_frozen, userId]);
+    } catch {}
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    balance: parseFloat(user.balance || 0),
+    is_frozen: Boolean(user.is_frozen)
+  };
+}
+
 // Check if external Postgres is configured and valid
 const isPlaceholderDb = !process.env.DATABASE_URL || process.env.DATABASE_URL.includes('YOUR_PROJECT');
 

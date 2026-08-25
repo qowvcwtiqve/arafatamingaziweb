@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { query } from '../config/db.js';
+import { query, updateUserBalance, toggleUserFreeze } from '../config/db.js';
 import { protect, requireAdmin } from '../middleware/auth.middleware.js';
 import Sale from '../models/sale.model.js';
 import {
@@ -112,19 +112,11 @@ router.put('/users/:id/freeze', async (req, res, next) => {
     if (req.params.id === req.user.id) {
       return res.status(400).json({ error: 'You cannot freeze your own admin account.' });
     }
-    const { rows } = await query(
-      'UPDATE users SET is_frozen=NOT is_frozen, updated_at=NOW() WHERE id=$1 RETURNING id,name,balance,is_frozen',
-      [req.params.id]
-    );
-    if (!rows[0]) {
+    const updated = await toggleUserFreeze(req.params.id);
+    if (!updated) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json({
-      id: rows[0].id,
-      name: rows[0].name,
-      balance: parseFloat(rows[0].balance || 0),
-      is_frozen: Boolean(rows[0].is_frozen)
-    });
+    res.json(updated);
   } catch (err) { next(err); }
 });
 
@@ -132,35 +124,11 @@ router.put('/users/:id/freeze', async (req, res, next) => {
 router.put('/users/:id/balance', async (req, res, next) => {
   try {
     const { action, amount } = req.body; // action: 'add' | 'deduct' | 'set' | 'reset'
-    const numAmount = Math.abs(parseFloat(amount || 0));
-    let sql;
-    let params;
-
-    if (action === 'add') {
-      sql = 'UPDATE users SET balance=balance+$1, updated_at=NOW() WHERE id=$2 RETURNING id,name,balance,is_frozen';
-      params = [numAmount, req.params.id];
-    } else if (action === 'deduct') {
-      sql = 'UPDATE users SET balance=balance-$1, updated_at=NOW() WHERE id=$2 RETURNING id,name,balance,is_frozen';
-      params = [numAmount, req.params.id];
-    } else if (action === 'set') {
-      sql = 'UPDATE users SET balance=$1, updated_at=NOW() WHERE id=$2 RETURNING id,name,balance,is_frozen';
-      params = [numAmount, req.params.id];
-    } else {
-      // reset
-      sql = 'UPDATE users SET balance=0, updated_at=NOW() WHERE id=$1 RETURNING id,name,balance,is_frozen';
-      params = [req.params.id];
-    }
-
-    const { rows } = await query(sql, params);
-    if (!rows[0]) {
+    const updated = await updateUserBalance(req.params.id, action, amount);
+    if (!updated) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json({
-      id: rows[0].id,
-      name: rows[0].name,
-      balance: parseFloat(rows[0].balance || 0),
-      is_frozen: Boolean(rows[0].is_frozen)
-    });
+    res.json(updated);
   } catch (err) { next(err); }
 });
 
