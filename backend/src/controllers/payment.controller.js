@@ -479,7 +479,13 @@ export const fulfillPaidOrder = async (orderId) => {
       (/pre[- ]?order/i.test(variant?.name || '')) ||
       (/pre[- ]?order/i.test(product?.name || ''))
     );
-    const isManual = !isPreorder && (variant?.delivery_method === 'manual' || product?.delivery_method === 'manual' || product?.delivery_process === 'manual');
+    const isManual = !isPreorder && Boolean(
+      variant?.delivery_method === 'manual' ||
+      product?.delivery_method === 'manual' ||
+      String(product?.delivery_process || '').toLowerCase().includes('manual') ||
+      String(variant?.name || '').toLowerCase().includes('manual') ||
+      String(product?.name || '').toLowerCase().includes('manual')
+    );
     const isInfinite = variant?.is_infinite || product?.is_infinite;
     const deliveryMethod = isPreorder ? 'preorder' : isManual ? 'manual' : isInfinite ? 'infinite' : 'instant';
     const saleStatus = isPreorder ? 'Pre-Order' : isManual ? 'Pending' : 'Delivered';
@@ -528,8 +534,8 @@ export const fulfillPaidOrder = async (orderId) => {
 
     const credsString = deliveredItems.join('\n\n');
     await query(
-      "UPDATE orders SET payment_status='paid', paid_at=NOW(), delivered_items=$1, sale_id=$2 WHERE id=$3",
-      [credsString, saleId, order.id]
+      "UPDATE orders SET payment_status='paid', paid_at=NOW(), order_status=$1, delivered_items=$2, sale_id=$3 WHERE id=$4",
+      [saleStatus, credsString, saleId, order.id]
     );
 
     return {

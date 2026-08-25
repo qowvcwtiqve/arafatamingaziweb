@@ -315,7 +315,7 @@ function DashboardContent() {
                               </span>
 
                               {/* Rich Status Badge */}
-                              {(order.status === 'Pre-Order' || order.payment_status === 'Pre-Order' || (order.items?.[0]?.title && /pre[- ]?order/i.test(order.items[0].title))) ? (
+                              {(order.status === 'Pre-Order' || order.order_status === 'Pre-Order' || (order.items?.[0]?.title && /pre[- ]?order/i.test(order.items[0].title))) ? (
                                 <span style={{
                                   padding: '4px 12px', borderRadius: 'var(--radius-full)',
                                   background: 'linear-gradient(135deg, rgba(110, 58, 255, 0.25) 0%, rgba(0, 212, 255, 0.2) 100%)',
@@ -327,7 +327,19 @@ function DashboardContent() {
                                   <span className="icon icon--sm" style={{ fontSize: 13 }}>rocket_launch</span>
                                   <span>Pre-Order</span>
                                 </span>
-                              ) : (order.status === 'Delivered' || order.payment_status === 'paid' || order.payment_status === 'Delivered') ? (
+                              ) : (order.status === 'Pending' || order.order_status === 'Pending' || (!order.credentials && !order.items?.[0]?.delivered_content && !order.items?.[0]?.download_token && order.delivery_method === 'manual')) ? (
+                                <span style={{
+                                  padding: '4px 12px', borderRadius: 'var(--radius-full)',
+                                  background: 'rgba(245, 158, 11, 0.12)',
+                                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                                  color: '#f59e0b',
+                                  fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em',
+                                  display: 'inline-flex', alignItems: 'center', gap: 5
+                                }}>
+                                  <span className="icon icon--sm" style={{ fontSize: 13 }}>hourglass_top</span>
+                                  <span>Pending Fulfillment</span>
+                                </span>
+                              ) : (order.status === 'Delivered' || (order.payment_status === 'paid' && (order.credentials || order.items?.[0]?.delivered_content || order.items?.[0]?.download_token))) ? (
                                 <span style={{
                                   padding: '4px 12px', borderRadius: 'var(--radius-full)',
                                   background: 'rgba(16, 185, 129, 0.12)',
@@ -372,6 +384,7 @@ function DashboardContent() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid var(--color-border)', paddingTop: 14 }}>
                           {order.items?.filter(Boolean).map((item, i) => {
                             const isOrderPreorder = order.status === 'Pre-Order' || order.payment_status === 'Pre-Order' || /pre[- ]?order/i.test(item.title || '') || /pre[- ]?order/i.test(item.variant_name || '');
+                            const isOrderManualPending = (order.status === 'Pending' || order.delivery_method === 'manual') && !item.delivered_content && !item.download_token;
                             return (
                               <div key={i} style={{
                                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -399,6 +412,16 @@ function DashboardContent() {
                                     }}>
                                       <span className="icon icon--sm" style={{ fontSize: 14 }}>rocket_launch</span>
                                       <span>Pre-Order Queued (Auto-dispatch on stock)</span>
+                                    </div>
+                                  ) : isOrderManualPending ? (
+                                    <div style={{
+                                      display: 'flex', alignItems: 'center', gap: 6,
+                                      background: 'rgba(245, 158, 11, 0.1)', padding: '6px 12px',
+                                      borderRadius: 'var(--radius-md)', border: '1px solid rgba(245, 158, 11, 0.3)',
+                                      fontSize: 12.5, fontWeight: 600, color: '#f59e0b'
+                                    }}>
+                                      <span className="icon icon--sm" style={{ fontSize: 14 }}>hourglass_top</span>
+                                      <span>Manual Delivery in progress</span>
                                     </div>
                                   ) : (
                                     <>
