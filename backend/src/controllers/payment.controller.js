@@ -458,8 +458,8 @@ export const fulfillPaidOrder = async (orderId) => {
       return { success: true, order, sale_id: order.sale_id, credentials: order.delivered_items, status: 'Delivered' };
     }
 
-    const product_id = order.meta_product_id;
-    const variant_id = order.meta_variant_id;
+    const product_id = String(order.meta_product_id || order.product_id || 'p-devtest-item');
+    const variant_id = String(order.meta_variant_id || order.variant_id || 'var-test-instant');
     const qty = Math.max(1, parseInt(order.meta_qty || 1));
 
     const product = await getProductById(product_id);
@@ -495,13 +495,13 @@ export const fulfillPaidOrder = async (orderId) => {
     const sale = await Sale.create({
       sale_id: saleId,
       source: 'website',
-      product_id,
-      variant_id,
-      pool_id: poolId,
+      product_id: product_id || product?.id || 'p-devtest-item',
+      variant_id: variant_id || variant?.id || 'var-test-instant',
+      pool_id: poolId || 'main',
       product_name: product?.name || 'Product',
       variant_name: variant?.name || 'Standard',
-      price: order.total_amount,
-      original_price: order.base_amount || order.total_amount,
+      price: parseFloat(order.total_amount || 0),
+      original_price: parseFloat(order.base_amount || order.total_amount || 0),
       quantity: qty,
       user_id: order.buyer_id || 'guest',
       user_email: order.buyer_email || 'customer@quantumxd.store',
