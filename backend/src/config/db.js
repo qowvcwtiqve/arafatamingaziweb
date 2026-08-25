@@ -119,10 +119,10 @@ export async function updateUserBalance(userId, action, amount) {
   user.balance = parseFloat(user.balance || 0);
   user.all_time_topup = parseFloat(user.all_time_topup || 0);
 
-  if (action === 'add') {
+  if (action === 'add' || action === 'topup' || action === 'credit') {
     user.balance += numAmount;
     user.all_time_topup += numAmount;
-  } else if (action === 'deduct') {
+  } else if (action === 'deduct' || action === 'cut' || action === 'subtract' || action === 'remove') {
     user.balance = Math.max(0, user.balance - numAmount);
   } else if (action === 'set') {
     user.balance = Math.max(0, numAmount);
@@ -393,31 +393,57 @@ export async function query(sql, params = []) {
 
   // 7. Orders
   if (lowerSql.startsWith('insert into orders')) {
-    const [order_number, buyer_id, buyer_email, total_amount, discount_amount, coupon_code, payment_method, payment_status, base_amount, timeout_at] = params;
-    const newOrder = {
-      id: `ord-${Date.now()}`,
-      order_number,
-      buyer_id,
-      buyer_email,
-      total_amount,
-      discount_amount: discount_amount || 0,
-      coupon_code,
-      payment_method,
-      payment_status: payment_status || 'pending',
-      base_amount,
-      timeout_at,
-      created_at: new Date().toISOString(),
-    };
-    if (payment_status === 'paid') newOrder.paid_at = new Date().toISOString();
+    let newOrder;
+    if (lowerSql.includes('(id,') || lowerSql.includes('(id ,')) {
+      const [id, order_number, buyer_id, buyer_email, total_amount, discount_amount, coupon_code, payment_method, payment_status, base_amount, meta_product_id, meta_variant_id, meta_qty] = params;
+      newOrder = {
+        id: id || `ord-${Date.now()}`,
+        order_number: order_number || `QXD${Date.now().toString(36).toUpperCase()}`,
+        buyer_id,
+        buyer_email,
+        total_amount: parseFloat(total_amount || 0),
+        discount_amount: parseFloat(discount_amount || 0),
+        coupon_code: coupon_code || null,
+        payment_method,
+        payment_status: payment_status || 'pending',
+        base_amount: parseFloat(base_amount || total_amount || 0),
+        timeout_at: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+        meta_product_id: meta_product_id || null,
+        meta_variant_id: meta_variant_id || null,
+        meta_qty: parseInt(meta_qty || 1),
+        created_at: new Date().toISOString(),
+      };
+    } else {
+      const [order_number, buyer_id, buyer_email, total_amount, discount_amount, coupon_code, payment_method, payment_status, base_amount, timeout_at, meta_product_id, meta_variant_id, meta_qty] = params;
+      newOrder = {
+        id: `ord-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        order_number: order_number || `QXD${Date.now().toString(36).toUpperCase()}`,
+        buyer_id,
+        buyer_email,
+        total_amount: parseFloat(total_amount || 0),
+        discount_amount: parseFloat(discount_amount || 0),
+        coupon_code: coupon_code || null,
+        payment_method,
+        payment_status: payment_status || 'pending',
+        base_amount: parseFloat(base_amount || total_amount || 0),
+        timeout_at: timeout_at ? new Date(timeout_at).toISOString() : new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+        meta_product_id: meta_product_id || null,
+        meta_variant_id: meta_variant_id || null,
+        meta_qty: parseInt(meta_qty || 1),
+        created_at: new Date().toISOString(),
+      };
+    }
+
+    if (newOrder.payment_status === 'paid') newOrder.paid_at = new Date().toISOString();
     db.orders = db.orders || [];
     db.orders.push(newOrder);
     writeLocalDb(db);
     return { rows: [newOrder] };
   }
 
-  if (lowerSql.includes('from orders') && lowerSql.includes('where o.id=$1')) {
-    const id = params[0];
-    const order = (db.orders || []).find(o => o.id === id);
+  if (lowerSql.includes('from orders') && (lowerSql.includes('where id=$1 or order_number=$1') || lowerSql.includes('where id=$1 or') || lowerSql.includes('where id=$1') || lowerSql.includes('where o.id=$1'))) {
+    const term = params[0];
+    const order = (db.orders || []).find(o => o.id === term || o.order_number === term || o.sale_id === term);
     return { rows: order ? [order] : [] };
   }
 
@@ -446,25 +472,24 @@ export async function query(sql, params = []) {
     return { rows: userOrders };
   }
 
-  if (lowerSql.includes('from orders') && lowerSql.includes('where id=$1')) {
-    const id = params[0];
-    const order = (db.orders || []).find(o => o.id === id);
-    return { rows: order ? [order] : [] };
-  }
-
   if (lowerSql.startsWith('update orders')) {
     const id = params[params.length - 1];
-    const order = (db.orders || []).find(o => o.id === id);
+    const order = (db.orders || []).find(o => o.id === id || o.order_number === id);
     if (order) {
       if (lowerSql.includes('payment_status=')) {
-        if (lowerSql.includes("'paid'")) {
-          order.payment_status = 'paid';
-          order.paid_at = new Date().toISOString();
+        const pMatch = lowerSql.match(/payment_status='([^']+)'/);
+        if (pMatch && pMatch[1]) {
+          order.payment_status = pMatch[1];
+          if (pMatch[1] === 'paid') order.paid_at = new Date().toISOString();
         }
+      }
+      if (lowerSql.includes('delivered_items=$1') && lowerSql.includes('sale_id=$2')) {
+        order.delivered_items = params[0];
+        order.sale_id = params[1];
       }
       if (lowerSql.includes('gateway_payment_id=$1')) {
         order.gateway_payment_id = params[0];
-        order.invoice_url = params[1];
+        if (params[1]) order.invoice_url = params[1];
       }
       writeLocalDb(db);
     }
