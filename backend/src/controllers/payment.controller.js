@@ -446,6 +446,92 @@ export const submitUpiPayment = async (req, res, next) => {
   }
 };
 
+// ─── Shared Fulfill Paid Order ───────────────────────────────────────────────
+export const fulfillPaidOrder = async (orderId) => {
+  try {
+    const { rows: orderRows } = await query('SELECT * FROM orders WHERE id=$1 OR order_number=$1', [orderId]);
+    if (!orderRows || !orderRows[0]) {
+      return { success: false, error: 'Order not found' };
+    }
+    const order = orderRows[0];
+    if (order.delivered_items && order.sale_id) {
+      return { success: true, order, sale_id: order.sale_id, credentials: order.delivered_items, status: 'Delivered' };
+    }
+
+    const product_id = order.meta_product_id;
+    const variant_id = order.meta_variant_id;
+    const qty = Math.max(1, parseInt(order.meta_qty || 1));
+
+    const product = await getProductById(product_id);
+    const variant = product?.variants?.find((v) => v.id === variant_id) || product?.variants?.[0];
+    const poolId = variant?.pool_id || product?.default_pool_id || 'main';
+
+    const isPreorder = variant?.delivery_method === 'preorder' || product?.delivery_method === 'preorder';
+    const isManual = variant?.delivery_method === 'manual' || product?.delivery_method === 'manual';
+    const isInfinite = variant?.is_infinite || product?.is_infinite;
+    const deliveryMethod = isPreorder ? 'preorder' : isManual ? 'manual' : isInfinite ? 'infinite' : 'instant';
+
+    const deliveredItems = [];
+    if (!isPreorder && !isManual) {
+      for (let i = 0; i < qty; i++) {
+        if (isInfinite) {
+          const Product = (await import('../models/product.model.js')).default;
+          const raw = await Product.findById(product_id).lean();
+          const pool = (raw?.stock_pools || {})[poolId] || [];
+          deliveredItems.push(pool[0] || 'Infinite Stock Item');
+        } else {
+          const item = await atomicPopStock(product_id, poolId);
+          if (item) {
+            deliveredItems.push(item);
+          }
+        }
+      }
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const endTs = variant?.duration > 0 ? now + variant.duration * 30 * 24 * 3600 : null;
+    const saleId = order.id || generateSaleId();
+
+    const sale = await Sale.create({
+      sale_id: saleId,
+      source: 'website',
+      product_id,
+      variant_id,
+      pool_id: poolId,
+      product_name: product?.name || 'Product',
+      variant_name: variant?.name || 'Standard',
+      price: order.total_amount,
+      original_price: order.base_amount || order.total_amount,
+      quantity: qty,
+      user_id: order.buyer_id || 'guest',
+      user_email: order.buyer_email || 'customer@quantumxd.store',
+      user_name: 'Customer',
+      credentials: deliveredItems.join('\n\n') || '',
+      status: isPreorder ? 'Pre-Order' : isManual ? 'Pending' : 'Delivered',
+      delivery_method: deliveryMethod,
+      purchase_ts: now,
+      end_ts: endTs,
+    });
+
+    const credsString = deliveredItems.join('\n\n');
+    await query(
+      "UPDATE orders SET payment_status='paid', paid_at=NOW(), delivered_items=$1, sale_id=$2 WHERE id=$3",
+      [credsString, saleId, order.id]
+    );
+
+    return {
+      success: true,
+      order,
+      sale_id: saleId,
+      credentials: credsString,
+      status: sale.status,
+    };
+  } catch (err) {
+    console.error('Error fulfilling paid order:', err);
+    return { success: false, error: err.message };
+  }
+};
+
 // ─── POST /api/payments/cashfree/verify ──────────────────────────────────────
 export const verifyCashfreePayment = async (req, res, next) => {
   try {
@@ -453,8 +539,13 @@ export const verifyCashfreePayment = async (req, res, next) => {
     if (!order_id) return res.status(400).json({ error: 'order_id is required' });
     const statusRes = await checkCashfreeStatus(order_id);
     if (statusRes.isPaid) {
-      await query("UPDATE orders SET payment_status='paid', paid_at=NOW() WHERE id=$1", [order_id]);
-      return res.json({ success: true, payment_status: 'paid' });
+      const fulfillment = await fulfillPaidOrder(order_id);
+      return res.json({
+        success: true,
+        payment_status: 'paid',
+        order_id: fulfillment.sale_id || order_id,
+        credentials: fulfillment.credentials,
+      });
     }
     res.json({ success: false, payment_status: statusRes.txStatus || 'pending' });
   } catch (err) { next(err); }
@@ -475,11 +566,12 @@ export const verifyBinancePayment = async (req, res, next) => {
 export const getOrderStatus = async (req, res, next) => {
   try {
     const { rows } = await query(
-      'SELECT id, order_number, payment_status, paid_at FROM orders WHERE id=$1',
+      'SELECT id, order_number, payment_status, paid_at, delivered_items, sale_id FROM orders WHERE id=$1 OR order_number=$1 OR sale_id=$1',
       [req.params.orderId]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Order not found' });
     res.json(rows[0]);
   } catch (err) { next(err); }
 };
+
 

@@ -1,23 +1,32 @@
 import axios from 'axios';
 import querystring from 'querystring';
+import { getPaymentSettings } from './paymentSettings.service.js';
 
-const getCfConfig = () => ({
-  appId: process.env.CF_CLIENT_ID || '13189604096003c23c53718d3280698131',
-  secretKey: process.env.CF_SECRET || 'cfsk_ma_prod_a02505b8be151e6c5f2187e1d147ec61_da93f571',
-  env: (process.env.CF_ENV || 'PRODUCTION').toUpperCase(),
-});
+const getCfConfig = async () => {
+  let cf = {};
+  try {
+    const settings = await getPaymentSettings();
+    cf = settings?.cashfree || {};
+  } catch (_) {}
 
-const getBaseUrl = () => {
-  const { env } = getCfConfig();
-  return env === 'SANDBOX' ? 'https://test.cashfree.com' : 'https://api.cashfree.com';
+  return {
+    appId: cf.client_id || process.env.CF_CLIENT_ID || '13189604096003c23c53718d3280698131',
+    secretKey: cf.client_secret || process.env.CF_SECRET || 'cfsk_ma_prod_a02505b8be151e6c5f2187e1d147ec61_da93f571',
+    env: (cf.env || process.env.CF_ENV || 'PRODUCTION').toUpperCase(),
+  };
+};
+
+const getBaseUrl = async () => {
+  const { env } = await getCfConfig();
+  return env === 'SANDBOX' || env === 'TEST' ? 'https://test.cashfree.com' : 'https://api.cashfree.com';
 };
 
 /**
  * Creates a Cashfree payment order (v1/v2 API matching old bot)
  */
 export async function createCashfreeOrder({ orderId, orderAmount, customerEmail, customerPhone, returnUrl }) {
-  const { appId, secretKey } = getCfConfig();
-  const baseUrl = getBaseUrl();
+  const { appId, secretKey } = await getCfConfig();
+  const baseUrl = await getBaseUrl();
   const url = `${baseUrl}/api/v1/order/create`;
 
   const payload = {
@@ -67,8 +76,8 @@ export async function createCashfreeOrder({ orderId, orderAmount, customerEmail,
  * Checks Cashfree order status
  */
 export async function checkCashfreeStatus(orderId) {
-  const { appId, secretKey } = getCfConfig();
-  const baseUrl = getBaseUrl();
+  const { appId, secretKey } = await getCfConfig();
+  const baseUrl = await getBaseUrl();
   const url = `${baseUrl}/api/v1/order/info/status`;
 
   const payload = {

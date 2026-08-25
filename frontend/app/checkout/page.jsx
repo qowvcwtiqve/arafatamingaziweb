@@ -68,8 +68,8 @@ function CheckoutContent() {
   const [status, setStatus] = useState(null); // 'pending' | 'under_review' | 'paid'
 
   const searchParams = useSearchParams();
-  const cfStatus = searchParams.get('cf_status');
-  const queryOrderId = searchParams.get('order_id');
+  const cfStatus = searchParams ? searchParams.get('cf_status') : null;
+  const queryOrderId = searchParams ? searchParams.get('order_id') : null;
 
   const subtotal = items.reduce((s, i) => s + (parseFloat(i.price) * (i.quantity || 1)), 0);
   const total = Math.max(0, subtotal - couponDiscount);
@@ -105,26 +105,37 @@ function CheckoutContent() {
     }
   }, [mounted, items, orderData, cfStatus, router]);
 
-  // Handle redirect from Cashfree
+  // Handle redirect from Cashfree with immediate verification
   useEffect(() => {
-    if (cfStatus === 'check' && queryOrderId && !orderData) {
-      setOrderData({ order_id: queryOrderId });
+    if (cfStatus === 'check' && queryOrderId) {
+      setOrderData((prev) => prev || { order_id: queryOrderId, order_number: queryOrderId });
       setStatus('pending');
       setPaymentMethod('cashfree');
+
+      api.post('/payments/cashfree/verify', { order_id: queryOrderId })
+        .then(({ data }) => {
+          if (data.payment_status === 'paid' || data.success) {
+            setStatus('paid');
+            setOrderData({ order_id: data.order_id || queryOrderId, order_number: data.order_id || queryOrderId });
+            clearCart();
+            toast.success('Payment verified successfully!');
+          }
+        })
+        .catch(console.error);
     }
-  }, [cfStatus, queryOrderId, orderData]);
+  }, [cfStatus, queryOrderId]);
 
   // Poll order status after payment initiated (for automated gateways)
   useEffect(() => {
-    if (!orderData || status === 'paid' || status === 'under_review') return;
-    const timer = setInterval(async () => {
+    if (!orderData?.order_id || status === 'paid' || status === 'under_review') return;
+    const checkStatus = async () => {
       try {
         if (paymentMethod === 'cashfree') {
           const { data } = await api.post('/payments/cashfree/verify', { order_id: orderData.order_id });
-          if (data.payment_status === 'paid') {
+          if (data.payment_status === 'paid' || data.success) {
             setStatus('paid');
+            setOrderData({ order_id: data.order_id || orderData.order_id, order_number: data.order_id || orderData.order_id });
             clearCart();
-            clearInterval(timer);
             return;
           }
         }
@@ -132,12 +143,13 @@ function CheckoutContent() {
         if (data.payment_status === 'paid') {
           setStatus('paid');
           clearCart();
-          clearInterval(timer);
         }
       } catch { /* ignore */ }
-    }, 4000);
+    };
+
+    const timer = setInterval(checkStatus, 3000);
     return () => clearInterval(timer);
-  }, [orderData, status, paymentMethod, clearCart]);
+  }, [orderData?.order_id, status, paymentMethod, clearCart]);
 
   const [appliedCouponCode, setAppliedCouponCode] = useState('');
   const [validatingCoupon, setValidatingCoupon] = useState(false);

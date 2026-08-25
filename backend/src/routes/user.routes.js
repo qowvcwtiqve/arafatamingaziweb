@@ -42,13 +42,70 @@ router.get('/orders', protect, async (req, res, next) => {
 router.get('/orders/:id', protect, async (req, res, next) => {
   try {
     const orderId = req.params.id;
-    const sale = await Sale.findOne({ sale_id: orderId }).lean();
+    let sale = await Sale.findOne({ sale_id: orderId }).lean();
+
+    if (!sale) {
+      // Check SQL orders table
+      const { rows } = await query(
+        'SELECT * FROM orders WHERE id=$1 OR order_number=$1 OR sale_id=$1',
+        [orderId]
+      );
+      if (rows && rows[0]) {
+        const ord = rows[0];
+        // If order was paid but sale record wasn't created, fulfill now
+        if (ord.payment_status === 'paid' && !ord.sale_id) {
+          const { fulfillPaidOrder } = await import('../controllers/payment.controller.js');
+          const result = await fulfillPaidOrder(ord.id);
+          sale = await Sale.findOne({ sale_id: result.sale_id || ord.id }).lean();
+        } else if (ord.sale_id) {
+          sale = await Sale.findOne({ sale_id: ord.sale_id }).lean();
+        }
+
+        if (!sale) {
+          // Construct fallback sale representation from orders table
+          const product = await Product.findById(ord.meta_product_id).lean();
+          const rules = product?.rules || 'Follow all standard login guidelines.';
+          return res.json({
+            success: true,
+            order: {
+              order_id: ord.id,
+              id: ord.id,
+              order_number: ord.order_number,
+              product_id: ord.meta_product_id,
+              product_name: product?.name || 'Digital Product',
+              variant_name: 'Standard',
+              status: ord.payment_status === 'paid' ? 'Delivered' : ord.payment_status === 'under_review' ? 'Pending' : 'Processing',
+              price: ord.total_amount,
+              quantity: ord.meta_qty || 1,
+              total_amount: ord.total_amount,
+              credentials: ord.delivered_items || '',
+              rules: rules,
+              purchase_ts: Math.floor(new Date(ord.created_at || Date.now()).getTime() / 1000),
+              purchase_date: new Date(ord.created_at || Date.now()).toLocaleString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+              user_email: ord.buyer_email || req.user.email,
+              user_name: req.user.name,
+              images: product?.website_meta?.images || [],
+              delivery_process: 'auto',
+              delivery_time: 'Instant',
+              support_username: 'qxdbotowner',
+            }
+          });
+        }
+      }
+    }
+
     if (!sale) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
     // Ensure authorized user (or admin)
-    if (sale.user_id !== req.user.id && req.user.role !== 'admin') {
+    if (sale.user_id !== req.user.id && sale.user_id !== 'guest' && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Unauthorized to view this order' });
     }
 
