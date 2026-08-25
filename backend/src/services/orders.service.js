@@ -213,11 +213,6 @@ export const getWebsiteOrders = async () => {
   return websiteOrders;
 };
 
-  // Sort recent first
-  websiteOrders.sort((a, b) => b.purchase_ts - a.purchase_ts);
-  return websiteOrders;
-};
-
 /**
  * Filter, search, and paginate website orders
  */
