@@ -45,26 +45,27 @@ export async function runFullSiteAudit() {
     addCheck('Public Storefront Gateways', 'PASS', `${publicMethods.length} gateways available to buyers`);
 
     // 4. Ensure Dev Test Product Exists with Isolated Stock
-    let testProd = await Product.findOne({ slug: 'dev-test-item' });
+    let testProd = await Product.findById('p-devtest-item');
     if (!testProd) {
       testProd = await Product.create({
+        _id: 'p-devtest-item',
         name: '🧪 Test Product (Dev Only)',
         slug: 'dev-test-item',
         description: 'Isolated test product used exclusively for automated test orders. Real stock is unaffected.',
         category: 'testing',
-        variants: [{
-          id: 'var-test-instant',
-          name: 'Test Plan (₹1)',
-          price: 1,
-          pool_id: 'pool_test',
-          duration: 30,
-          delivery_method: 'instant',
-        }],
+        variants: {
+          'var-test-instant': {
+            name: 'Test Plan (₹1)',
+            price: 1,
+            pool_id: 'pool_test',
+            duration: 30,
+          }
+        },
         stock_pools: {
-          pool_test: ['test_item_account_1@quantumxd.store:pass123', 'test_item_account_2@quantumxd.store:pass456']
+          pool_test: ['test_item_account_1@quantumxd.store:pass123', 'test_item_account_2@quantumxd.store:pass456', 'test_item_account_3@quantumxd.store:pass789']
         },
         is_active: true,
-        website_meta: { is_listed: true }
+        website_meta: { is_published: true, is_listed: true, images: ['https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=800'] }
       });
       addCheck('Dev Test Product', 'PASS', 'Created dedicated test product (ID: ' + testProd._id.toString() + ')');
     } else {
