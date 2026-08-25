@@ -13,6 +13,7 @@ export default function ProductCard({ product: p }) {
     e.stopPropagation();
     addItem({
       product_id: p.id,
+      variant_id: p.variants?.[0]?.id || p.id,
       title: p.website_meta?.title || p.title || p.name,
       price: p.min_price || 0,
       seller_name: 'QuantumXD Store',

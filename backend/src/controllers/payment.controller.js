@@ -60,8 +60,8 @@ export const walletPurchase = async (req, res, next) => {
       quantity = quantity || items[0].quantity || 1;
     }
 
-    if (!product_id || !variant_id) {
-      return res.status(400).json({ error: 'product_id and variant_id are required' });
+    if (!product_id) {
+      return res.status(400).json({ error: 'product_id is required' });
     }
     const qty = Math.max(1, parseInt(quantity));
 
@@ -71,8 +71,12 @@ export const walletPurchase = async (req, res, next) => {
       return res.status(404).json({ error: 'Product not found or inactive' });
     }
 
-    // 2. Find variant
-    const variant = product.variants.find((v) => v.id === variant_id);
+    // 2. Find variant (fallback to first variant if not explicitly provided)
+    let variant = product.variants?.find((v) => v.id === variant_id);
+    if (!variant && product.variants && product.variants.length > 0) {
+      variant = product.variants[0];
+      variant_id = variant.id;
+    }
     if (!variant) return res.status(404).json({ error: 'Variant not found' });
 
     const poolId = variant.pool_id;
@@ -292,8 +296,8 @@ export const initiatePayment = async (req, res, next) => {
       return walletPurchase(req, res, next);
     }
 
-    if (!product_id || !variant_id || !payment_method) {
-      return res.status(400).json({ error: 'product_id, variant_id, and payment_method required' });
+    if (!product_id || !payment_method) {
+      return res.status(400).json({ error: 'product_id and payment_method required' });
     }
     if (!['cashfree', 'nowpayments', 'binance', 'upi', 'upi_qr', 'wallet'].includes(payment_method)) {
       return res.status(400).json({ error: 'Invalid payment method' });
@@ -314,7 +318,11 @@ export const initiatePayment = async (req, res, next) => {
     const product = await getProductById(product_id);
     if (!product || !product.is_active) return res.status(404).json({ error: 'Product not found' });
 
-    const variant = product.variants.find((v) => v.id === variant_id);
+    let variant = product.variants?.find((v) => v.id === variant_id);
+    if (!variant && product.variants && product.variants.length > 0) {
+      variant = product.variants[0];
+      variant_id = variant.id;
+    }
     if (!variant) return res.status(404).json({ error: 'Variant not found' });
 
     const unitPrice = variant.price;
