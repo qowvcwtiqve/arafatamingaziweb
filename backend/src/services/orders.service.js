@@ -15,11 +15,13 @@ import { query } from '../config/db.js';
 export const fulfillWebsitePreorders = async (productId, poolId, stockItems) => {
   if (!stockItems || stockItems.length === 0) return [];
 
-  // Find pending Pre-Order website sales for this product+pool, FIFO (oldest first)
+  // Find pending Pre-Order website sales for this product, FIFO (oldest first)
   const pendingOrders = await Sale.find({
-    product_id: productId,
-    pool_id: poolId,
-    status: 'Pre-Order',
+    $and: [
+      { $or: [{ product_id: productId }, { product_id: String(productId) }] },
+      { $or: [{ pool_id: poolId }, { pool_id: 'default' }, { pool_id: 'main' }, { pool_id: { $exists: false } }, { pool_id: null }] },
+      { status: { $regex: /^pre[- ]?order$/i } }
+    ]
   }).sort({ purchase_ts: 1 }).lean(); // ASC = oldest first (FIFO)
 
   if (!pendingOrders.length) return stockItems; // No pre-orders, return all stock to pool
@@ -46,6 +48,12 @@ export const fulfillWebsitePreorders = async (productId, poolId, stockItems) => 
       }
     );
 
+    // Also update SQL orders table
+    await query(
+      "UPDATE orders SET payment_status='paid', order_status='Delivered', delivered_items=$1 WHERE id=$2 OR order_number=$2 OR sale_id=$2",
+      [credential, order.sale_id]
+    ).catch(() => {});
+
     fulfilledCount++;
     console.log(`[Pre-Order] Auto-fulfilled ${order.sale_id} → credential: ${credential.substring(0, 30)}...`);
   }
@@ -59,11 +67,11 @@ export const fulfillWebsitePreorders = async (productId, poolId, stockItems) => 
 
 /**
  * Background checker: Checks if any pending Pre-Orders on the website
- * can be fulfilled from current stock in MongoDB (e.g. if stock was added directly from the Bot).
+ * can be fulfilled from current stock in MongoDB (e.g. if stock was added directly from the Bot or Admin).
  */
 export const syncAndFulfillPreordersFromBotStock = async () => {
   try {
-    const pendingPreorders = await Sale.find({ status: 'Pre-Order' })
+    const pendingPreorders = await Sale.find({ status: { $regex: /^pre[- ]?order$/i } })
       .sort({ purchase_ts: 1 })
       .lean();
 
@@ -73,7 +81,7 @@ export const syncAndFulfillPreordersFromBotStock = async () => {
       const prod = await Product.findById(order.product_id);
       if (!prod) continue;
 
-      const poolStock = (prod.stock_pools || {})[order.pool_id] || [];
+      const poolStock = (prod.stock_pools || {})[order.pool_id] || (prod.stock_pools || {})['main'] || (prod.stock_pools || {})['default'] || [];
       if (Array.isArray(poolStock) && poolStock.length > 0) {
         // Take first available credential
         const credential = poolStock[0];
@@ -93,10 +101,19 @@ export const syncAndFulfillPreordersFromBotStock = async () => {
           }
         );
 
-        // 2. Remove consumed credential from MongoDB Product pool
-        await Product.findByIdAndUpdate(order.product_id, {
-          $set: { [`stock_pools.${order.pool_id}`]: remainingPoolStock }
-        });
+        // 2. Update SQL orders table
+        await query(
+          "UPDATE orders SET payment_status='paid', order_status='Delivered', delivered_items=$1 WHERE id=$2 OR order_number=$2 OR sale_id=$2",
+          [credential, order.sale_id]
+        ).catch(() => {});
+
+        // 3. Remove consumed credential from MongoDB Product pool
+        const targetPoolId = (prod.stock_pools || {})[order.pool_id] ? order.pool_id : Object.keys(prod.stock_pools || {})[0];
+        if (targetPoolId) {
+          await Product.findByIdAndUpdate(order.product_id, {
+            $set: { [`stock_pools.${targetPoolId}`]: remainingPoolStock }
+          });
+        }
 
         console.log(`[BotSync Pre-Order] Auto-fulfilled order ${order.sale_id} from Bot Stock Pool (${order.pool_id}). Remaining pool stock: ${remainingPoolStock.length}`);
       }
@@ -105,9 +122,6 @@ export const syncAndFulfillPreordersFromBotStock = async () => {
     console.error('Error in syncAndFulfillPreordersFromBotStock:', err.message);
   }
 };
-
-
-
 
 /**
  * Fetch all Website orders from MongoDB (website_sales) + Postgres (orders)
@@ -184,8 +198,8 @@ export const getWebsiteOrders = async () => {
       price: parseFloat(o.total_amount || 0),
       total_amount: parseFloat(o.total_amount || 0),
       quantity: 1,
-      status: o.payment_status === 'paid' ? 'Delivered' : (o.payment_status === 'pending' ? 'Pending' : 'Canceled'),
-      credentials: o.credentials || '',
+      status: o.order_status || (o.payment_status === 'paid' ? 'Delivered' : (o.payment_status === 'pending' ? 'Pending' : 'Canceled')),
+      credentials: o.credentials || o.delivered_items || '',
       purchase_ts: o.created_at ? new Date(o.created_at).getTime() : Date.now(),
       created_at: o.created_at || new Date().toISOString(),
       end_ts: null,
@@ -193,6 +207,11 @@ export const getWebsiteOrders = async () => {
       admin_notes: '',
     });
   }
+
+  // Sort recent first
+  websiteOrders.sort((a, b) => b.purchase_ts - a.purchase_ts);
+  return websiteOrders;
+};
 
   // Sort recent first
   websiteOrders.sort((a, b) => b.purchase_ts - a.purchase_ts);

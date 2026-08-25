@@ -18,6 +18,7 @@ import { connectMongoDB } from './config/mongodb.js';
 // Payment background checkers
 import { processUpiPayments, expireTimedOutOrders } from './services/upi.service.js';
 import { processNowPaymentsOrders } from './services/nowpayments.service.js';
+import { syncAndFulfillPreordersFromBotStock } from './services/orders.service.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -89,10 +90,11 @@ app.listen(PORT, '0.0.0.0', () => {
   const interval = parseInt(process.env.PAYMENT_CHECKER_INTERVAL_MS || 60000);
 
   setInterval(async () => {
-    console.log('[Payment Checker] Running...');
+    console.log('[Payment & Pre-order Checker] Running...');
     await expireTimedOutOrders();
     await processUpiPayments();
     await processNowPaymentsOrders();
+    await syncAndFulfillPreordersFromBotStock();
   }, interval);
 
   console.log(`\n   Payment checker running every ${interval / 1000}s`);
