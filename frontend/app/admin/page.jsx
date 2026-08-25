@@ -640,34 +640,11 @@ export default function AdminPage() {
                           </button>
                           <button
                             className="btn btn--ghost btn--sm"
-                            onClick={() => {
-                              openPrompt('Edit Balance', `Add (+ve) or Deduct (-ve) balance for ${u.name}. Or type 'reset' to set to 0.`, '', 'e.g. 500, -100, reset', async (input) => {
-                                if (!input) return;
-                                let action = 'add';
-                                let amount = parseFloat(input);
-                                
-                                if (input.toLowerCase().trim() === 'reset') {
-                                  action = 'reset';
-                                  amount = 0;
-                                } else if (amount < 0) {
-                                  action = 'deduct';
-                                  amount = Math.abs(amount);
-                                } else if (isNaN(amount) || amount === 0) {
-                                  return toast.error('Invalid amount');
-                                }
-
-                                try {
-                                  const { data } = await api.put(`/admin/users/${u.id}/balance`, { action, amount });
-                                  setUsers(us => us.map(x => x.id === u.id ? { ...x, balance: data.balance } : x));
-                                  toast.success('Balance updated');
-                                } catch (err) {
-                                  toast.error(err.response?.data?.error || 'Failed to update balance');
-                                }
-                              });
-                            }}
+                            onClick={() => setSelectedUserId(u.id)}
+                            style={{ gap: 5 }}
                           >
-                            <span className="icon icon--sm">account_balance_wallet</span>
-                            Balance
+                            <span className="icon icon--sm icon--accent">account_balance_wallet</span>
+                            Manage Balance
                           </button>
                         </div>
                       </td>
@@ -732,9 +709,24 @@ export default function AdminPage() {
             onAdd={(c) => setCoupons(cs => [c, ...cs])}
             onDelete={handleDeleteCoupon}
           />
-        )}
+      {/* Admin Prompt & Confirm Modal */}
+      {modalConfig && (
+        <AdminModal
+          config={modalConfig}
+          onClose={() => setModalConfig(null)}
+        />
+      )}
 
-      </main>
+      {/* User Detail & Balance Management Modal */}
+      {selectedUserId && (
+        <UserDetailModal
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+          onUserUpdated={(uId, newBal) => {
+            setUsers(us => us.map(x => x.id === uId ? { ...x, balance: newBal } : x));
+          }}
+        />
+      )}
 
       {/* Edit Product Meta Modal */}
       {editProductConfig && (
