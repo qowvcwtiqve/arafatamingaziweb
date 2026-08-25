@@ -306,6 +306,23 @@ export default function Header() {
               />
             </div>
 
+            {/* Mobile Theme Toggle Pill */}
+            <div style={{ marginBottom: 16 }}>
+              <button
+                onClick={toggleTheme}
+                className="btn btn--ghost btn--sm btn--full"
+                style={{ justifyContent: 'space-between', padding: '10px 14px' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span className="icon icon--sm icon--cyan">{theme === 'light' ? 'light_mode' : 'dark_mode'}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>Theme Mode</span>
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'capitalize', color: 'var(--color-cyan)' }}>
+                  {theme === 'light' ? 'Light' : 'Dark'}
+                </span>
+              </button>
+            </div>
+
             {/* Main Links */}
             <div className="mobile-drawer__section-label">MAIN NAVIGATION</div>
             <nav className="mobile-drawer__nav">
