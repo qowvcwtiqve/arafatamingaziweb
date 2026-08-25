@@ -262,29 +262,43 @@ export async function query(sql, params = []) {
   }
 
   // Update user freeze
-  if (lowerSql.startsWith('update users') && lowerSql.includes('is_frozen=not is_frozen')) {
-    const id = params[0];
+  if (lowerSql.startsWith('update users') && lowerSql.includes('is_frozen')) {
+    const id = params[params.length - 1];
     const user = (db.users || []).find(u => u.id === id);
     if (user) {
-      user.is_frozen = !user.is_frozen;
+      if (lowerSql.includes('is_frozen=not is_frozen') || lowerSql.includes('is_frozen = not is_frozen')) {
+        user.is_frozen = !user.is_frozen;
+      } else if (lowerSql.includes('is_frozen=$1') || lowerSql.includes('is_frozen = $1')) {
+        user.is_frozen = Boolean(params[0]);
+      }
+      user.updated_at = new Date().toISOString();
       writeLocalDb(db);
       return { rows: [user] };
     }
     return { rows: [] };
   }
 
-  // Update user balance
-  if (lowerSql.startsWith('update users') && lowerSql.includes('balance=')) {
+  // Update user balance (Add, Deduct, Set, Reset)
+  if (lowerSql.startsWith('update users') && lowerSql.includes('balance')) {
     const id = params[params.length - 1];
     const user = (db.users || []).find(u => u.id === id);
     if (user) {
-      if (lowerSql.includes('balance=0')) {
+      user.balance = parseFloat(user.balance || 0);
+      if (lowerSql.includes('balance=0') || lowerSql.includes('balance = 0')) {
         user.balance = 0;
-      } else if (lowerSql.includes('balance=balance+$1')) {
-        user.balance += parseFloat(params[0]);
-      } else if (lowerSql.includes('balance-$1')) {
-        user.balance = Math.max(0, user.balance - parseFloat(params[0]));
+      } else if (lowerSql.includes('balance=balance+$1') || lowerSql.includes('balance = balance + $1') || lowerSql.includes('balance+$1')) {
+        const val = parseFloat(params[0] || 0);
+        user.balance += val;
+        if (lowerSql.includes('all_time_topup')) {
+          user.all_time_topup = (parseFloat(user.all_time_topup) || 0) + val;
+        }
+      } else if (lowerSql.includes('balance-$1') || lowerSql.includes('balance - $1')) {
+        const val = parseFloat(params[0] || 0);
+        user.balance = Math.max(0, user.balance - val);
+      } else if (lowerSql.includes('balance=$1') || lowerSql.includes('balance = $1')) {
+        user.balance = Math.max(0, parseFloat(params[0] || 0));
       }
+      user.updated_at = new Date().toISOString();
       writeLocalDb(db);
       return { rows: [user] };
     }

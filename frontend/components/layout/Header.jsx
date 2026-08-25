@@ -23,7 +23,7 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
 
   const { items, isOpen, openCart, closeCart } = useCartStore();
-  const { user, logout } = useAuthStore();
+  const { user, logout, refreshUser } = useAuthStore();
   const [theme, setTheme] = useState('dark');
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [categoryLinks, setCategoryLinks] = useState([]);
@@ -32,6 +32,13 @@ export default function Header() {
     setMounted(true);
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
+    
+    // Always fetch fresh balance from server when user is active
+    if (user?.id) {
+      refreshUser();
+      const onFocus = () => refreshUser();
+      window.addEventListener('focus', onFocus);
+    }
     
     const saved = localStorage.getItem('quantumxd-theme');
     if (saved) {
@@ -65,7 +72,7 @@ export default function Header() {
       window.removeEventListener('scroll', onScroll);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, []);
+  }, [user?.id]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';

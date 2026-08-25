@@ -113,23 +113,54 @@ router.put('/users/:id/freeze', async (req, res, next) => {
       return res.status(400).json({ error: 'You cannot freeze your own admin account.' });
     }
     const { rows } = await query(
-      'UPDATE users SET is_frozen=NOT is_frozen, updated_at=NOW() WHERE id=$1 RETURNING id,name,is_frozen',
+      'UPDATE users SET is_frozen=NOT is_frozen, updated_at=NOW() WHERE id=$1 RETURNING id,name,balance,is_frozen',
       [req.params.id]
     );
-    res.json(rows[0]);
+    if (!rows[0]) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({
+      id: rows[0].id,
+      name: rows[0].name,
+      balance: parseFloat(rows[0].balance || 0),
+      is_frozen: Boolean(rows[0].is_frozen)
+    });
   } catch (err) { next(err); }
 });
 
 // PUT /api/admin/users/:id/balance
 router.put('/users/:id/balance', async (req, res, next) => {
   try {
-    const { action, amount } = req.body; // action: 'add' | 'deduct' | 'reset'
+    const { action, amount } = req.body; // action: 'add' | 'deduct' | 'set' | 'reset'
+    const numAmount = Math.abs(parseFloat(amount || 0));
     let sql;
-    if (action === 'add') sql = 'UPDATE users SET balance=balance+$1, updated_at=NOW() WHERE id=$2 RETURNING balance';
-    else if (action === 'deduct') sql = 'UPDATE users SET balance=GREATEST(0,balance-$1), updated_at=NOW() WHERE id=$2 RETURNING balance';
-    else sql = 'UPDATE users SET balance=0, updated_at=NOW() WHERE id=$2 RETURNING balance';
-    const { rows } = await query(sql, action === 'reset' ? [null, req.params.id] : [parseFloat(amount), req.params.id]);
-    res.json(rows[0]);
+    let params;
+
+    if (action === 'add') {
+      sql = 'UPDATE users SET balance=balance+$1, updated_at=NOW() WHERE id=$2 RETURNING id,name,balance,is_frozen';
+      params = [numAmount, req.params.id];
+    } else if (action === 'deduct') {
+      sql = 'UPDATE users SET balance=balance-$1, updated_at=NOW() WHERE id=$2 RETURNING id,name,balance,is_frozen';
+      params = [numAmount, req.params.id];
+    } else if (action === 'set') {
+      sql = 'UPDATE users SET balance=$1, updated_at=NOW() WHERE id=$2 RETURNING id,name,balance,is_frozen';
+      params = [numAmount, req.params.id];
+    } else {
+      // reset
+      sql = 'UPDATE users SET balance=0, updated_at=NOW() WHERE id=$1 RETURNING id,name,balance,is_frozen';
+      params = [req.params.id];
+    }
+
+    const { rows } = await query(sql, params);
+    if (!rows[0]) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({
+      id: rows[0].id,
+      name: rows[0].name,
+      balance: parseFloat(rows[0].balance || 0),
+      is_frozen: Boolean(rows[0].is_frozen)
+    });
   } catch (err) { next(err); }
 });
 
