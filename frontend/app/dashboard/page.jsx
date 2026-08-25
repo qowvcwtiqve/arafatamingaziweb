@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
 import api from '../../lib/api';
@@ -13,7 +13,7 @@ const STATUS_COLORS = {
   expired: 'var(--color-text-faint)'
 };
 
-export default function DashboardPage() {
+function DashboardContent() {
   const router = useRouter();
   const { user, logout, refreshUser, _hasHydrated } = useAuthStore();
   const [mounted, setMounted] = useState(false);
@@ -789,5 +789,19 @@ function WalletTopup({ user, refreshUser }) {
         <span>{loading ? 'Processing Gateway...' : `Proceed to Pay ₹${amount || 0}`}</span>
       </button>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="loading-spinner"></div>
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }

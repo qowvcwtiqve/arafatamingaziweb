@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCartStore } from '../../store/cartStore';
@@ -51,7 +51,7 @@ const DEFAULT_METHODS = [
   },
 ];
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const { items, clearCart } = useCartStore();
   const { user } = useAuthStore();
@@ -708,5 +708,19 @@ export default function CheckoutPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="loading-spinner"></div>
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   );
 }
