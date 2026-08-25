@@ -658,15 +658,37 @@ function ProfileTab({ user, refreshUser }) {
 
 function WalletTopup({ user, refreshUser }) {
   const [amount, setAmount] = useState('500');
-  const [paymentMethod, setPaymentMethod] = useState('cashfree');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [availableMethods, setAvailableMethods] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [manualPayData, setManualPayData] = useState(null);
+  const [manualTxInput, setManualTxInput] = useState('');
+  const [submittingManual, setSubmittingManual] = useState(false);
 
   const presets = ['100', '250', '500', '1000', '2000'];
+
+  useEffect(() => {
+    api.get('/payments/methods')
+      .then(({ data }) => {
+        if (data.methods && data.methods.length > 0) {
+          const filtered = data.methods.filter(m => m.id !== 'wallet');
+          setAvailableMethods(filtered);
+          if (filtered.length > 0) {
+            setPaymentMethod(filtered[0].id);
+          }
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const handleTopup = async () => {
     const num = parseFloat(amount);
     if (!num || num < 10) {
       toast.error('Minimum topup amount is ₹10');
+      return;
+    }
+    if (!paymentMethod) {
+      toast.error('Please select a payment method');
       return;
     }
 
@@ -683,6 +705,8 @@ function WalletTopup({ user, refreshUser }) {
       } else if (res.data.invoice_url) {
         window.open(res.data.invoice_url, '_blank');
         toast.success('Crypto payment page opened!');
+      } else if (res.data.upi_id || res.data.binance_pay_id) {
+        setManualPayData({ ...res.data, method: paymentMethod, amount: num });
       } else if (res.data.balance !== undefined) {
         toast.success(res.data.message || `₹${num} added to wallet!`);
         await refreshUser();
@@ -694,13 +718,36 @@ function WalletTopup({ user, refreshUser }) {
     }
   };
 
+  const handleSubmitManualDeposit = async () => {
+    if (!manualTxInput.trim()) {
+      return toast.error('Please enter your 12-digit UTR or Transaction ID');
+    }
+    setSubmittingManual(true);
+    try {
+      const { data } = await api.post('/users/wallet/submit-manual-deposit', {
+        order_id: manualPayData?.orderId,
+        transaction_id: manualTxInput.trim(),
+        gateway: manualPayData?.method || 'upi',
+        amount: manualPayData?.amount || amount,
+      });
+      toast.success(data.message || 'Deposit proof submitted!');
+      setManualPayData(null);
+      setManualTxInput('');
+      await refreshUser();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to submit deposit');
+    } finally {
+      setSubmittingManual(false);
+    }
+  };
+
   return (
     <div className="dashboard-content-card">
       <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
         Wallet Balance &amp; Deposit
       </h2>
       <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24 }}>
-        Current Balance: <strong style={{ color: 'var(--color-accent)', fontSize: 16 }}>₹{(user?.balance || 0).toFixed(2)}</strong>
+        Current Balance: <strong style={{ color: 'var(--color-accent)', fontSize: 16 }}>₹{parseFloat(user?.balance || 0).toFixed(2)}</strong>
       </p>
 
       {/* Preset Pills */}
@@ -741,43 +788,123 @@ function WalletTopup({ user, refreshUser }) {
       <div style={{ marginBottom: 28 }}>
         <label className="form-label" style={{ fontWeight: 700, marginBottom: 10, display: 'block' }}>Payment Method</label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          
-          <button
-            type="button"
-            onClick={() => setPaymentMethod('cashfree')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px',
-              background: paymentMethod === 'cashfree' ? 'rgba(110, 58, 255, 0.12)' : 'var(--color-surface-2)',
-              border: `1.5px solid ${paymentMethod === 'cashfree' ? 'var(--color-primary)' : 'var(--color-border)'}`,
-              borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left'
-            }}
-          >
-            <span className="icon icon--md icon--cyan">account_balance</span>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>UPI QR &amp; Cards (Instant)</div>
-              <div style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>Google Pay, PhonePe, Paytm, Cards</div>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setPaymentMethod('nowpayments')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px',
-              background: paymentMethod === 'nowpayments' ? 'rgba(110, 58, 255, 0.12)' : 'var(--color-surface-2)',
-              border: `1.5px solid ${paymentMethod === 'nowpayments' ? 'var(--color-primary)' : 'var(--color-border)'}`,
-              borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left'
-            }}
-          >
-            <span className="icon icon--md icon--accent">currency_bitcoin</span>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>Crypto / USDT / BTC</div>
-              <div style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>USDT (TRC20/BEP20), BTC, LTC, SOL</div>
-            </div>
-          </button>
-
+          {availableMethods.map(m => {
+            const isSelected = paymentMethod === m.id;
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setPaymentMethod(m.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px',
+                  background: isSelected ? 'var(--color-surface-2)' : 'var(--color-surface)',
+                  border: `1.5px solid ${isSelected ? (m.color || 'var(--color-primary)') : 'var(--color-border)'}`,
+                  borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left',
+                  boxShadow: isSelected ? `0 0 16px ${m.color ? `${m.color}30` : 'rgba(110, 58, 255, 0.15)'}` : 'none',
+                  transition: 'var(--transition-fast)'
+                }}
+              >
+                <div style={{
+                  width: 40, height: 40, borderRadius: 10,
+                  background: `${m.color || 'var(--color-primary)'}18`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: m.color || 'var(--color-primary)', flexShrink: 0
+                }}>
+                  <span className="icon icon--md icon--filled">{m.icon || 'payments'}</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--color-text)' }}>
+                    {m.label || m.title}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>
+                    {m.desc || m.instructions}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
+
+      {/* Manual UPI / Binance Instructions Modal / Box */}
+      {manualPayData && (
+        <div style={{
+          background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-lg)', padding: 20, marginBottom: 24, animation: 'fadeIn 0.2s ease'
+        }}>
+          <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="icon icon--sm icon--cyan">qr_code_2</span>
+            Complete Your Payment of ₹{manualPayData.amount}
+          </h4>
+
+          {manualPayData.upi_id && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>UPI ID:</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,0.2)', padding: '8px 12px', borderRadius: 8, fontFamily: 'monospace', fontWeight: 700 }}>
+                <span>{manualPayData.upi_id}</span>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm"
+                  onClick={() => { navigator.clipboard.writeText(manualPayData.upi_id); toast.success('UPI ID copied!'); }}
+                  style={{ padding: '2px 8px', fontSize: 11 }}
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          )}
+
+          {manualPayData.binance_pay_id && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>Binance Pay ID:</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,0.2)', padding: '8px 12px', borderRadius: 8, fontFamily: 'monospace', fontWeight: 700 }}>
+                <span>{manualPayData.binance_pay_id}</span>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm"
+                  onClick={() => { navigator.clipboard.writeText(manualPayData.binance_pay_id); toast.success('Binance Pay ID copied!'); }}
+                  style={{ padding: '2px 8px', fontSize: 11 }}
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginBottom: 14 }}>
+            <label className="form-label" style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, display: 'block' }}>
+              Enter 12-Digit UTR / Transaction ID:
+            </label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="e.g. 329482910482"
+              value={manualTxInput}
+              onChange={e => setManualTxInput(e.target.value)}
+              style={{ fontFamily: 'monospace', fontWeight: 700 }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={handleSubmitManualDeposit}
+              disabled={submittingManual}
+              style={{ flex: 1 }}
+            >
+              {submittingManual ? 'Submitting...' : 'Submit UTR / Proof'}
+            </button>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => setManualPayData(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <button
         className="btn btn--primary btn--full btn--lg"

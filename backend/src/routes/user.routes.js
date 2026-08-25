@@ -120,7 +120,7 @@ router.put('/profile', protect, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// POST /api/users/wallet/topup — Initiate Cashfree / Crypto topup
+// POST /api/users/wallet/topup — Initiate Cashfree / Crypto / UPI / Binance topup
 router.post('/wallet/topup', protect, async (req, res, next) => {
   try {
     const { amount, payment_method } = req.body;
@@ -128,6 +128,9 @@ router.post('/wallet/topup', protect, async (req, res, next) => {
     if (!numAmount || numAmount <= 0) {
       return res.status(400).json({ error: 'Please enter a valid positive amount' });
     }
+
+    const { getPaymentSettings } = await import('../services/paymentSettings.service.js');
+    const settings = await getPaymentSettings();
 
     if (payment_method === 'cashfree') {
       const { createCashfreeOrder } = await import('../services/cashfree.service.js');
@@ -160,12 +163,60 @@ router.post('/wallet/topup', protect, async (req, res, next) => {
       });
     }
 
-    // Direct simulation credit for testing
+    if (payment_method === 'upi_qr' || payment_method === 'upi') {
+      const upiConfig = settings.upi_qr || {};
+      const orderId = `TOPUP_UPI_${Date.now()}_${String(req.user.id).slice(0, 6)}`;
+      return res.json({
+        success: true,
+        orderId,
+        upi_id: upiConfig.upi_id || 'quantumxd@upi',
+        merchant_name: upiConfig.merchant_name || 'QuantumXD Store',
+        qr_image_url: upiConfig.qr_image_url || '/upi-qr.png',
+        amount: numAmount,
+        instructions: upiConfig.instructions || 'Pay to UPI ID or QR, then submit your 12-digit UTR.'
+      });
+    }
+
+    if (payment_method === 'binance') {
+      const binanceConfig = settings.binance || {};
+      const orderId = `TOPUP_BINANCE_${Date.now()}_${String(req.user.id).slice(0, 6)}`;
+      return res.json({
+        success: true,
+        orderId,
+        binance_pay_id: binanceConfig.binance_pay_id || '1133813547',
+        amount: numAmount,
+        instructions: binanceConfig.instructions || 'Transfer via Binance Pay ID, then submit your Transaction ID.'
+      });
+    }
+
+    // Direct simulation credit fallback for test
     const { rows } = await query(
       'UPDATE users SET balance = balance + $1, all_time_topup = all_time_topup + $1 WHERE id=$2 RETURNING balance',
       [numAmount, req.user.id]
     );
     res.json({ success: true, balance: parseFloat(rows[0]?.balance || numAmount), message: `₹${numAmount} credited to wallet!` });
+  } catch (err) { next(err); }
+});
+
+// POST /api/users/wallet/submit-manual-deposit
+router.post('/wallet/submit-manual-deposit', protect, async (req, res, next) => {
+  try {
+    const { order_id, transaction_id, gateway, amount } = req.body;
+    if (!transaction_id || !String(transaction_id).trim()) {
+      return res.status(400).json({ error: 'Please enter your Transaction / UTR ID' });
+    }
+
+    const depId = `dep-${Date.now()}`;
+    await query(
+      `INSERT INTO deposits (id, user_id, amount, currency, gateway, transaction_id, status, created_at)
+       VALUES ($1, $2, $3, 'INR', $4, $5, 'pending', NOW())`,
+      [depId, req.user.id, parseFloat(amount || 0), gateway || 'upi', String(transaction_id).trim()]
+    );
+
+    res.json({
+      success: true,
+      message: 'Deposit proof submitted! It will be verified and credited to your wallet shortly.'
+    });
   } catch (err) { next(err); }
 });
 
