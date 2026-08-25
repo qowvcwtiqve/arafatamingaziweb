@@ -220,6 +220,18 @@ export function formatProductForAPI(p, full = false) {
     const poolId = v.pool_id;
     const poolStock = stockPools[poolId] || [];
     const isInfinite = infinitePools[poolId] || false;
+
+    // 1. Variant website meta
+    const varMeta = websiteMeta.variants?.[vid] || {};
+
+    // 2. Rules priority: variant-specific → pool-level → global
+    const rules =
+      varMeta.rules ||
+      (poolId ? poolRules[poolId] : '') ||
+      p.rules ||
+      '';
+
+    // 3. Preorder check
     const isPreorder = Boolean(
       preorderPools[poolId] ||
       varMeta.is_preorder ||
@@ -228,11 +240,23 @@ export function formatProductForAPI(p, full = false) {
       (p.name && /pre[- ]?order/i.test(p.name))
     );
 
-    const deliveryMethod = isPreorder
-      ? 'preorder'
-      : (varMeta.delivery_method || p.delivery_process || 'auto');
+    // 4. Delivery method: prioritize bot delivery_process / varMeta
+    let deliveryMethod = 'auto';
+    if (isPreorder) {
+      deliveryMethod = 'preorder';
+    } else if (varMeta.delivery_method) {
+      deliveryMethod = varMeta.delivery_method;
+    } else if (p.delivery_process) {
+      deliveryMethod = String(p.delivery_process).toLowerCase().includes('manual') ? 'manual' : 'auto';
+    }
 
-    const deliveryTime = varMeta.delivery_time || p.delivery_time || (isPreorder ? 'Release Date / On Queue' : deliveryMethod === 'manual' ? '15 - 60 Minutes' : 'Instant (10-30s)');
+    // 5. Delivery time: prioritize bot delivery_time / varMeta
+    const deliveryTime =
+      varMeta.delivery_time ||
+      p.delivery_time ||
+      (isPreorder ? 'Release Date / On Queue' : deliveryMethod === 'manual' ? '15 - 60 Minutes' : 'Instant');
+
+    const stockCount = isInfinite ? 9999 : poolStock.length;
 
     return {
       id: vid,
@@ -269,6 +293,11 @@ export function formatProductForAPI(p, full = false) {
   const displayTitle = websiteMeta.title || p.name;
   const slug = generateProductSlug(displayTitle, p._id);
 
+  const productDeliveryProcess = isPreorderProduct
+    ? 'preorder'
+    : (p.delivery_process || (variantList[0]?.delivery_method) || 'auto');
+  const productDeliveryTime = p.delivery_time || (variantList[0]?.delivery_time) || (isPreorderProduct ? 'Release Date / On Queue' : 'Instant');
+
   return {
     id: p._id,
     slug,
@@ -283,8 +312,8 @@ export function formatProductForAPI(p, full = false) {
     is_published: websiteMeta.is_published !== undefined ? websiteMeta.is_published : true,
     compare_price: variantList[0]?.compare_price || websiteMeta.compare_price || null,
     category_id: p.category_id || null,
-    delivery_process: isPreorderProduct ? 'preorder' : (p.delivery_process || 'auto'),
-    delivery_time: p.delivery_time || (isPreorderProduct ? 'Release Date / On Queue' : 'Instant (10-30s)'),
+    delivery_process: productDeliveryProcess,
+    delivery_time: productDeliveryTime,
     is_active: p.is_active || false,
     min_price: minPrice,
     max_price: maxPrice,
