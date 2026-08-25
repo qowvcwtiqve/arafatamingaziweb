@@ -46,10 +46,16 @@ export async function resetAllOrdersAndUsersExceptAdmin() {
       { _id: 'p-devtest-item' },
       { slug: 'dev-test-item' },
       { slug: 'test-product-dev' },
+      { slug: /test/i },
+      { name: /test product|dev only/i },
       { category: 'testing' }
     ]
   });
   console.log(`✅ Cleaned test products from catalog: ${prodResult.deletedCount} removed.`);
+
+  // 7. Force touch bot last modified so Telegram Bot flushes its cache immediately
+  const { touchBotLastModified } = await import('./services/botdb.service.js');
+  await touchBotLastModified();
 
   console.log('--- FULL RESET FINISHED SUCCESSFULLY ---');
 }

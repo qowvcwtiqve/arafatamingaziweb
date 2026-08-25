@@ -471,7 +471,12 @@ export const touchBotLastModified = async () => {
     const now = Date.now() / 1000;
     await getCollection('system').updateOne(
       { _id: 'last_modified' },
-      { $set: { time: now } },
+      { $set: { time: now, timestamp: now, value: now, updated_at: now } },
+      { upsert: true }
+    );
+    await getCollection('system').updateOne(
+      { key: 'last_modified' },
+      { $set: { time: now, timestamp: now, value: now, updated_at: now } },
       { upsert: true }
     );
     console.log(`[BotSync] Updated system.last_modified timestamp to ${now}`);
