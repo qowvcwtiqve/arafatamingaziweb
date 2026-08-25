@@ -709,6 +709,10 @@ export default function AdminPage() {
             onAdd={(c) => setCoupons(cs => [c, ...cs])}
             onDelete={handleDeleteCoupon}
           />
+        )}
+
+      </main>
+
       {/* Admin Prompt & Confirm Modal */}
       {modalConfig && (
         <AdminModal
