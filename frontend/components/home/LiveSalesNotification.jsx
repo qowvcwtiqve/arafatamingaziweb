@@ -1,41 +1,95 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import api from '../../lib/api';
 
-const RECENT_SALES = [
-  { name: 'Rahul S.', city: 'Mumbai', product: 'Canva Pro Lifetime', time: '14s ago' },
-  { name: 'Aman V.', city: 'Delhi', product: 'Adobe Creative Cloud', time: '42s ago' },
-  { name: 'Vikram P.', city: 'Ahmedabad', product: 'ChatGPT Plus Account', time: '1m ago' },
-  { name: 'Priya N.', city: 'Bangalore', product: 'Netflix Premium 4K UHD', time: '2m ago' },
-  { name: 'Devendra S.', city: 'Jaipur', product: 'NordVPN 2-Year Plan', time: '3m ago' },
-  { name: 'Rohan G.', city: 'Pune', product: 'Spotify Premium Family', time: '4m ago' },
-  { name: 'Ananya D.', city: 'Kolkata', product: 'MS Office 365 Pro Plus', time: '5m ago' },
+const FIRST_NAMES = [
+  'Rahul', 'Aman', 'Vikram', 'Priya', 'Devendra', 'Rohan', 'Ananya', 'Sameer',
+  'Aditya', 'Neha', 'Siddharth', 'Kunal', 'Pooja', 'Abhishek', 'Gaurav', 'Kartik',
+  'Rishi', 'Sneha', 'Deepak', 'Manish', 'Harsh', 'Arjun', 'Kabir', 'Tanmay', 'Alok', 'Yash', 'Saurabh'
 ];
 
+const LAST_INITIALS = ['S.', 'V.', 'P.', 'N.', 'K.', 'R.', 'G.', 'D.', 'M.', 'T.', 'B.', 'J.', 'A.', 'C.'];
+
+const CITIES = [
+  'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Ahmedabad', 'Pune', 'Kolkata',
+  'Jaipur', 'Lucknow', 'Indore', 'Chandigarh', 'Surat', 'Bhopal', 'Nagpur', 'Noida', 'Gurgaon'
+];
+
+const TIME_AGO = ['12s ago', '25s ago', '42s ago', '1m ago', '2m ago', '3m ago', '4m ago'];
+
 export default function LiveSalesNotification() {
-  const [saleIndex, setSaleIndex] = useState(0);
+  const [currentSale, setCurrentSale] = useState(null);
   const [visible, setVisible] = useState(false);
+  const inStockProductsRef = useRef([]);
 
   useEffect(() => {
-    // Initial delay before first popup
-    const initialTimer = setTimeout(() => {
-      setVisible(true);
-    }, 3000);
+    // 1. Fetch real in-stock products from the store database
+    api.get('/products?limit=50')
+      .then(({ data }) => {
+        const prods = data.products || [];
+        // Only keep products that are currently in stock
+        const inStock = prods.filter(p => {
+          if (p.in_stock === false) return false;
+          if (p.total_stock === 0) return false;
+          return true;
+        });
+        if (inStock.length > 0) {
+          inStockProductsRef.current = inStock;
+        }
+      })
+      .catch(() => {});
 
-    const interval = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setSaleIndex(prev => (prev + 1) % RECENT_SALES.length);
+    // Generate random sale data
+    const generateNewSale = () => {
+      const prods = inStockProductsRef.current;
+      if (!prods.length) return null;
+
+      const randomProd = prods[Math.floor(Math.random() * prods.length)];
+      const randomName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+      const randomInit = LAST_INITIALS[Math.floor(Math.random() * LAST_INITIALS.length)];
+      const randomCity = CITIES[Math.floor(Math.random() * CITIES.length)];
+      const randomTime = TIME_AGO[Math.floor(Math.random() * TIME_AGO.length)];
+
+      return {
+        name: `${randomName} ${randomInit}`,
+        city: randomCity,
+        product: randomProd.title || randomProd.name,
+        time: randomTime
+      };
+    };
+
+    let timerId = null;
+    let hideTimerId = null;
+
+    const triggerPopup = () => {
+      const sale = generateNewSale();
+      if (sale) {
+        setCurrentSale(sale);
         setVisible(true);
-      }, 800);
-    }, 7000);
+
+        // Show for 4.5 seconds then fade out
+        hideTimerId = setTimeout(() => {
+          setVisible(false);
+          // Wait 18-26 seconds before showing next notification (realistic slow pace)
+          const nextInterval = 18000 + Math.random() * 8000;
+          timerId = setTimeout(triggerPopup, nextInterval);
+        }, 4500);
+      } else {
+        // Retry after a short moment if products not loaded yet
+        timerId = setTimeout(triggerPopup, 5000);
+      }
+    };
+
+    // First alert appears after 8 seconds of browsing
+    timerId = setTimeout(triggerPopup, 8000);
 
     return () => {
-      clearTimeout(initialTimer);
-      clearInterval(interval);
+      if (timerId) clearTimeout(timerId);
+      if (hideTimerId) clearTimeout(hideTimerId);
     };
   }, []);
 
-  const current = RECENT_SALES[saleIndex];
+  if (!currentSale) return null;
 
   return (
     <div className={`live-sales-badge ${visible ? 'is-visible' : ''}`}>
@@ -80,6 +134,7 @@ export default function LiveSalesNotification() {
           display: flex;
           flex-direction: column;
           gap: 2px;
+          min-width: 0;
         }
         .buyer-line {
           font-size: 11.5px;
@@ -87,6 +142,9 @@ export default function LiveSalesNotification() {
           display: flex;
           align-items: center;
           gap: 6px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .product-line {
           font-size: 13px;
@@ -111,10 +169,10 @@ export default function LiveSalesNotification() {
       </div>
       <div className="content-box">
         <div className="buyer-line">
-          <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{current.name}</span> from {current.city} • <span style={{ color: 'var(--color-cyan)' }}>{current.time}</span>
+          <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{currentSale.name}</span> from {currentSale.city} • <span style={{ color: 'var(--color-cyan)' }}>{currentSale.time}</span>
         </div>
         <div className="product-line">
-          Purchased {current.product}
+          Purchased {currentSale.product}
         </div>
       </div>
     </div>
