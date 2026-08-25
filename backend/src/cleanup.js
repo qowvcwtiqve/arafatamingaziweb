@@ -7,80 +7,58 @@ import Product from './models/product.model.js';
 
 dotenv.config();
 
-export async function cleanupTestData() {
-  console.log('--- STARTING CLEANUP OF TEST ORDERS & USERS ---');
+export async function resetAllOrdersAndUsersExceptAdmin() {
+  console.log('--- FULL RESET OF ALL ORDERS, DEPOSITS & NON-ADMIN USERS ---');
   await connectMongoDB();
 
   const db = readLocalDb();
 
-  // 1. Inspect existing users
-  const keepEmails = ['quantumxd11@gmail.com', 'ashiqulthander@gmail.com', 'admin@quantumxd.store'];
-  const testUsersFilter = (u) => {
-    const isKeep = keepEmails.includes(u.email?.toLowerCase()) || u.role === 'admin';
-    const isTest = u.email?.includes('test') || u.email?.includes('demo') || u.email?.includes('audit') || u.name?.toLowerCase().includes('test') || u.name?.toLowerCase().includes('demo');
-    return isTest && !isKeep;
-  };
+  // 1. Filter Users: Keep ONLY admins
+  const admins = (db.users || []).filter(u => u.role === 'admin' || u.email?.toLowerCase() === 'quantumxd11@gmail.com');
+  const removedUsersCount = (db.users || []).length - admins.length;
+  console.log(`Keeping ${admins.length} Admin User(s):`, admins.map(a => `${a.name} (${a.email})`));
+  console.log(`Removing ${removedUsersCount} Non-Admin User(s).`);
+  
+  db.users = admins;
 
-  const usersToDelete = (db.users || []).filter(testUsersFilter);
-  const userIdsToDelete = usersToDelete.map(u => u.id);
-  console.log(`Found ${usersToDelete.length} test users to delete:`, usersToDelete.map(u => `${u.name} (${u.email})`));
+  // 2. Clear ALL Orders & Order Items
+  const orderCount = (db.orders || []).length;
+  db.orders = [];
+  db.order_items = [];
+  console.log(`Cleared ${orderCount} total orders and all order items.`);
 
-  db.users = (db.users || []).filter(u => !userIdsToDelete.includes(u.id));
+  // 3. Clear ALL Deposits
+  const depositCount = (db.deposits || []).length;
+  db.deposits = [];
+  console.log(`Cleared ${depositCount} total deposits.`);
 
-  // 2. Inspect existing orders
-  const testOrderFilter = (o) => {
-    const isTest = o.id?.startsWith('AUDIT_') || o.id?.startsWith('TEST_') || o.order_number?.startsWith('QXDTEST') || o.order_number?.startsWith('QXDAUDIT') || o.buyer_email?.includes('test') || o.buyer_email?.includes('audit') || o.buyer_email?.includes('demo') || userIdsToDelete.includes(o.buyer_id);
-    return isTest;
-  };
-
-  const ordersToDelete = (db.orders || []).filter(testOrderFilter);
-  const orderIdsToDelete = ordersToDelete.map(o => o.id);
-  console.log(`Found ${ordersToDelete.length} test orders to delete:`, orderIdsToDelete);
-
-  db.orders = (db.orders || []).filter(o => !orderIdsToDelete.includes(o.id));
-  db.order_items = (db.order_items || []).filter(item => !orderIdsToDelete.includes(item.order_id));
-
-  // 3. Inspect existing deposits
-  const testDepositFilter = (d) => {
-    return d.user_email?.includes('test') || d.user_email?.includes('demo') || d.user_email?.includes('audit') || userIdsToDelete.includes(d.user_id);
-  };
-  const depositsToDelete = (db.deposits || []).filter(testDepositFilter);
-  console.log(`Found ${depositsToDelete.length} test deposits to delete`);
-  db.deposits = (db.deposits || []).filter(d => !testDepositFilter(d));
-
-  // Save cleaned local DB
+  // 4. Save Local SQL Database
   writeLocalDb(db);
-  console.log('✅ Local SQL DB cleaned successfully.');
+  console.log('✅ Local SQL database reset complete.');
 
-  // 4. Clean MongoDB sales and test product
-  const deletedSales = await Sale.deleteMany({
-    $or: [
-      { sale_id: { $regex: /AUDIT|TEST/i } },
-      { user_email: { $regex: /test|audit|demo/i } },
-      { user_id: { $in: userIdsToDelete } }
-    ]
-  });
-  console.log(`✅ MongoDB Website Sales: Deleted ${deletedSales.deletedCount} test sale records.`);
+  // 5. Clear MongoDB Website Sales
+  const salesResult = await Sale.deleteMany({});
+  console.log(`✅ MongoDB Website Sales: Cleared ${salesResult.deletedCount} sale records.`);
 
-  // Clean test product
-  const deletedProd = await Product.deleteOne({
+  // 6. Remove test products if any
+  const prodResult = await Product.deleteMany({
     $or: [
       { _id: 'p-devtest-item' },
       { slug: 'dev-test-item' },
-      { slug: 'test-product-dev' }
+      { slug: 'test-product-dev' },
+      { category: 'testing' }
     ]
   });
-  console.log(`✅ MongoDB Test Product cleaned: ${deletedProd.deletedCount} removed.`);
+  console.log(`✅ Cleaned test products from catalog: ${prodResult.deletedCount} removed.`);
 
-  console.log('--- CLEANUP COMPLETED ---');
+  console.log('--- FULL RESET FINISHED SUCCESSFULLY ---');
 }
 
 if (process.argv[1]?.endsWith('cleanup.js')) {
-  cleanupTestData().then(() => {
-    console.log('Finished.');
+  resetAllOrdersAndUsersExceptAdmin().then(() => {
     process.exit(0);
   }).catch(err => {
-    console.error('Cleanup error:', err);
+    console.error('Reset error:', err);
     process.exit(1);
   });
 }
