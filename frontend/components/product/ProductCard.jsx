@@ -52,7 +52,7 @@ export default function ProductCard({ product: p }) {
   const soldCount = 120 + (charCodeSum % 380);
 
   return (
-    <Link href={`/products/${p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+    <Link href={`/products/${p.slug || p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
       <div className="product-card">
         {/* 1. Visual Graphic Banner (1:1 Square Ratio) */}
         <div

@@ -13,6 +13,58 @@ import WebsiteProduct from '../models/websiteProduct.model.js';
 // ── Get the native MongoDB driver collection for direct low-level ops ─────────
 const getCollection = (name) => mongoose.connection.collection(name);
 
+/**
+ * Generate a clean, SEO-friendly human-readable slug from product name and ID
+ * Example: "Netflix 4K (1 Month)", "p-cd345e" -> "netflix-4k-1-month-p-cd345e"
+ */
+export function generateProductSlug(name, id) {
+  const clean = (name || 'product')
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+  return clean ? `${clean}-${id}` : `${id}`;
+}
+
+export function formatWebProduct(webProd) {
+  const idStr = webProd._id.toString();
+  return {
+    id: idStr,
+    slug: generateProductSlug(webProd.name, idStr),
+    name: webProd.name,
+    title: webProd.name,
+    description: webProd.description || '',
+    rules: webProd.rules || '',
+    min_price: webProd.price,
+    max_price: webProd.price,
+    images: webProd.images || [],
+    badge: webProd.badge || '',
+    is_featured: webProd.is_featured || false,
+    is_published: webProd.is_published || false,
+    compare_price: webProd.compare_price || null,
+    category_id: webProd.category_id || null,
+    delivery_process: 'manual',
+    delivery_time: webProd.delivery_time || 'Instant',
+    is_website_only: true,
+    total_stock: 9999,
+    in_stock: true,
+    is_preorder: false,
+    variants: [{
+      id: 'v-standard',
+      name: 'Standard',
+      price: webProd.price,
+      duration: 0,
+      stock: 'Available',
+      is_infinite: true,
+      rules: webProd.rules || '',
+      description: webProd.description || '',
+      delivery_time: webProd.delivery_time || 'Instant',
+      delivery_method: 'manual'
+    }],
+    pools: {}
+  };
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PRODUCTS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -45,27 +97,7 @@ export const getActiveProducts = async (opts = {}) => {
   if (featured === 'true' || featured === true) webQuery.is_featured = true;
 
   let rawWebProducts = await WebsiteProduct.find(webQuery).lean();
-  let mappedWebProducts = rawWebProducts.map((p) => ({
-    id: p._id.toString(),
-    name: p.name,
-    title: p.name,
-    description: p.description || '',
-    rules: p.rules || '',
-    min_price: p.price,
-    max_price: p.price,
-    images: p.images || [],
-    badge: p.badge || '',
-    is_featured: p.is_featured || false,
-    is_published: p.is_published || false,
-    compare_price: p.compare_price || null,
-    category_id: p.category_id || null,
-    delivery_process: 'manual',
-    delivery_time: p.delivery_time || 'Instant',
-    total_stock: 9999,
-    in_stock: true,
-    is_preorder: false,
-    is_website_only: true,
-  }));
+  let mappedWebProducts = rawWebProducts.map((p) => formatWebProduct(p));
 
   // 3. Combine
   let combined = [...mappedBotProducts, ...mappedWebProducts];
@@ -125,55 +157,54 @@ export const getActiveProducts = async (opts = {}) => {
 };
 
 /**
- * Get a single product by its bot ID (e.g. "p-abc123").
+ * Get a single product by its ID or SEO slug (e.g. "p-cd345e" or "netflix-premium-4k-p-cd345e").
  */
-export const getProductById = async (productId) => {
-  // Check if it's a website product first (ObjectId length 24)
-  if (productId.length === 24) {
-    const webProd = await WebsiteProduct.findById(productId).lean();
-    if (webProd) {
-      return {
-        id: webProd._id.toString(),
-        name: webProd.name,
-        title: webProd.name,
-        description: webProd.description,
-        rules: webProd.rules || '',
-        min_price: webProd.price,
-        max_price: webProd.price,
-        images: webProd.images || [],
-        badge: webProd.badge || '',
-        is_featured: webProd.is_featured || false,
-        compare_price: webProd.compare_price || null,
-        category_id: webProd.category_id,
-        delivery_process: 'manual',
-        delivery_time: webProd.delivery_time,
-        is_website_only: true,
-        // Mock variants for the frontend standard structure
-        variants: [{
-          id: 'v-standard',
-          name: 'Standard',
-          price: webProd.price,
-          duration: 0,
-          stock: 'Available',
-          is_infinite: true,
-          rules: webProd.rules || '',
-          description: webProd.description || '',
-          delivery_time: webProd.delivery_time || 'Instant',
-          delivery_method: 'manual'
-        }],
-        pools: {}
-      };
-    }
+export const getProductById = async (identifier) => {
+  if (!identifier) return null;
+
+  // 1. Direct ID match for WebsiteProduct (24-char ObjectId)
+  if (identifier.length === 24 && /^[0-9a-fA-F]{24}$/.test(identifier)) {
+    const webProd = await WebsiteProduct.findById(identifier).lean();
+    if (webProd) return formatWebProduct(webProd);
   }
 
-  const p = await Product.findById(productId).lean();
-  if (!p) return null;
-  return formatProductForAPI(p, true); // full=true includes stock pool sizes
+  // 2. Direct ID match for Bot Product (e.g. "p-cd345e")
+  let p = await Product.findById(identifier).lean();
+  if (p) return formatProductForAPI(p, true);
+
+  // 3. Extract bot ID from slug suffix (e.g. "netflix-premium-p-cd345e" -> "p-cd345e")
+  const botIdMatch = identifier.match(/(p-[a-zA-Z0-9_-]+)$/);
+  if (botIdMatch) {
+    p = await Product.findById(botIdMatch[1]).lean();
+    if (p) return formatProductForAPI(p, true);
+  }
+
+  // 4. Extract 24-char hex ObjectId from slug suffix
+  const hexIdMatch = identifier.match(/([0-9a-fA-F]{24})$/);
+  if (hexIdMatch) {
+    const webProd = await WebsiteProduct.findById(hexIdMatch[1]).lean();
+    if (webProd) return formatWebProduct(webProd);
+  }
+
+  // 5. Fallback search by computed slug matching
+  const allProds = await Product.find({ is_active: true }).lean();
+  for (const prod of allProds) {
+    const s = generateProductSlug(prod.website_meta?.title || prod.name, prod._id);
+    if (s === identifier) return formatProductForAPI(prod, true);
+  }
+
+  const allWeb = await WebsiteProduct.find({ is_published: true }).lean();
+  for (const web of allWeb) {
+    const s = generateProductSlug(web.name, web._id.toString());
+    if (s === identifier) return formatWebProduct(web);
+  }
+
+  return null;
 };
 
 /**
  * Format a raw MongoDB product document into a clean API response.
- * Computes: min_price, max_price, total_stock, variants with stock info.
+ * Computes: min_price, max_price, total_stock, variants with stock info, and SEO slug.
  */
 export function formatProductForAPI(p, full = false) {
   const variants = p.variants || {};
@@ -232,11 +263,15 @@ export function formatProductForAPI(p, full = false) {
     : variantList.reduce((sum, v) => sum + (typeof v.stock === 'number' ? v.stock : 0), 0);
   const hasAnyStock = isInfiniteProduct || totalStock > 0 || variantList.some((v) => v.in_stock || v.is_preorder);
 
+  const displayTitle = websiteMeta.title || p.name;
+  const slug = generateProductSlug(displayTitle, p._id);
+
   return {
     id: p._id,
+    slug,
     name: p.name,
     // Website display overrides
-    title: websiteMeta.title || p.name,
+    title: displayTitle,
     description: websiteMeta.description || p.description || '',
     rules: p.rules || '',
     images: websiteMeta.images || [],

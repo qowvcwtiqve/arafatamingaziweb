@@ -552,7 +552,7 @@ export default function ProductsManagementTab({
                           </span>
                         </button>
                         {isPublished && (
-                          <Link href={`/products/${p.id}`} target="_blank" className="btn btn--ghost btn--sm" title="View in store">
+                          <Link href={`/products/${p.slug || p.id}`} target="_blank" className="btn btn--ghost btn--sm" title="View in store">
                             <span className="icon icon--sm">open_in_new</span>
                           </Link>
                         )}
