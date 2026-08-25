@@ -10,31 +10,73 @@ import Product from '../models/product.model.js';
 // GET /api/users/orders — buyer's order history
 router.get('/orders', protect, async (req, res, next) => {
   try {
-    const orders = await Sale.find({ user_id: req.user.id })
+    const sales = await Sale.find({
+      $or: [
+        { user_id: req.user.id },
+        { user_email: req.user.email?.toLowerCase() }
+      ]
+    })
       .sort({ purchase_ts: -1 })
       .limit(50)
       .lean();
 
-    // Map to the format the frontend expects (or similar)
-    const formattedOrders = orders.map(o => ({
-      id: o.sale_id,
-      order_number: o.sale_id,
-      total_amount: o.price * (o.quantity || 1),
-      payment_status: o.status,
-      status: o.status,
-      payment_method: 'wallet',
-      credentials: o.credentials || '',
-      paid_at: new Date(o.purchase_ts * 1000).toISOString(),
-      created_at: new Date(o.purchase_ts * 1000).toISOString(),
-      items: [{
-        title: o.product_name,
-        price: o.price,
-        delivered_content: o.credentials,
-        variant_name: o.variant_name
-      }]
-    }));
+    const { rows: sqlOrders } = await query(
+      'SELECT * FROM orders WHERE buyer_id=$1 OR buyer_email=$2 ORDER BY created_at DESC LIMIT 50',
+      [req.user.id, req.user.email]
+    );
 
-    res.json({ orders: formattedOrders });
+    const saleIds = new Set(sales.map(s => s.sale_id));
+    const mergedOrders = [];
+
+    // 1. Add MongoDB sales
+    sales.forEach(s => {
+      mergedOrders.push({
+        id: s.sale_id,
+        order_number: s.sale_id,
+        total_amount: s.price * (s.quantity || 1),
+        payment_status: s.status,
+        status: s.status,
+        delivery_method: s.delivery_method || 'instant',
+        payment_method: s.payment_method || 'Online',
+        credentials: s.credentials || '',
+        paid_at: new Date(s.purchase_ts * 1000).toISOString(),
+        created_at: new Date(s.purchase_ts * 1000).toISOString(),
+        items: [{
+          title: s.product_name,
+          price: s.price,
+          delivered_content: s.credentials,
+          variant_name: s.variant_name
+        }]
+      });
+    });
+
+    // 2. Add any SQL orders not yet in sales list
+    (sqlOrders || []).forEach(ord => {
+      if (!saleIds.has(ord.id) && !saleIds.has(ord.sale_id)) {
+        mergedOrders.push({
+          id: ord.id,
+          order_number: ord.order_number || ord.id,
+          total_amount: ord.total_amount,
+          payment_status: ord.order_status || (ord.payment_status === 'paid' ? 'Delivered' : ord.payment_status === 'under_review' ? 'Pending' : 'Processing'),
+          status: ord.order_status || (ord.payment_status === 'paid' ? 'Delivered' : ord.payment_status === 'under_review' ? 'Pending' : 'Processing'),
+          payment_method: ord.payment_method || 'Online',
+          credentials: ord.delivered_items || '',
+          paid_at: ord.paid_at || ord.created_at,
+          created_at: ord.created_at || new Date().toISOString(),
+          items: [{
+            title: ord.product_title || 'Digital Product',
+            price: ord.total_amount,
+            delivered_content: ord.delivered_items,
+            variant_name: ord.variant_name || 'Standard'
+          }]
+        });
+      }
+    });
+
+    // Sort newest first
+    mergedOrders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    res.json({ orders: mergedOrders });
   } catch (err) { next(err); }
 });
 
@@ -70,11 +112,11 @@ router.get('/orders/:id', protect, async (req, res, next) => {
             order: {
               order_id: ord.id,
               id: ord.id,
-              order_number: ord.order_number,
+              order_number: ord.order_number || ord.id,
               product_id: ord.meta_product_id,
               product_name: product?.name || 'Digital Product',
               variant_name: 'Standard',
-              status: ord.payment_status === 'paid' ? 'Delivered' : ord.payment_status === 'under_review' ? 'Pending' : 'Processing',
+              status: ord.order_status || (ord.payment_status === 'paid' ? 'Delivered' : ord.payment_status === 'under_review' ? 'Pending' : 'Processing'),
               price: ord.total_amount,
               quantity: ord.meta_qty || 1,
               total_amount: ord.total_amount,
@@ -91,8 +133,8 @@ router.get('/orders/:id', protect, async (req, res, next) => {
               user_email: ord.buyer_email || req.user.email,
               user_name: req.user.name,
               images: product?.website_meta?.images || [],
-              delivery_process: 'auto',
-              delivery_time: 'Instant',
+              delivery_process: product?.delivery_process || 'auto',
+              delivery_time: product?.delivery_time || 'Instant',
               support_username: 'qxdbotowner',
             }
           });

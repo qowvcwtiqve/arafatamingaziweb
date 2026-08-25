@@ -254,17 +254,23 @@ export default function ProductDetailPage() {
     ? Math.round((1 - price / comparePrice) * 100)
     : null;
 
-  const isPreorder = selectedVariant
-    ? Boolean(selectedVariant.is_preorder)
-    : Boolean(product.is_preorder);
+  const isPreorder = Boolean(
+    selectedVariant?.is_preorder ||
+    product.is_preorder ||
+    selectedVariant?.delivery_method === 'preorder' ||
+    /pre[- ]?order/i.test(selectedVariant?.name || '') ||
+    /pre[- ]?order/i.test(product.title || '')
+  );
   const inStock = selectedVariant ? Boolean(selectedVariant.in_stock) : Boolean(product.in_stock);
   const isOutOfStock = !inStock && !isPreorder;
 
-  const deliveryMethodText = (selectedVariant?.delivery_method || product.delivery_process) === 'manual'
-    ? 'Manual Delivery'
-    : 'Automated Instant Delivery';
+  const deliveryMethodText = isPreorder
+    ? 'Pre-Order (Queue Dispatch)'
+    : (selectedVariant?.delivery_method || product.delivery_process) === 'manual'
+    ? 'Manual Delivery (Admin)'
+    : 'Automated Instant Delivery ⚡';
 
-  const deliveryTimeText = selectedVariant?.delivery_time || product.delivery_time || 'Instant';
+  const deliveryTimeText = selectedVariant?.delivery_time || product.delivery_time || (isPreorder ? 'Release Date / On Stock' : (selectedVariant?.delivery_method || product.delivery_process) === 'manual' ? '15 - 60 Minutes' : 'Instant (10-30s)');
 
   const handleAddToCart = () => {
     if (isOutOfStock) {

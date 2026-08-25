@@ -220,18 +220,19 @@ export function formatProductForAPI(p, full = false) {
     const poolId = v.pool_id;
     const poolStock = stockPools[poolId] || [];
     const isInfinite = infinitePools[poolId] || false;
-    const isPreorder = preorderPools[poolId] || false;
-    const stockCount = isInfinite ? 9999 : poolStock.length;
+    const isPreorder = Boolean(
+      preorderPools[poolId] ||
+      varMeta.is_preorder ||
+      varMeta.delivery_method === 'preorder' ||
+      (v.name && /pre[- ]?order/i.test(v.name)) ||
+      (p.name && /pre[- ]?order/i.test(p.name))
+    );
 
-    // Website-meta overrides for this variant
-    const varMeta = websiteMeta.variants?.[vid] || {};
-    
-    // Rules priority: variant-specific → pool-level → global
-    const rules =
-      varMeta.rules ||
-      (poolId ? poolRules[poolId] : '') ||
-      p.rules ||
-      '';
+    const deliveryMethod = isPreorder
+      ? 'preorder'
+      : (varMeta.delivery_method || p.delivery_process || 'auto');
+
+    const deliveryTime = varMeta.delivery_time || p.delivery_time || (isPreorder ? 'Release Date / On Queue' : deliveryMethod === 'manual' ? '15 - 60 Minutes' : 'Instant (10-30s)');
 
     return {
       id: vid,
@@ -247,8 +248,8 @@ export function formatProductForAPI(p, full = false) {
       compare_price: varMeta.compare_price ? parseFloat(varMeta.compare_price) : null,
       description: varMeta.description || '',
       rules,
-      delivery_time: varMeta.delivery_time || p.delivery_time || 'Instant',
-      delivery_method: varMeta.delivery_method || p.delivery_process || 'auto',
+      delivery_time: deliveryTime,
+      delivery_method: deliveryMethod,
     };
   });
 
@@ -262,6 +263,7 @@ export function formatProductForAPI(p, full = false) {
   const totalStock = isInfiniteProduct
     ? 9999
     : variantList.reduce((sum, v) => sum + (typeof v.stock === 'number' ? v.stock : 0), 0);
+  const isPreorderProduct = variantList.some((v) => v.is_preorder) || Object.values(preorderPools || {}).some(Boolean) || (p.name && /pre[- ]?order/i.test(p.name)) || false;
   const hasAnyStock = isInfiniteProduct || totalStock > 0 || variantList.some((v) => v.in_stock || v.is_preorder);
 
   const displayTitle = websiteMeta.title || p.name;
@@ -281,15 +283,15 @@ export function formatProductForAPI(p, full = false) {
     is_published: websiteMeta.is_published !== undefined ? websiteMeta.is_published : true,
     compare_price: variantList[0]?.compare_price || websiteMeta.compare_price || null,
     category_id: p.category_id || null,
-    delivery_process: p.delivery_process || 'auto',
-    delivery_time: p.delivery_time || 'Instant',
+    delivery_process: isPreorderProduct ? 'preorder' : (p.delivery_process || 'auto'),
+    delivery_time: p.delivery_time || (isPreorderProduct ? 'Release Date / On Queue' : 'Instant (10-30s)'),
     is_active: p.is_active || false,
     min_price: minPrice,
     max_price: maxPrice,
     total_stock: totalStock,
     is_infinite: isInfiniteProduct,
     in_stock: hasAnyStock,
-    is_preorder: variantList.some((v) => v.is_preorder) || Object.values(preorderPools || {}).some(Boolean) || (p.name && p.name.toLowerCase().includes('pre order')) || false,
+    is_preorder: isPreorderProduct,
     preorder_pools: preorderPools,
     infinite_pools: infinitePools,
     variants: variantList,

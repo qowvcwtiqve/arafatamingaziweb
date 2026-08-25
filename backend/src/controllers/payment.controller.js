@@ -23,8 +23,9 @@ import axios from 'axios';
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
 
-function generateSaleId() {
-  return uuidv4().replace(/-/g, '').slice(0, 8).toUpperCase();
+export function generateSaleId() {
+  const rand = Math.floor(100000 + Math.random() * 900000);
+  return `QXD-${rand}`;
 }
 
 async function getUsdToInrRate() {
@@ -347,16 +348,18 @@ export const initiatePayment = async (req, res, next) => {
 
     const finalAmount = parseFloat((totalAmount - discountAmount).toFixed(2));
     const usdToInr = await getUsdToInrRate();
-    const orderNumber = 'QXD' + Date.now().toString(36).toUpperCase();
+    const orderId = generateSaleId();
+    const orderNumber = orderId;
 
     // Create pending order record (local db.js orders table)
     const { rows: orderRows } = await query(`
-      INSERT INTO orders (order_number, buyer_id, buyer_email, total_amount, discount_amount,
+      INSERT INTO orders (id, order_number, buyer_id, buyer_email, total_amount, discount_amount,
         coupon_code, payment_method, payment_status, base_amount, timeout_at,
         meta_product_id, meta_variant_id, meta_qty)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,'pending',$8,$9,$10,$11,$12)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,'pending',$8,$9,$10,$11,$12,$13)
       RETURNING *
     `, [
+      orderId,
       orderNumber,
       req.user?.id || null,
       req.user?.email || email || null,
@@ -370,7 +373,7 @@ export const initiatePayment = async (req, res, next) => {
       variant_id,
       qty,
     ]);
-    const order = orderRows[0];
+    const order = orderRows[0] || { id: orderId, order_number: orderNumber };
 
     const responseData = {
       order_id: order.id,
@@ -455,7 +458,9 @@ export const fulfillPaidOrder = async (orderId) => {
     }
     const order = orderRows[0];
     if (order.delivered_items && order.sale_id) {
-      return { success: true, order, sale_id: order.sale_id, credentials: order.delivered_items, status: 'Delivered' };
+      const existingSale = await Sale.findOne({ sale_id: order.sale_id }).lean();
+      const status = existingSale?.status || order.order_status || 'Delivered';
+      return { success: true, order, sale_id: order.sale_id, credentials: order.delivered_items, status };
     }
 
     const product_id = String(order.meta_product_id || order.product_id || 'p-devtest-item');
@@ -466,10 +471,18 @@ export const fulfillPaidOrder = async (orderId) => {
     const variant = product?.variants?.find((v) => v.id === variant_id) || product?.variants?.[0];
     const poolId = variant?.pool_id || product?.default_pool_id || 'main';
 
-    const isPreorder = variant?.delivery_method === 'preorder' || product?.delivery_method === 'preorder';
-    const isManual = variant?.delivery_method === 'manual' || product?.delivery_method === 'manual';
+    const isPreorder = Boolean(
+      variant?.is_preorder ||
+      variant?.delivery_method === 'preorder' ||
+      product?.delivery_method === 'preorder' ||
+      product?.is_preorder ||
+      (/pre[- ]?order/i.test(variant?.name || '')) ||
+      (/pre[- ]?order/i.test(product?.name || ''))
+    );
+    const isManual = !isPreorder && (variant?.delivery_method === 'manual' || product?.delivery_method === 'manual' || product?.delivery_process === 'manual');
     const isInfinite = variant?.is_infinite || product?.is_infinite;
     const deliveryMethod = isPreorder ? 'preorder' : isManual ? 'manual' : isInfinite ? 'infinite' : 'instant';
+    const saleStatus = isPreorder ? 'Pre-Order' : isManual ? 'Pending' : 'Delivered';
 
     const deliveredItems = [];
     if (!isPreorder && !isManual) {
@@ -507,7 +520,7 @@ export const fulfillPaidOrder = async (orderId) => {
       user_email: order.buyer_email || 'customer@quantumxd.store',
       user_name: 'Customer',
       credentials: deliveredItems.join('\n\n') || '',
-      status: isPreorder ? 'Pre-Order' : isManual ? 'Pending' : 'Delivered',
+      status: saleStatus,
       delivery_method: deliveryMethod,
       purchase_ts: now,
       end_ts: endTs,
