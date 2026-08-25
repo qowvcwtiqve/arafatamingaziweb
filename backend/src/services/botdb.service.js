@@ -14,16 +14,17 @@ import WebsiteProduct from '../models/websiteProduct.model.js';
 const getCollection = (name) => mongoose.connection.collection(name);
 
 /**
- * Generate a clean, SEO-friendly human-readable slug from product name and ID
- * Example: "Netflix 4K (1 Month)", "p-cd345e" -> "netflix-4k-1-month-p-cd345e"
+ * Generate a clean, SEO-friendly human-readable slug from product name (no random ID codes)
+ * Example: "Adobe Express Premium", "p-cd345e" -> "adobe-express-premium"
  */
 export function generateProductSlug(name, id) {
-  const clean = (name || 'product')
+  const clean = (name || '')
     .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
     .trim()
-    .replace(/\s+/g, '-');
-  return clean ? `${clean}-${id}` : `${id}`;
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+  return clean || id || 'product';
 }
 
 export function formatWebProduct(webProd) {
