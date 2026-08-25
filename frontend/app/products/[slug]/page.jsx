@@ -366,7 +366,7 @@ export default function ProductDetailPage() {
                 <div className="product-guarantee-icon-box">
                   <span className="icon icon--md icon--cyan icon--filled">bolt</span>
                 </div>
-                <div>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <div className="product-guarantee-title">Instant Auto Delivery</div>
                   <div className="product-guarantee-sub">Direct Credential Dispatch</div>
                 </div>
@@ -376,7 +376,7 @@ export default function ProductDetailPage() {
                 <div className="product-guarantee-icon-box">
                   <span className="icon icon--md icon--primary">verified_user</span>
                 </div>
-                <div>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <div className="product-guarantee-title">100% Genuine Quality</div>
                   <div className="product-guarantee-sub">Tested &amp; Quality Checked</div>
                 </div>
@@ -386,7 +386,7 @@ export default function ProductDetailPage() {
                 <div className="product-guarantee-icon-box">
                   <span className="icon icon--md icon--accent">support_agent</span>
                 </div>
-                <div>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <div className="product-guarantee-title">24/7 Priority Support</div>
                   <div className="product-guarantee-sub">Telegram &amp; Helpdesk</div>
                 </div>
