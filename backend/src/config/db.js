@@ -393,46 +393,32 @@ export async function query(sql, params = []) {
 
   // 7. Orders
   if (lowerSql.startsWith('insert into orders')) {
-    let newOrder;
-    if (lowerSql.includes('(id,') || lowerSql.includes('(id ,')) {
-      const [id, order_number, buyer_id, buyer_email, total_amount, discount_amount, coupon_code, payment_method, payment_status, base_amount, meta_product_id, meta_variant_id, meta_qty] = params;
-      newOrder = {
-        id: id || `ord-${Date.now()}`,
-        order_number: order_number || `QXD${Date.now().toString(36).toUpperCase()}`,
-        buyer_id,
-        buyer_email,
-        total_amount: parseFloat(total_amount || 0),
-        discount_amount: parseFloat(discount_amount || 0),
-        coupon_code: coupon_code || null,
-        payment_method,
-        payment_status: payment_status || 'pending',
-        base_amount: parseFloat(base_amount || total_amount || 0),
-        timeout_at: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
-        meta_product_id: meta_product_id || null,
-        meta_variant_id: meta_variant_id || null,
-        meta_qty: parseInt(meta_qty || 1),
-        created_at: new Date().toISOString(),
-      };
-    } else {
-      const [order_number, buyer_id, buyer_email, total_amount, discount_amount, coupon_code, payment_method, payment_status, base_amount, timeout_at, meta_product_id, meta_variant_id, meta_qty] = params;
-      newOrder = {
-        id: `ord-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        order_number: order_number || `QXD${Date.now().toString(36).toUpperCase()}`,
-        buyer_id,
-        buyer_email,
-        total_amount: parseFloat(total_amount || 0),
-        discount_amount: parseFloat(discount_amount || 0),
-        coupon_code: coupon_code || null,
-        payment_method,
-        payment_status: payment_status || 'pending',
-        base_amount: parseFloat(base_amount || total_amount || 0),
-        timeout_at: timeout_at ? new Date(timeout_at).toISOString() : new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
-        meta_product_id: meta_product_id || null,
-        meta_variant_id: meta_variant_id || null,
-        meta_qty: parseInt(meta_qty || 1),
-        created_at: new Date().toISOString(),
-      };
+    const colMatch = lowerSql.match(/insert into orders\s*\(([^)]+)\)/);
+    const newOrder = {
+      id: `ord-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      order_number: `QXD${Date.now().toString(36).toUpperCase()}`,
+      payment_status: 'pending',
+      created_at: new Date().toISOString(),
+      timeout_at: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+      total_amount: 0,
+      discount_amount: 0,
+      base_amount: 0,
+      meta_qty: 1,
+    };
+
+    if (colMatch && colMatch[1]) {
+      const cols = colMatch[1].split(',').map(c => c.trim().toLowerCase());
+      cols.forEach((col, idx) => {
+        if (params[idx] !== undefined) {
+          newOrder[col] = params[idx];
+        }
+      });
     }
+
+    if (newOrder.total_amount) newOrder.total_amount = parseFloat(newOrder.total_amount);
+    if (newOrder.discount_amount) newOrder.discount_amount = parseFloat(newOrder.discount_amount);
+    if (newOrder.base_amount) newOrder.base_amount = parseFloat(newOrder.base_amount);
+    if (newOrder.meta_qty) newOrder.meta_qty = parseInt(newOrder.meta_qty);
 
     if (newOrder.payment_status === 'paid') newOrder.paid_at = new Date().toISOString();
     db.orders = db.orders || [];
