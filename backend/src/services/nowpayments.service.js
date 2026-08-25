@@ -2,14 +2,24 @@ import axios from 'axios';
 import { query } from '../config/db.js';
 import { generateDownloadTokens } from './upi.service.js';
 import { sendOrderConfirmationEmail } from './email.service.js';
+import { getPaymentSettings } from './paymentSettings.service.js';
 
 const NP_API = 'https://api.nowpayments.io/v1';
-const headers = () => ({ 'x-api-key': process.env.NOWPAYMENTS_API_KEY });
+
+const getHeaders = async () => {
+  let key = process.env.NOWPAYMENTS_API_KEY;
+  try {
+    const settings = await getPaymentSettings();
+    if (settings?.nowpayments?.api_key) key = settings.nowpayments.api_key;
+  } catch (_) {}
+  return { 'x-api-key': key || 'N4A03H3-9F94S9W-M37G1W0-9R529A1' };
+};
 
 // Create a NowPayments invoice for crypto payment
 export async function createCryptoInvoice({ orderId, amountINR, userId }) {
   const billAmount = parseFloat((amountINR * (1 + parseFloat(process.env.CRYPTO_FEE_PERCENT || 5) / 100)).toFixed(2));
   const orderDesc = `QuantumXD Order ${orderId}`;
+  const headers = await getHeaders();
 
   const { data } = await axios.post(`${NP_API}/invoice`, {
     price_amount: billAmount,
@@ -17,7 +27,7 @@ export async function createCryptoInvoice({ orderId, amountINR, userId }) {
     order_id: orderId,
     order_description: orderDesc,
     ipn_callback_url: `${process.env.BACKEND_URL || process.env.FRONTEND_URL || 'https://quantumxd.store'}/api/payments/nowpayments/webhook`,
-  }, { headers: headers() });
+  }, { headers });
 
   return {
     invoiceUrl: data.invoice_url,
@@ -29,7 +39,8 @@ export async function createCryptoInvoice({ orderId, amountINR, userId }) {
 // Poll NowPayments status for a specific payment
 export async function checkNowPaymentsStatus(paymentId) {
   try {
-    const { data } = await axios.get(`${NP_API}/payment/${paymentId}`, { headers: headers() });
+    const headers = await getHeaders();
+    const { data } = await axios.get(`${NP_API}/payment/${paymentId}`, { headers });
     return data.payment_status; // 'waiting','confirming','confirmed','sending','finished','failed','refunded','expired'
   } catch {
     return null;
@@ -52,8 +63,8 @@ export async function processNowPaymentsOrders() {
       if (!status) continue;
 
       if (['finished', 'sending', 'confirmed'].includes(status)) {
-        await query(`UPDATE orders SET payment_status='paid', paid_at=NOW(), updated_at=NOW() WHERE id=$1`, [order.id]);
-        await generateDownloadTokens(order.id);
+        const { fulfillPaidOrder } = await import('../controllers/payment.controller.js');
+        await fulfillPaidOrder(order.id);
 
         if (order.buyer_id) {
           const creditAmount = parseFloat(order.base_amount);
@@ -63,7 +74,7 @@ export async function processNowPaymentsOrders() {
         }
 
         await sendOrderConfirmationEmail(order.id);
-        console.log(`[NowPayments] Order ${order.id} marked PAID`);
+        console.log(`[NowPayments] Order ${order.id} marked PAID and fulfilled`);
 
       } else if (['failed', 'refunded', 'expired'].includes(status)) {
         await query(`UPDATE orders SET payment_status='failed', updated_at=NOW() WHERE id=$1`, [order.id]);

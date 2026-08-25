@@ -234,12 +234,25 @@ function CheckoutContent() {
     if (!binanceTxId.trim()) return toast.error('Enter your Binance transaction ID');
     setVerifying(true);
     try {
-      await api.post('/payments/binance/verify', { order_id: orderData.order_id, tx_id: binanceTxId });
-      setStatus('paid');
-      clearCart();
-      toast.success('Payment verified!');
+      const res = await api.post('/payments/binance/verify', { order_id: orderData.order_id, tx_id: binanceTxId.trim() });
+      if (res.data.payment_status === 'paid' || (res.data.success && !res.data.under_review)) {
+        setStatus('paid');
+        clearCart();
+        toast.success('Binance payment verified!');
+      } else {
+        setStatus('under_review');
+        clearCart();
+        toast.success('Binance transaction ID submitted for review!');
+      }
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Transaction not found');
+      try {
+        await api.post('/payments/upi/submit', { order_id: orderData.order_id, utr_number: `BINANCE_${binanceTxId.trim()}` });
+        setStatus('under_review');
+        clearCart();
+        toast.success('Binance transaction proof submitted! Order is under review.');
+      } catch (_) {
+        toast.error(err.response?.data?.error || 'Failed to submit Binance proof');
+      }
     } finally {
       setVerifying(false);
     }

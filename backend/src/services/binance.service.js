@@ -3,13 +3,20 @@ import crypto from 'crypto';
 import { query } from '../config/db.js';
 import { generateDownloadTokens } from './upi.service.js';
 import { sendOrderConfirmationEmail } from './email.service.js';
+import { getPaymentSettings } from './paymentSettings.service.js';
 
 // Verify a Binance Pay transaction by Order ID or Transaction ID
 export async function verifyBinanceTransaction(txId) {
-  const apiKey = process.env.BINANCE_API_KEY;
-  const apiSecret = process.env.BINANCE_API_SECRET;
-  if (!apiKey || apiKey === 'YOUR_BINANCE_API_KEY_HERE') {
-    throw new Error('Binance API keys not configured. Please set BINANCE_API_KEY and BINANCE_API_SECRET in .env');
+  let apiKey = process.env.BINANCE_API_KEY;
+  let apiSecret = process.env.BINANCE_API_SECRET;
+  try {
+    const settings = await getPaymentSettings();
+    if (settings?.binance?.api_key) apiKey = settings.binance.api_key;
+    if (settings?.binance?.api_secret) apiSecret = settings.binance.api_secret;
+  } catch (_) {}
+
+  if (!apiKey || apiKey === 'YOUR_BINANCE_API_KEY_HERE' || !apiSecret) {
+    return null;
   }
 
   const timestamp = Date.now();
@@ -19,33 +26,49 @@ export async function verifyBinanceTransaction(txId) {
 
   const url = `https://api.binance.com/sapi/v1/pay/transactions?${queryString}&signature=${signature}`;
 
-  const { data } = await axios.get(url, {
-    headers: { 'X-MBX-APIKEY': apiKey },
-    timeout: 8000,
-  });
+  try {
+    const { data } = await axios.get(url, {
+      headers: { 'X-MBX-APIKEY': apiKey },
+      timeout: 8000,
+    });
 
-  if (data?.code !== '000000' || !data?.success) return null;
+    if (data?.code !== '000000' || !data?.success) return null;
 
-  const txIdClean = txId.trim().toLowerCase();
-  const txn = data.data?.find((t) => {
-    return String(t.orderId).toLowerCase() === txIdClean
-      || String(t.transactionId).toLowerCase() === txIdClean;
-  });
+    const txIdClean = txId.trim().toLowerCase();
+    const txn = data.data?.find((t) => {
+      return String(t.orderId).toLowerCase() === txIdClean
+        || String(t.transactionId).toLowerCase() === txIdClean;
+    });
 
-  if (!txn) return null;
+    if (!txn) return null;
 
-  return {
-    amountUsd: parseFloat(txn.amount || 0),
-    currency: txn.currency,
-    orderId: String(txn.orderId),
-    transactionId: String(txn.transactionId || ''),
-  };
+    return {
+      amountUsd: parseFloat(txn.amount || 0),
+      currency: txn.currency,
+      orderId: String(txn.orderId),
+      transactionId: String(txn.transactionId || ''),
+    };
+  } catch (err) {
+    console.error('Binance transaction query error:', err.response?.data || err.message);
+    return null;
+  }
 }
 
 // Process a Binance Pay order after user submits TX ID
 export async function processBinanceOrder(orderId, txId) {
   const txn = await verifyBinanceTransaction(txId);
-  if (!txn) return { success: false, error: 'Transaction not found or invalid' };
+  if (!txn) {
+    // Save under review for manual admin verification if API check could not verify automatically
+    await query(
+      "UPDATE orders SET gateway_payment_id=$1, payment_status='under_review' WHERE id=$2",
+      [String(txId).trim(), orderId]
+    );
+    return {
+      success: true,
+      under_review: true,
+      message: 'Binance transaction submitted. Admin will verify and activate your order shortly.'
+    };
+  }
 
   const minUsd = parseFloat(process.env.BINANCE_MIN_USD || 1);
   if (txn.amountUsd < minUsd) {
@@ -73,17 +96,12 @@ export async function processBinanceOrder(orderId, txId) {
     await query('INSERT INTO processed_payment_ids (payment_id, gateway) VALUES ($1,$2) ON CONFLICT DO NOTHING', [txn.transactionId, 'binance']);
   }
 
-  // Update order
-  const { rows: orderRows } = await query(`
-    UPDATE orders SET payment_status='paid', gateway_payment_id=$1, paid_at=NOW(), updated_at=NOW()
-    WHERE id=$2 RETURNING buyer_id, base_amount
-  `, [txn.transactionId || txn.orderId, orderId]);
+  // Fulfill order
+  const { fulfillPaidOrder } = await import('../controllers/payment.controller.js');
+  const fulfillment = await fulfillPaidOrder(orderId);
 
-  if (!orderRows[0]) return { success: false, error: 'Order not found' };
-
-  await generateDownloadTokens(orderId);
-
-  const { buyer_id } = orderRows[0];
+  const { rows: orderRows } = await query('SELECT buyer_id, base_amount FROM orders WHERE id=$1', [orderId]);
+  const buyer_id = orderRows[0]?.buyer_id;
   if (buyer_id) {
     await query(`UPDATE users SET balance=balance+$1, all_time_topup=all_time_topup+$1, updated_at=NOW() WHERE id=$2`, [creditINR, buyer_id]);
     await query(`INSERT INTO deposits (user_id, order_id, amount, gateway, transaction_id) VALUES ($1,$2,$3,'binance',$4)`,
@@ -92,5 +110,11 @@ export async function processBinanceOrder(orderId, txId) {
 
   await sendOrderConfirmationEmail(orderId);
 
-  return { success: true, amountUsd: txn.amountUsd, creditINR };
+  return {
+    success: true,
+    amountUsd: txn.amountUsd,
+    creditINR,
+    credentials: fulfillment.credentials,
+    sale_id: fulfillment.sale_id,
+  };
 }
