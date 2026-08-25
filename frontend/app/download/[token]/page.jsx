@@ -13,7 +13,7 @@ export default function DownloadPage() {
   useEffect(() => {
     if (!token) return;
     // Call download endpoint
-    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/download/${token}`;
+    const url = `${process.env.NEXT_PUBLIC_API_URL || ''}/api/download/${token}`;
     
     // We can directly trigger window.location.href or fetch if json response (e.g. license keys)
     fetch(url)

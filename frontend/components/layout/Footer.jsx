@@ -20,7 +20,7 @@ export default function Footer() {
     ],
     Support: [
       { href: '/contact', label: 'Contact Us' },
-      { href: 'https://t.me/your_support_username', label: 'Telegram Channel', external: true },
+      { href: 'https://t.me/quantumxdservices', label: 'Telegram Channel', external: true },
       { href: 'mailto:support@quantumxd.store', label: 'Email Helpdesk' },
       { href: '/faq', label: 'Frequently Asked Questions' },
     ],
@@ -55,7 +55,7 @@ export default function Footer() {
             </p>
           </div>
           <a
-            href="https://t.me/your_support_username"
+            href="https://t.me/quantumxdservices"
             target="_blank"
             rel="noopener noreferrer"
             className="footer-support-pill"

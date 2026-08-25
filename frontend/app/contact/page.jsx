@@ -41,7 +41,7 @@ export default function ContactPage() {
               </div>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Telegram Support</h3>
               <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 }}>Instant replies & active live community channel.</p>
-              <a href="https://t.me/your_support_username" target="_blank" rel="noopener noreferrer" className="btn btn--outline btn--sm btn--full">
+              <a href="https://t.me/quantumxdservices" target="_blank" rel="noopener noreferrer" className="btn btn--outline btn--sm btn--full">
                 Open Telegram
               </a>
             </div>
@@ -51,8 +51,8 @@ export default function ContactPage() {
                 <span className="icon icon--lg">email</span>
               </div>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Email Support</h3>
-              <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 }}>digitalshoppei@gmail.com</p>
-              <a href="mailto:digitalshoppei@gmail.com" className="btn btn--outline btn--sm btn--full">
+              <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 }}>support@quantumxd.store</p>
+              <a href="mailto:support@quantumxd.store" className="btn btn--outline btn--sm btn--full">
                 Send Direct Email
               </a>
             </div>

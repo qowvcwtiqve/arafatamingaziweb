@@ -28,8 +28,8 @@ export async function createCashfreeOrder({ orderId, orderAmount, customerEmail,
     orderCurrency: 'INR',
     customerEmail: customerEmail || 'customer@quantumxd.store',
     customerPhone: customerPhone || '9999999999',
-    returnUrl: returnUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/checkout?cf_status=check&order_id=${orderId}`,
-    notifyUrl: `${process.env.FRONTEND_URL?.replace('3000', '5000') || 'http://localhost:5000'}/api/payments/cashfree/webhook`,
+    returnUrl: returnUrl || `${process.env.FRONTEND_URL || 'https://quantumxd.store'}/checkout?cf_status=check&order_id=${orderId}`,
+    notifyUrl: `${process.env.BACKEND_URL || process.env.FRONTEND_URL || 'https://quantumxd.store'}/api/payments/cashfree/webhook`,
   };
 
   try {

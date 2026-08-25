@@ -136,7 +136,7 @@ router.post('/wallet/topup', protect, async (req, res, next) => {
         orderId,
         orderAmount: numAmount,
         customerEmail: req.user.email,
-        returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?topup_status=check&order_id=${orderId}&amount=${numAmount}`,
+        returnUrl: `${process.env.FRONTEND_URL || 'https://quantumxd.store'}/dashboard?topup_status=check&order_id=${orderId}&amount=${numAmount}`,
       });
 
       if (cfRes.success && cfRes.paymentLink) {

@@ -456,7 +456,7 @@ function DashboardContent() {
                       Fastest response time. Direct human support for license issues and inquiries.
                     </p>
                     <a
-                      href="https://t.me/your_support_username"
+                      href="https://t.me/quantumxdservices"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn--primary btn--sm"

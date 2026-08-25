@@ -16,7 +16,7 @@ export async function createCryptoInvoice({ orderId, amountINR, userId }) {
     price_currency: 'inr',
     order_id: orderId,
     order_description: orderDesc,
-    ipn_callback_url: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/payments/nowpayments/webhook`,
+    ipn_callback_url: `${process.env.BACKEND_URL || process.env.FRONTEND_URL || 'https://quantumxd.store'}/api/payments/nowpayments/webhook`,
   }, { headers: headers() });
 
   return {
