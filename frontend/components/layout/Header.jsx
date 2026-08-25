@@ -175,16 +175,7 @@ export default function Header() {
 
               {/* User Menu / Auth */}
               {mounted && user ? (
-                <div className="header__user-dropdown-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Link
-                    href="/dashboard?tab=wallet"
-                    className="badge badge--new"
-                    style={{ gap: 5, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}
-                  >
-                    <span className="icon icon--sm icon--filled" style={{ fontSize: 14 }}>account_balance_wallet</span>
-                    <span>₹{parseFloat(user.balance || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
-                  </Link>
-
+                <div className="header__user-dropdown-container" style={{ position: 'relative' }}>
                   <button 
                     className="header__user-btn btn btn--ghost btn--icon"
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
