@@ -51,10 +51,20 @@ export const useAuthStore = create(
 
       refreshUser: async () => {
         try {
-          const { data } = await api.get('/auth/me');
-          set({ user: data.user, _hasHydrated: true });
+          const { data } = await api.get('/users/profile');
+          if (data?.user) {
+            set((state) => ({
+              ...state,
+              user: {
+                ...state.user,
+                ...data.user,
+                balance: parseFloat(data.user.balance || 0),
+              },
+              _hasHydrated: true,
+            }));
+          }
         } catch {
-          set({ user: null, token: null, _hasHydrated: true });
+          // Keep current state on transient network error
         }
       },
     }),

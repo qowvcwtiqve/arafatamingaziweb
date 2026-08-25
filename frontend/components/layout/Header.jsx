@@ -175,7 +175,16 @@ export default function Header() {
 
               {/* User Menu / Auth */}
               {mounted && user ? (
-                <div className="header__user-dropdown-container" style={{ position: 'relative' }}>
+                <div className="header__user-dropdown-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Link
+                    href="/dashboard?tab=wallet"
+                    className="badge badge--new"
+                    style={{ gap: 5, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}
+                  >
+                    <span className="icon icon--sm icon--filled" style={{ fontSize: 14 }}>account_balance_wallet</span>
+                    <span>₹{parseFloat(user.balance || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+                  </Link>
+
                   <button 
                     className="header__user-btn btn btn--ghost btn--icon"
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -197,8 +206,8 @@ export default function Header() {
                         <Link href="/dashboard?tab=orders" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
                           <span className="icon icon--sm">receipt_long</span> Order History
                         </Link>
-                        <Link href="/dashboard?tab=profile" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
-                          <span className="icon icon--sm icon--accent">account_balance_wallet</span> Wallet: ₹{(user.balance || 0).toFixed(2)}
+                        <Link href="/dashboard?tab=wallet" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
+                          <span className="icon icon--sm icon--accent">account_balance_wallet</span> Wallet: ₹{parseFloat(user.balance || 0).toFixed(2)}
                         </Link>
                         {user.role === 'admin' && (
                           <Link href="/admin" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
@@ -274,7 +283,7 @@ export default function Header() {
               <div className="mobile-drawer__user-box">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <div style={{ fontWeight: 600, fontSize: 15 }}>{user.name}</div>
-                  <div style={{ fontSize: 13, color: 'var(--color-accent)', fontWeight: 700 }}>₹{(user.balance || 0).toFixed(2)}</div>
+                  <div style={{ fontSize: 13, color: 'var(--color-accent)', fontWeight: 700 }}>₹{parseFloat(user.balance || 0).toFixed(2)}</div>
                 </div>
                 <Link
                   href="/dashboard"
