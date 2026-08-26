@@ -8,12 +8,12 @@ export default function TelegramCommunityBanner() {
           <style jsx>{`
             .telegram-community-card {
               position: relative;
-              background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(0, 212, 255, 0.15) 100%), var(--color-surface);
-              border: 1px solid var(--color-border-glow);
+              background: linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(36, 41, 54, 0.5) 100%), var(--color-surface);
+              border: 1px solid var(--color-border);
               border-radius: var(--radius-xl);
               padding: 44px 36px;
               overflow: hidden;
-              box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 0 35px rgba(124, 58, 237, 0.2);
+              box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
               display: flex;
               align-items: center;
               justify-content: space-between;
@@ -28,8 +28,8 @@ export default function TelegramCommunityBanner() {
               gap: 6px;
               padding: 5px 12px;
               border-radius: var(--radius-full);
-              background: rgba(0, 212, 255, 0.15);
-              border: 1px solid rgba(0, 212, 255, 0.35);
+              background: var(--color-surface-2);
+              border: 1px solid var(--color-border);
               color: var(--color-cyan);
               font-size: 11.5px;
               font-weight: 700;

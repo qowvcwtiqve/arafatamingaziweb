@@ -695,8 +695,8 @@ export default function ProductDetailPage() {
                   onClick={handleBuyNow}
                   style={{
                     flex: 1,
-                    background: 'linear-gradient(135deg, #6E3AFF 0%, #00D4FF 100%)',
-                    boxShadow: '0 0 25px rgba(110, 58, 255, 0.4)',
+                    background: 'var(--gradient-primary)',
+                    boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
                     height: 52,
                     fontSize: 16,
                     fontWeight: 700

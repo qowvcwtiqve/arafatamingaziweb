@@ -35,7 +35,7 @@ export default function Logo({ size = 'default', showTag = true, href = '/', cla
         <span>Quantum</span>
         <span
           style={{
-            background: 'linear-gradient(135deg, #7C3AED 0%, #00D4FF 100%)',
+            background: 'linear-gradient(135deg, #8B5CF6 0%, #38BDF8 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             fontWeight: 900,

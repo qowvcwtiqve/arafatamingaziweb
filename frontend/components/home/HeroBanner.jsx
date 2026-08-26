@@ -53,13 +53,13 @@ export default function HeroBanner() {
       position: 'relative',
       padding: '130px 0 70px',
       overflow: 'hidden',
-      background: 'radial-gradient(ellipse 90% 60% at 50% -10%, rgba(110, 58, 255, 0.22) 0%, rgba(8, 11, 20, 0) 70%), var(--color-bg)'
+      background: 'radial-gradient(ellipse 90% 60% at 50% -10%, rgba(124, 58, 237, 0.16) 0%, transparent 70%), var(--color-bg)'
     }}>
       {/* Background Animated Glow Elements */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes pulseGlowMesh {
-          0%, 100% { transform: scale(1); opacity: 0.5; }
-          50% { transform: scale(1.1); opacity: 0.8; }
+          0%, 100% { transform: scale(1); opacity: 0.4; }
+          50% { transform: scale(1.08); opacity: 0.65; }
         }
         @keyframes subtleFloat {
           0%, 100% { transform: translateY(0px); }
@@ -71,14 +71,14 @@ export default function HeroBanner() {
         .hero-feature-card:hover {
           transform: translateY(-5px);
           border-color: var(--color-border-glow) !important;
-          box-shadow: 0 16px 32px -10px rgba(110, 58, 255, 0.25);
+          box-shadow: 0 16px 32px -10px rgba(124, 58, 237, 0.25);
         }
       `}} />
 
       <div style={{
         position: 'absolute', top: '-100px', left: '50%', transform: 'translateX(-50%)',
         width: 700, height: 400, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(110, 58, 255, 0.2) 0%, rgba(0, 212, 255, 0.08) 50%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, rgba(56, 189, 248, 0.05) 50%, transparent 70%)',
         filter: 'blur(70px)', pointerEvents: 'none',
         animation: 'pulseGlowMesh 8s ease-in-out infinite'
       }} />
@@ -100,11 +100,10 @@ export default function HeroBanner() {
             gap: 8,
             padding: '7px 18px',
             borderRadius: 'var(--radius-full)',
-            background: 'rgba(110, 58, 255, 0.12)',
-            border: '1px solid rgba(110, 58, 255, 0.35)',
-            boxShadow: '0 0 20px rgba(110, 58, 255, 0.2)',
+            background: 'var(--color-surface-2)',
+            border: '1px solid var(--color-border)',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
             marginBottom: 24,
-            backdropFilter: 'blur(12px)'
           }}>
             <span className="icon icon--sm icon--cyan icon--filled">verified</span>
             <span style={{
@@ -130,7 +129,7 @@ export default function HeroBanner() {
           }}>
             Instant Delivery for Premium <br />
             <span style={{
-              background: 'linear-gradient(135deg, #6E3AFF 0%, #00D4FF 50%, #00FFCC 100%)',
+              background: 'linear-gradient(135deg, #A78BFA 0%, #818CF8 50%, #38BDF8 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               display: 'inline-block'
