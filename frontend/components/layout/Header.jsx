@@ -27,12 +27,17 @@ export default function Header() {
   const { items, isOpen, openCart, closeCart } = useCartStore();
   const { user, logout, refreshUser } = useAuthStore();
   const { format } = useCurrency();
-  const [theme, setTheme] = useState('dark');
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [categoryLinks, setCategoryLinks] = useState([]);
 
   useEffect(() => {
     setMounted(true);
+    // Enforce dark mode across all devices
+    try {
+      localStorage.removeItem('quantumxd-theme');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } catch (e) {}
+
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
     
@@ -43,17 +48,8 @@ export default function Header() {
       window.addEventListener('focus', onFocus);
     }
     
-    const saved = localStorage.getItem('quantumxd-theme');
-    if (saved) {
-      setTheme(saved);
-      document.documentElement.setAttribute('data-theme', saved);
-    } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-      setTheme('light');
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
-    
     const handleClickOutside = (e) => {
-      if (!e.target.closest('.header__user-dropdown-container')) {
+      if (!e.target.closest('.header__user-dropdown-container') && !e.target.closest('.header__auth-container')) {
         setUserDropdownOpen(false);
       }
     };
@@ -76,13 +72,6 @@ export default function Header() {
       document.removeEventListener('click', handleClickOutside);
     };
   }, [user?.id]);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('quantumxd-theme', newTheme);
-  };
 
   const primaryLinks = [
     { href: '/', label: 'Home', icon: 'home' },

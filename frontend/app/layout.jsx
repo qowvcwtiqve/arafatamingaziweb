@@ -30,15 +30,8 @@ export const viewport = {
 const themeScript = `
   (function() {
     try {
-      var savedTheme = localStorage.getItem('quantumxd-theme');
-      if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-      } else {
-        var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-        if (prefersLight) {
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
-      }
+      localStorage.removeItem('quantumxd-theme');
+      document.documentElement.setAttribute('data-theme', 'dark');
     } catch (e) {}
   })();
 `;

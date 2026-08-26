@@ -82,49 +82,7 @@
   --header-height: 72px;
 }
 
-[data-theme='light'] {
-  /* 2026 Ultra-Crisp Modern Pearl & Vibrant Royal Violet / Electric Blue */
-  --color-bg:            #F8FAFC;
-  --color-surface:       #FFFFFF;
-  --color-surface-2:     #F1F5F9;
-  --color-surface-3:     #E2E8F0;
-  --color-border:        rgba(15, 23, 42, 0.09);
-  --color-border-hover:  rgba(15, 23, 42, 0.20);
-  --color-border-glow:   rgba(109, 40, 217, 0.35);
 
-  --color-primary:       #6D28D9;
-  --color-primary-light: #7C3AED;
-  --color-cyan:          #0284C7;
-  --color-cyan-glow:     rgba(2, 132, 199, 0.18);
-  --color-accent:        #059669;
-
-  --color-text:          #0F172A;
-  --color-text-muted:    #334155;
-  --color-text-faint:    #64748B;
-
-  --color-success:       #059669;
-  --color-warning:       #D97706;
-  --color-error:         #DC2626;
-
-  /* Gradients */
-  --gradient-primary:      linear-gradient(135deg, #6D28D9 0%, #0284C7 100%);
-  --gradient-primary-soft: linear-gradient(135deg, rgba(109, 40, 217, 0.08) 0%, rgba(2, 132, 199, 0.06) 100%);
-  --gradient-hero:         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(109, 40, 217, 0.10) 0%, transparent 70%);
-  --gradient-card-glow:    radial-gradient(circle at top left, rgba(109, 40, 217, 0.06), transparent 60%);
-
-  /* Solid Theme (Light) */
-  --glass-bg:         #FFFFFF;
-  --glass-bg-hover:   #F8FAFC;
-  --glass-border:     1px solid rgba(15, 23, 42, 0.09);
-  --glass-blur:       none;
-  --glass-shadow:     0 4px 20px rgba(0, 0, 0, 0.05);
-
-  --shadow-sm:        0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md:        0 4px 14px rgba(0, 0, 0, 0.07);
-  --shadow-lg:        0 12px 30px rgba(0, 0, 0, 0.08);
-  --shadow-glow:      0 0 25px rgba(109, 40, 217, 0.16);
-  --shadow-cyan:      0 0 20px rgba(2, 132, 199, 0.12);
-}
 
 /* ============================================================
    RESET & BASE
