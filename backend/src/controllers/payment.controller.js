@@ -357,7 +357,7 @@ export const initiatePayment = async (req, res, next) => {
       INSERT INTO orders (id, order_number, buyer_id, buyer_email, total_amount, discount_amount,
         coupon_code, payment_method, payment_status, base_amount, timeout_at,
         meta_product_id, meta_variant_id, meta_qty)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'pending',$9,$10,$11,$12,$13)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       RETURNING *
     `, [
       orderId,
@@ -368,6 +368,7 @@ export const initiatePayment = async (req, res, next) => {
       discountAmount,
       coupon_code || null,
       payment_method,
+      'pending',
       finalAmount,
       new Date(Date.now() + 3 * 60 * 60 * 1000),
       product_id,

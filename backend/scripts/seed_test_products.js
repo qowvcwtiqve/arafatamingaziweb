@@ -7,27 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
-const ProductSchema = new mongoose.Schema(
-  {
-    _id: String,
-    name: String,
-    description: String,
-    rules: String,
-    delivery_process: String,
-    delivery_time: String,
-    is_active: Boolean,
-    category_id: String,
-    variants: mongoose.Schema.Types.Mixed,
-    stock_pools: mongoose.Schema.Types.Mixed,
-    pool_rules: mongoose.Schema.Types.Mixed,
-    infinite_pools: mongoose.Schema.Types.Mixed,
-    preorder_pools: mongoose.Schema.Types.Mixed,
-    website_meta: mongoose.Schema.Types.Mixed,
-  },
-  { strict: false, _id: false, collection: 'products' }
-);
-
-const Product = mongoose.model('Product', ProductSchema);
+import Product from '../src/models/product.model.js';
 
 const singleAllInOneProduct = {
   _id: 'p-test-all-in-one',

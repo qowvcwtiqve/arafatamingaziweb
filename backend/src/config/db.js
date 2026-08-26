@@ -433,7 +433,7 @@ export async function query(sql, params = []) {
     };
 
     if (colMatch && colMatch[1]) {
-      const cols = colMatch[1].split(',').map(c => c.trim().toLowerCase());
+      const cols = colMatch[1].split(',').map((c) => c.trim().toLowerCase());
       cols.forEach((col, idx) => {
         if (params[idx] !== undefined) {
           newOrder[col] = params[idx];
