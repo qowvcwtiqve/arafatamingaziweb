@@ -10,46 +10,8 @@ import toast from 'react-hot-toast';
 const renderOrderStatusBadge = (order) => {
   const rawStatus = String(order?.status || order?.order_status || order?.payment_status || '').trim();
   const s = rawStatus.toLowerCase().replace(/[^a-z]/g, '');
-  const isPreorder = s === 'preorder' || /pre[- ]?order/i.test(order?.variant_name || '') || /pre[- ]?order/i.test(order?.items?.[0]?.title || '') || /pre[- ]?order/i.test(order?.items?.[0]?.variant_name || '');
-  const isDelivered = (s === 'delivered' || s === 'completed' || (s === 'paid' && Boolean(order?.credentials || order?.items?.[0]?.delivered_content))) && !isPreorder;
-  const isRefunded = s === 'refunded';
-  const isCanceled = s === 'canceled' || s === 'cancelled' || s === 'failed';
 
-  if (isPreorder) {
-    return (
-      <span style={{
-        padding: '5px 14px', borderRadius: 'var(--radius-full)',
-        background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(99, 102, 241, 0.2) 100%)',
-        border: '1px solid rgba(168, 85, 247, 0.6)',
-        color: '#c084fc',
-        fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        boxShadow: '0 0 16px rgba(168, 85, 247, 0.25)'
-      }}>
-        <span className="icon icon--sm" style={{ fontSize: 14 }}>rocket_launch</span>
-        <span>Pre-Order</span>
-      </span>
-    );
-  }
-
-  if (isDelivered) {
-    return (
-      <span style={{
-        padding: '5px 14px', borderRadius: 'var(--radius-full)',
-        background: 'rgba(16, 185, 129, 0.15)',
-        border: '1px solid rgba(16, 185, 129, 0.45)',
-        color: '#10b981',
-        fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        boxShadow: '0 0 16px rgba(16, 185, 129, 0.2)'
-      }}>
-        <span className="icon icon--sm" style={{ fontSize: 14 }}>check_circle</span>
-        <span>Delivered</span>
-      </span>
-    );
-  }
-
-  if (isRefunded) {
+  if (s === 'refunded') {
     return (
       <span style={{
         padding: '5px 14px', borderRadius: 'var(--radius-full)',
@@ -66,7 +28,7 @@ const renderOrderStatusBadge = (order) => {
     );
   }
 
-  if (isCanceled) {
+  if (s === 'canceled' || s === 'cancelled' || s === 'failed') {
     return (
       <span style={{
         padding: '5px 14px', borderRadius: 'var(--radius-full)',
@@ -79,6 +41,40 @@ const renderOrderStatusBadge = (order) => {
       }}>
         <span className="icon icon--sm" style={{ fontSize: 14 }}>cancel</span>
         <span>Canceled</span>
+      </span>
+    );
+  }
+
+  if (s === 'delivered' || s === 'completed' || (s === 'paid' && Boolean(order?.credentials || order?.items?.[0]?.delivered_content))) {
+    return (
+      <span style={{
+        padding: '5px 14px', borderRadius: 'var(--radius-full)',
+        background: 'rgba(16, 185, 129, 0.15)',
+        border: '1px solid rgba(16, 185, 129, 0.45)',
+        color: '#10b981',
+        fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        boxShadow: '0 0 16px rgba(16, 185, 129, 0.2)'
+      }}>
+        <span className="icon icon--sm" style={{ fontSize: 14 }}>check_circle</span>
+        <span>Delivered</span>
+      </span>
+    );
+  }
+
+  if (s === 'preorder') {
+    return (
+      <span style={{
+        padding: '5px 14px', borderRadius: 'var(--radius-full)',
+        background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(99, 102, 241, 0.2) 100%)',
+        border: '1px solid rgba(168, 85, 247, 0.6)',
+        color: '#c084fc',
+        fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        boxShadow: '0 0 16px rgba(168, 85, 247, 0.25)'
+      }}>
+        <span className="icon icon--sm" style={{ fontSize: 14 }}>rocket_launch</span>
+        <span>Pre-Order</span>
       </span>
     );
   }
@@ -386,10 +382,10 @@ function DashboardContent() {
                     {orders.map((order) => {
                       const rawStatus = String(order?.status || order?.order_status || order?.payment_status || '').trim();
                       const s = rawStatus.toLowerCase().replace(/[^a-z]/g, '');
-                      const isPreorder = s === 'preorder' || /pre[- ]?order/i.test(order?.variant_name || '') || /pre[- ]?order/i.test(order?.items?.[0]?.title || '') || /pre[- ]?order/i.test(order?.items?.[0]?.variant_name || '');
-                      const isDelivered = (s === 'delivered' || s === 'completed' || (s === 'paid' && Boolean(order?.credentials || order?.items?.[0]?.delivered_content))) && !isPreorder;
                       const isRefunded = s === 'refunded';
                       const isCanceled = s === 'canceled' || s === 'cancelled' || s === 'failed';
+                      const isDelivered = (s === 'delivered' || s === 'completed' || (s === 'paid' && Boolean(order?.credentials || order?.items?.[0]?.delivered_content))) && !isRefunded && !isCanceled;
+                      const isPreorder = s === 'preorder' && !isRefunded && !isCanceled && !isDelivered;
                       const isPending = !isDelivered && !isPreorder && !isRefunded && !isCanceled;
 
                       return (
@@ -481,8 +477,34 @@ function DashboardContent() {
                                     </div>
                                   )}
 
+                                  {/* Refunded Notice */}
+                                  {isRefunded && (
+                                    <div style={{
+                                      display: 'flex', alignItems: 'center', gap: 7,
+                                      background: 'rgba(59, 130, 246, 0.12)', padding: '8px 14px',
+                                      borderRadius: 'var(--radius-md)', border: '1px solid rgba(59, 130, 246, 0.4)',
+                                      fontSize: 12.5, fontWeight: 700, color: '#60a5fa'
+                                    }}>
+                                      <span className="icon icon--sm" style={{ fontSize: 15 }}>currency_exchange</span>
+                                      <span>Refunded to Wallet / Payment Source</span>
+                                    </div>
+                                  )}
+
+                                  {/* Canceled Notice */}
+                                  {isCanceled && (
+                                    <div style={{
+                                      display: 'flex', alignItems: 'center', gap: 7,
+                                      background: 'rgba(239, 68, 68, 0.12)', padding: '8px 14px',
+                                      borderRadius: 'var(--radius-md)', border: '1px solid rgba(239, 68, 68, 0.4)',
+                                      fontSize: 12.5, fontWeight: 700, color: '#f87171'
+                                    }}>
+                                      <span className="icon icon--sm" style={{ fontSize: 15 }}>cancel</span>
+                                      <span>Order Canceled</span>
+                                    </div>
+                                  )}
+
                                   {/* Pending Manual Notice */}
-                                  {isPending && !isPreorder && (
+                                  {isPending && (
                                     <div style={{
                                       display: 'flex', alignItems: 'center', gap: 7,
                                       background: 'rgba(245, 158, 11, 0.12)', padding: '8px 14px',
