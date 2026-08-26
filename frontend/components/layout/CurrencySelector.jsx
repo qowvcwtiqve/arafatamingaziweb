@@ -43,45 +43,122 @@ export default function CurrencySelector({ isMobile = false }) {
     );
   }
 
-  // 1. INLINE GRID VIEW FOR MOBILE PROFILE BOTTOM SHEET
+  // 1. SLEEK MINIMAL EXPANDABLE CARD FOR MOBILE PROFILE SHEET
   if (isMobile) {
+    const current = CURRENCIES[currency] || CURRENCIES.INR;
+
     return (
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: 8,
-        width: '100%'
+        borderRadius: 12,
+        border: '1px solid var(--color-border)',
+        background: 'var(--color-surface-2)',
+        overflow: 'hidden',
+        transition: 'all 0.2s ease'
       }}>
-        {Object.values(CURRENCIES).map((c) => {
-          const isSelected = c.code === currency;
-          return (
-            <button
-              key={c.code}
-              type="button"
-              onClick={() => setCurrency(c.code)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                padding: '9px 6px',
-                borderRadius: 'var(--radius-md, 10px)',
-                background: isSelected ? 'rgba(56, 189, 248, 0.15)' : 'var(--color-surface-2)',
-                border: isSelected ? '1.5px solid var(--color-cyan)' : '1px solid var(--color-border)',
-                color: isSelected ? 'var(--color-cyan)' : 'var(--color-text)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                userSelect: 'none'
-              }}
-            >
-              <FlagIcon code={c.code} size={15} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                <span style={{ fontWeight: 800, fontSize: 12.5 }}>{c.code}</span>
-                <span style={{ fontSize: 11, opacity: 0.75 }}>{c.symbol}</span>
+        {/* Active Selection Trigger Header */}
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 14px',
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--color-text)',
+            cursor: 'pointer',
+            textAlign: 'left'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <FlagIcon code={current.code} size={20} />
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontWeight: 800, fontSize: 14, color: 'var(--color-text)' }}>{current.code}</span>
+                <span style={{ fontSize: 12, color: 'var(--color-cyan)', fontWeight: 700 }}>({current.symbol})</span>
               </div>
-            </button>
-          );
-        })}
+              <div style={{ fontSize: 11.5, color: 'var(--color-text-faint)' }}>{current.name}</div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{
+              fontSize: 11.5,
+              fontWeight: 700,
+              color: 'var(--color-cyan)',
+              background: 'rgba(56, 189, 248, 0.08)',
+              padding: '3px 8px',
+              borderRadius: 6
+            }}>
+              {open ? 'Close' : 'Change'}
+            </span>
+            <span className="icon icon--sm" style={{
+              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+              fontSize: 18,
+              color: 'var(--color-text-faint)'
+            }}>
+              expand_more
+            </span>
+          </div>
+        </button>
+
+        {/* Expandable Options List */}
+        {open && (
+          <div style={{
+            borderTop: '1px solid var(--color-border)',
+            background: 'var(--color-surface)',
+            maxHeight: 240,
+            overflowY: 'auto',
+            padding: '4px'
+          }}>
+            {Object.values(CURRENCIES).map((c) => {
+              const isSelected = c.code === currency;
+              return (
+                <button
+                  key={c.code}
+                  type="button"
+                  onClick={() => {
+                    setCurrency(c.code);
+                    setOpen(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '9px 12px',
+                    borderRadius: 8,
+                    background: isSelected ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
+                    border: 'none',
+                    color: isSelected ? 'var(--color-cyan)' : 'var(--color-text)',
+                    cursor: 'pointer',
+                    transition: 'background 0.12s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <FlagIcon code={c.code} size={18} />
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontWeight: isSelected ? 800 : 600, fontSize: 13 }}>{c.code}</span>
+                        <span style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>{c.symbol}</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>{c.name}</div>
+                    </div>
+                  </div>
+
+                  {isSelected && (
+                    <span className="icon icon--sm" style={{ color: 'var(--color-cyan)', fontSize: 18 }}>
+                      check
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   }
