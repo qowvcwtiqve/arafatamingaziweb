@@ -382,54 +382,216 @@ function DashboardContent() {
                     </Link>
                   </div>
                 ) : (
-                  <div className="orders-list-container">
-                    {orders.map((order) => {
-                      const primaryItem = order.items?.[0] || {};
-                      const itemTitle = primaryItem.title || 'Order #' + (order.order_number || order.id);
-                      const variantName = primaryItem.variant_name || order.variant_name;
+                  <>
+                    {/* PC / Desktop View */}
+                    <div className="orders-desktop-view">
+                      {orders.map((order) => {
+                        const rawStatus = String(order?.status || order?.order_status || order?.payment_status || '').trim();
+                        const s = rawStatus.toLowerCase().replace(/[^a-z]/g, '');
+                        const isRefunded = s === 'refunded';
+                        const isCanceled = s === 'canceled' || s === 'cancelled' || s === 'failed';
+                        const isDelivered = (s === 'delivered' || s === 'completed' || (s === 'paid' && Boolean(order?.credentials || order?.items?.[0]?.delivered_content))) && !isRefunded && !isCanceled;
+                        const isPreorder = s === 'preorder' && !isRefunded && !isCanceled && !isDelivered;
+                        const isPending = !isDelivered && !isPreorder && !isRefunded && !isCanceled;
 
-                      return (
-                        <Link
-                          key={order.id}
-                          href={`/dashboard/order/${order.id}`}
-                          className="order-list-item"
-                        >
-                          {/* Left: Icon & Info */}
-                          <div className="order-list-left">
-                            <div className="order-list-icon">
-                              <span className="icon" style={{ fontSize: 18 }}>inventory_2</span>
+                        return (
+                          <div key={order.id} className="dashboard-order-card">
+                            {/* Order Header */}
+                            <div className="dashboard-order-header">
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: 16, color: 'var(--color-text)', letterSpacing: '0.02em' }}>
+                                  #{order.order_number || order.id}
+                                </span>
+                                {renderOrderStatusBadge(order)}
+                              </div>
+
+                              <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontFamily: 'var(--font-heading)', fontSize: 19, fontWeight: 900, color: 'var(--color-accent)' }}>
+                                  {format(order.total_amount)}
+                                </div>
+                                <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                                  {order.payment_method || 'Online'}
+                                </div>
+                              </div>
                             </div>
 
-                            <div className="order-list-content">
-                              <div className="order-list-title">
-                                {itemTitle}
-                              </div>
-                              <div className="order-list-meta">
+                            {/* Purchase Date Bar */}
+                            <div style={{ fontSize: 12, color: 'var(--color-text-faint)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span className="icon icon--sm" style={{ fontSize: 14 }}>calendar_today</span>
+                              <span>{new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+
+                            {/* Items List */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                              {order.items?.filter(Boolean).map((item, i) => (
+                                <div key={i} className="dashboard-order-item-row">
+                                  <div style={{ flex: '1 1 200px' }}>
+                                    <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--color-text)', marginBottom: 4 }}>
+                                      {item.title}
+                                    </div>
+                                    {item.variant_name && (
+                                      <div style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                                        fontSize: 11.5, fontWeight: 700, color: 'var(--color-cyan)',
+                                        background: 'rgba(0, 212, 255, 0.08)', padding: '2px 8px', borderRadius: 6
+                                      }}>
+                                        <span>{item.variant_name}</span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div className="dashboard-order-actions-wrap">
+                                    {/* Pre-order Notice */}
+                                    {isPreorder && (
+                                      <div style={{
+                                        display: 'flex', alignItems: 'center', gap: 7,
+                                        background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%)',
+                                        padding: '8px 12px', borderRadius: 'var(--radius-md)',
+                                        border: '1px solid rgba(168, 85, 247, 0.4)',
+                                        fontSize: 12, fontWeight: 700, color: '#c084fc'
+                                      }}>
+                                        <span className="icon icon--sm" style={{ fontSize: 14 }}>rocket_launch</span>
+                                        <span>Pre-Order Queued (Auto-dispatch on stock)</span>
+                                      </div>
+                                    )}
+
+                                    {/* Refunded Notice */}
+                                    {isRefunded && (
+                                      <div style={{
+                                        display: 'flex', alignItems: 'center', gap: 7,
+                                        background: 'rgba(59, 130, 246, 0.12)', padding: '8px 12px',
+                                        borderRadius: 'var(--radius-md)', border: '1px solid rgba(59, 130, 246, 0.4)',
+                                        fontSize: 12, fontWeight: 700, color: '#60a5fa'
+                                      }}>
+                                        <span className="icon icon--sm" style={{ fontSize: 14 }}>currency_exchange</span>
+                                        <span>Refunded to Wallet / Source</span>
+                                      </div>
+                                    )}
+
+                                    {/* Canceled Notice */}
+                                    {isCanceled && (
+                                      <div style={{
+                                        display: 'flex', alignItems: 'center', gap: 7,
+                                        background: 'rgba(239, 68, 68, 0.12)', padding: '8px 12px',
+                                        borderRadius: 'var(--radius-md)', border: '1px solid rgba(239, 68, 68, 0.4)',
+                                        fontSize: 12, fontWeight: 700, color: '#f87171'
+                                      }}>
+                                        <span className="icon icon--sm" style={{ fontSize: 14 }}>cancel</span>
+                                        <span>Order Canceled</span>
+                                      </div>
+                                    )}
+
+                                    {/* Pending Manual Notice */}
+                                    {isPending && (
+                                      <div style={{
+                                        display: 'flex', alignItems: 'center', gap: 7,
+                                        background: 'rgba(245, 158, 11, 0.12)', padding: '8px 12px',
+                                        borderRadius: 'var(--radius-md)', border: '1px solid rgba(245, 158, 11, 0.4)',
+                                        fontSize: 12, fontWeight: 700, color: '#fbbf24'
+                                      }}>
+                                        <span className="icon icon--sm" style={{ fontSize: 14 }}>hourglass_top</span>
+                                        <span>Manual Delivery in Progress</span>
+                                      </div>
+                                    )}
+
+                                    {/* Delivered Credentials Box */}
+                                    {isDelivered && (item.delivered_content || order.credentials) && !item.download_token && (
+                                      <div className="dashboard-credentials-box">
+                                        <span className="dashboard-credentials-text">
+                                          {item.delivered_content || order.credentials}
+                                        </span>
+                                        <button
+                                          className="btn btn--ghost btn--icon"
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(item.delivered_content || order.credentials);
+                                            toast.success('Credentials copied to clipboard');
+                                          }}
+                                          style={{ width: 28, height: 28, color: '#10b981', flexShrink: 0 }}
+                                          title="Copy to clipboard"
+                                        >
+                                          <span className="icon" style={{ fontSize: 15 }}>content_copy</span>
+                                        </button>
+                                      </div>
+                                    )}
+
+                                    {/* Download Token Button */}
+                                    {item.download_token && (
+                                      <a
+                                        href={`${process.env.NEXT_PUBLIC_API_URL}/api/download/${item.download_token}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn--primary btn--sm"
+                                        style={{ gap: 6, padding: '7px 14px' }}
+                                      >
+                                        <span className="icon icon--sm">download</span>
+                                        <span>Download File</span>
+                                      </a>
+                                    )}
+
+                                    {/* View Receipt Details Button */}
+                                    <Link
+                                      href={`/dashboard/order/${order.id}`}
+                                      className="btn btn--outline btn--sm"
+                                      style={{
+                                        gap: 6,
+                                        padding: '7px 14px',
+                                        borderColor: 'rgba(255, 255, 255, 0.15)',
+                                        fontWeight: 700,
+                                        background: 'rgba(255, 255, 255, 0.03)'
+                                      }}
+                                    >
+                                      <span>Details</span>
+                                      <span className="icon icon--sm" style={{ fontSize: 14 }}>chevron_right</span>
+                                    </Link>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Phone / Mobile Minimal 2-Line View */}
+                    <div className="orders-mobile-view">
+                      {orders.map((order) => {
+                        const primaryItem = order.items?.[0] || {};
+                        const itemTitle = primaryItem.title || 'Order #' + (order.order_number || order.id);
+                        const variantName = primaryItem.variant_name || order.variant_name;
+
+                        return (
+                          <Link
+                            key={order.id}
+                            href={`/dashboard/order/${order.id}`}
+                            className="mobile-order-card"
+                          >
+                            {/* Line 1: Title + Price */}
+                            <div className="mobile-order-row-1">
+                              <div className="mobile-order-title">{itemTitle}</div>
+                              <div className="mobile-order-price">{format(order.total_amount)}</div>
+                            </div>
+
+                            {/* Line 2: Plan/ID/Date on left, Status Badge on right */}
+                            <div className="mobile-order-row-2">
+                              <div className="mobile-order-meta">
                                 {variantName && (
-                                  <>
-                                    <span style={{ color: 'var(--color-cyan)', fontWeight: 600 }}>{variantName}</span>
-                                    <span>•</span>
-                                  </>
+                                  <span style={{ color: 'var(--color-cyan)', fontWeight: 600 }}>{variantName} •</span>
                                 )}
                                 <span>#{order.order_number || order.id}</span>
                                 <span>•</span>
                                 <span>{new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
                               </div>
-                            </div>
-                          </div>
 
-                          {/* Right: Price & Status */}
-                          <div className="order-list-right">
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
-                              <div className="order-list-price">{format(order.total_amount)}</div>
-                              {renderOrderStatusBadge(order, true)}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                                {renderOrderStatusBadge(order, true)}
+                                <span className="icon icon--sm" style={{ color: 'var(--color-text-faint)', fontSize: 15 }}>chevron_right</span>
+                              </div>
                             </div>
-                            <span className="icon icon--sm" style={{ color: 'var(--color-text-faint)', fontSize: 16 }}>chevron_right</span>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </div>
             )}
