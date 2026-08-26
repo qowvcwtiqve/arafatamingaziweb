@@ -185,33 +185,187 @@ export default function Header() {
                   </button>
 
                   {userDropdownOpen && (
-                    <div className="user-dropdown">
-                      <div className="user-dropdown__header">
-                        <span className="user-dropdown__name">{user.name}</span>
-                        <span className="user-dropdown__email">{user.email}</span>
-                      </div>
-                      <div className="user-dropdown__body">
-                        <Link href="/dashboard" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
-                          <span className="icon icon--sm">dashboard</span> Dashboard
-                        </Link>
-                        <Link href="/dashboard?tab=orders" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
-                          <span className="icon icon--sm">receipt_long</span> Order History
-                        </Link>
-                        <Link href="/dashboard?tab=wallet" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
-                          <span className="icon icon--sm icon--accent">account_balance_wallet</span> Wallet: ₹{parseFloat(user.balance || 0).toFixed(2)}
-                        </Link>
-                        {user.role === 'admin' && (
-                          <Link href="/admin" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
-                            <span className="icon icon--sm icon--primary">admin_panel_settings</span> Admin Panel
+                    <>
+                      {/* Desktop Dropdown */}
+                      <div className="user-dropdown user-dropdown--desktop">
+                        <div className="user-dropdown__header">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{
+                              width: 32, height: 32, borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #7C3AED 0%, #38BDF8 100%)',
+                              color: '#FFFFFF', fontWeight: 800, fontSize: 13,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <span className="user-dropdown__name">{user.name}</span>
+                              <span className="user-dropdown__email">{user.email}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="user-dropdown__body">
+                          <Link href="/dashboard" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
+                            <span className="icon icon--sm">dashboard</span> Dashboard
                           </Link>
-                        )}
+                          <Link href="/dashboard?tab=orders" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
+                            <span className="icon icon--sm icon--cyan">receipt_long</span> Order History
+                          </Link>
+                          <Link href="/dashboard?tab=wallet" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
+                            <span className="icon icon--sm icon--accent">account_balance_wallet</span> Wallet: ₹{parseFloat(user.balance || 0).toFixed(2)}
+                          </Link>
+                          {user.role === 'admin' && (
+                            <Link href="/admin" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
+                              <span className="icon icon--sm icon--primary">admin_panel_settings</span> Admin Panel
+                            </Link>
+                          )}
+                        </div>
+                        <div className="user-dropdown__footer">
+                          <button onClick={() => { logout(); setUserDropdownOpen(false); }} className="user-dropdown__item user-dropdown__item--danger">
+                            <span className="icon icon--sm">logout</span> Sign Out
+                          </button>
+                        </div>
                       </div>
-                      <div className="user-dropdown__footer">
-                        <button onClick={() => { logout(); setUserDropdownOpen(false); }} className="user-dropdown__item user-dropdown__item--danger">
-                          <span className="icon icon--sm">logout</span> Sign Out
-                        </button>
+
+                      {/* Mobile Bottom Sheet (Slide-Up Drawer from Bottom) */}
+                      <div className="user-bottom-sheet-overlay" onClick={() => setUserDropdownOpen(false)}>
+                        <div className="user-bottom-sheet" onClick={(e) => e.stopPropagation()}>
+                          
+                          {/* Pull Bar Handle */}
+                          <div className="user-bottom-sheet__handle-wrapper" onClick={() => setUserDropdownOpen(false)}>
+                            <div className="user-bottom-sheet__handle" />
+                          </div>
+
+                          {/* Profile Header */}
+                          <div className="user-bottom-sheet__user-card">
+                            <div className="user-bottom-sheet__avatar">
+                              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                            <div className="user-bottom-sheet__user-info">
+                              <div className="user-bottom-sheet__user-name-row">
+                                <span className="user-bottom-sheet__user-name">{user.name}</span>
+                                <span className={`user-bottom-sheet__role-badge ${user.role === 'admin' ? 'user-bottom-sheet__role-badge--admin' : ''}`}>
+                                  {user.role === 'admin' ? 'Admin' : 'Member'}
+                                </span>
+                              </div>
+                              <span className="user-bottom-sheet__user-email">{user.email}</span>
+                            </div>
+                            <button
+                              className="user-bottom-sheet__close-btn"
+                              onClick={() => setUserDropdownOpen(false)}
+                              aria-label="Close"
+                            >
+                              <span className="icon icon--md">close</span>
+                            </button>
+                          </div>
+
+                          {/* Wallet Quick Card */}
+                          <div className="user-bottom-sheet__wallet-card">
+                            <div className="user-bottom-sheet__wallet-left">
+                              <span className="icon icon--md icon--accent" style={{ fontSize: 24 }}>account_balance_wallet</span>
+                              <div>
+                                <div className="user-bottom-sheet__wallet-label">Available Balance</div>
+                                <div className="user-bottom-sheet__wallet-amount">₹{parseFloat(user.balance || 0).toFixed(2)}</div>
+                              </div>
+                            </div>
+                            <Link
+                              href="/dashboard?tab=wallet"
+                              className="btn btn--primary btn--sm"
+                              onClick={() => setUserDropdownOpen(false)}
+                              style={{ gap: 4, padding: '7px 16px', borderRadius: 'var(--radius-full)' }}
+                            >
+                              <span className="icon icon--sm">add</span>
+                              <span>Top Up</span>
+                            </Link>
+                          </div>
+
+                          {/* Menu Items List */}
+                          <div className="user-bottom-sheet__nav-list">
+                            <Link
+                              href="/dashboard"
+                              className="user-bottom-sheet__nav-item"
+                              onClick={() => setUserDropdownOpen(false)}
+                            >
+                              <div className="user-bottom-sheet__nav-item-left">
+                                <div className="user-bottom-sheet__nav-icon-box">
+                                  <span className="icon icon--md icon--primary">dashboard</span>
+                                </div>
+                                <div>
+                                  <div className="user-bottom-sheet__nav-title">Dashboard Overview</div>
+                                  <div className="user-bottom-sheet__nav-subtitle">Account stats & quick summary</div>
+                                </div>
+                              </div>
+                              <span className="icon icon--sm icon--muted">chevron_right</span>
+                            </Link>
+
+                            <Link
+                              href="/dashboard?tab=orders"
+                              className="user-bottom-sheet__nav-item"
+                              onClick={() => setUserDropdownOpen(false)}
+                            >
+                              <div className="user-bottom-sheet__nav-item-left">
+                                <div className="user-bottom-sheet__nav-icon-box">
+                                  <span className="icon icon--md icon--cyan">receipt_long</span>
+                                </div>
+                                <div>
+                                  <div className="user-bottom-sheet__nav-title">Order History &amp; Keys</div>
+                                  <div className="user-bottom-sheet__nav-subtitle">View keys, files &amp; pre-order queue</div>
+                                </div>
+                              </div>
+                              <span className="icon icon--sm icon--muted">chevron_right</span>
+                            </Link>
+
+                            <Link
+                              href="/dashboard?tab=wallet"
+                              className="user-bottom-sheet__nav-item"
+                              onClick={() => setUserDropdownOpen(false)}
+                            >
+                              <div className="user-bottom-sheet__nav-item-left">
+                                <div className="user-bottom-sheet__nav-icon-box">
+                                  <span className="icon icon--md icon--accent">account_balance_wallet</span>
+                                </div>
+                                <div>
+                                  <div className="user-bottom-sheet__nav-title">Wallet &amp; Transactions</div>
+                                  <div className="user-bottom-sheet__nav-subtitle">Deposit via UPI, Binance &amp; Crypto</div>
+                                </div>
+                              </div>
+                              <span className="icon icon--sm icon--muted">chevron_right</span>
+                            </Link>
+
+                            {user.role === 'admin' && (
+                              <Link
+                                href="/admin"
+                                className="user-bottom-sheet__nav-item user-bottom-sheet__nav-item--admin"
+                                onClick={() => setUserDropdownOpen(false)}
+                              >
+                                <div className="user-bottom-sheet__nav-item-left">
+                                  <div className="user-bottom-sheet__nav-icon-box" style={{ background: 'rgba(124, 58, 237, 0.18)' }}>
+                                    <span className="icon icon--md icon--primary">admin_panel_settings</span>
+                                  </div>
+                                  <div>
+                                    <div className="user-bottom-sheet__nav-title" style={{ color: 'var(--color-primary-light)' }}>Admin Control Panel</div>
+                                    <div className="user-bottom-sheet__nav-subtitle">Orders, stock pools, products &amp; users</div>
+                                  </div>
+                                </div>
+                                <span className="icon icon--sm" style={{ color: 'var(--color-primary-light)' }}>chevron_right</span>
+                              </Link>
+                            )}
+                          </div>
+
+                          {/* Logout Button */}
+                          <div className="user-bottom-sheet__footer">
+                            <button
+                              onClick={() => { logout(); setUserDropdownOpen(false); }}
+                              className="user-bottom-sheet__logout-btn"
+                            >
+                              <span className="icon icon--md">logout</span>
+                              <span>Sign Out of Account</span>
+                            </button>
+                          </div>
+
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
                 </div>
               ) : (
