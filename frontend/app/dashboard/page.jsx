@@ -378,7 +378,7 @@ function DashboardContent() {
                     </Link>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                  <div className="orders-list-container">
                     {orders.map((order) => {
                       const rawStatus = String(order?.status || order?.order_status || order?.payment_status || '').trim();
                       const s = rawStatus.toLowerCase().replace(/[^a-z]/g, '');
@@ -386,164 +386,82 @@ function DashboardContent() {
                       const isCanceled = s === 'canceled' || s === 'cancelled' || s === 'failed';
                       const isDelivered = (s === 'delivered' || s === 'completed' || (s === 'paid' && Boolean(order?.credentials || order?.items?.[0]?.delivered_content))) && !isRefunded && !isCanceled;
                       const isPreorder = s === 'preorder' && !isRefunded && !isCanceled && !isDelivered;
-                      const isPending = !isDelivered && !isPreorder && !isRefunded && !isCanceled;
+
+                      // Primary item details
+                      const primaryItem = order.items?.[0] || {};
+                      const itemTitle = primaryItem.title || 'Order #' + (order.order_number || order.id);
+                      const variantName = primaryItem.variant_name || order.variant_name;
+                      const extraItemsCount = (order.items?.length || 1) - 1;
 
                       return (
-                        <div key={order.id} className="dashboard-order-card">
-                          {/* Order Header */}
-                          <div className="dashboard-order-header">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: 16, color: 'var(--color-text)', letterSpacing: '0.02em' }}>
-                                #{order.order_number || order.id}
+                        <Link
+                          key={order.id}
+                          href={`/dashboard/order/${order.id}`}
+                          className="order-list-item"
+                        >
+                          {/* Left: Icon & Info */}
+                          <div className="order-list-left">
+                            <div className="order-list-icon">
+                              <span className="icon">
+                                {isPreorder ? 'rocket_launch' : isDelivered ? 'verified' : isRefunded ? 'currency_exchange' : isCanceled ? 'cancel' : 'inventory_2'}
                               </span>
-
-                              {/* Live Status Badge */}
-                              {renderOrderStatusBadge(order)}
                             </div>
 
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 19, fontWeight: 900, color: 'var(--color-accent)' }}>
-                                {format(order.total_amount)}
+                            <div className="order-list-content">
+                              <div className="order-list-title-row">
+                                <span className="order-list-title">{itemTitle}</span>
+                                {variantName && (
+                                  <span style={{
+                                    fontSize: 11, fontWeight: 700, color: 'var(--color-cyan)',
+                                    background: 'rgba(0, 212, 255, 0.08)', padding: '2px 7px', borderRadius: 6
+                                  }}>
+                                    {variantName}
+                                  </span>
+                                )}
+                                {extraItemsCount > 0 && (
+                                  <span style={{
+                                    fontSize: 10.5, fontWeight: 600, color: 'var(--color-text-faint)',
+                                    background: 'rgba(255, 255, 255, 0.06)', padding: '2px 6px', borderRadius: 4
+                                  }}>
+                                    +{extraItemsCount} more
+                                  </span>
+                                )}
                               </div>
-                              <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
-                                {order.payment_method || 'Online'}
+
+                              <div className="order-list-meta">
+                                <span style={{ fontWeight: 700, color: 'var(--color-text-muted)' }}>
+                                  #{order.order_number || order.id}
+                                </span>
+                                <span>•</span>
+                                <span>
+                                  {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                <span>•</span>
+                                <span style={{ textTransform: 'uppercase' }}>
+                                  {order.payment_method || 'Online'}
+                                </span>
                               </div>
                             </div>
                           </div>
 
-                          {/* Purchase Date Bar */}
-                          <div style={{ fontSize: 12, color: 'var(--color-text-faint)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span className="icon icon--sm" style={{ fontSize: 14 }}>calendar_today</span>
-                            <span>{new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                          {/* Right: Status & Price & View Receipt CTA */}
+                          <div className="order-list-right">
+                            {renderOrderStatusBadge(order)}
+
+                            <div className="order-list-price-block">
+                              <div className="order-list-price">{format(order.total_amount)}</div>
+                            </div>
+
+                            <span className="btn btn--outline btn--sm" style={{
+                              gap: 4, padding: '6px 12px', fontSize: 12, fontWeight: 700,
+                              borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.03)',
+                              pointerEvents: 'none'
+                            }}>
+                              <span>View Receipt</span>
+                              <span className="icon icon--sm" style={{ fontSize: 14 }}>chevron_right</span>
+                            </span>
                           </div>
-
-                          {/* Items & Deliverables List */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            {order.items?.filter(Boolean).map((item, i) => (
-                              <div key={i} className="dashboard-order-item-row">
-                                <div style={{ flex: '1 1 200px' }}>
-                                  <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--color-text)', marginBottom: 4 }}>
-                                    {item.title}
-                                  </div>
-                                  {item.variant_name && (
-                                    <div style={{
-                                      display: 'inline-flex', alignItems: 'center', gap: 5,
-                                      fontSize: 11.5, fontWeight: 700, color: 'var(--color-cyan)',
-                                      background: 'rgba(0, 212, 255, 0.08)', padding: '2px 8px', borderRadius: 6
-                                    }}>
-                                      <span>{item.variant_name}</span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="dashboard-order-actions-wrap">
-                                  {/* Pre-order Queue Notice */}
-                                  {isPreorder && (
-                                    <div style={{
-                                      display: 'flex', alignItems: 'center', gap: 7,
-                                      background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%)',
-                                      padding: '8px 12px', borderRadius: 'var(--radius-md)',
-                                      border: '1px solid rgba(168, 85, 247, 0.4)',
-                                      fontSize: 12, fontWeight: 700, color: '#c084fc'
-                                    }}>
-                                      <span className="icon icon--sm" style={{ fontSize: 14 }}>rocket_launch</span>
-                                      <span>Pre-Order Queued (Auto-dispatch on stock)</span>
-                                    </div>
-                                  )}
-
-                                  {/* Refunded Notice */}
-                                  {isRefunded && (
-                                    <div style={{
-                                      display: 'flex', alignItems: 'center', gap: 7,
-                                      background: 'rgba(59, 130, 246, 0.12)', padding: '8px 12px',
-                                      borderRadius: 'var(--radius-md)', border: '1px solid rgba(59, 130, 246, 0.4)',
-                                      fontSize: 12, fontWeight: 700, color: '#60a5fa'
-                                    }}>
-                                      <span className="icon icon--sm" style={{ fontSize: 14 }}>currency_exchange</span>
-                                      <span>Refunded to Wallet / Source</span>
-                                    </div>
-                                  )}
-
-                                  {/* Canceled Notice */}
-                                  {isCanceled && (
-                                    <div style={{
-                                      display: 'flex', alignItems: 'center', gap: 7,
-                                      background: 'rgba(239, 68, 68, 0.12)', padding: '8px 12px',
-                                      borderRadius: 'var(--radius-md)', border: '1px solid rgba(239, 68, 68, 0.4)',
-                                      fontSize: 12, fontWeight: 700, color: '#f87171'
-                                    }}>
-                                      <span className="icon icon--sm" style={{ fontSize: 14 }}>cancel</span>
-                                      <span>Order Canceled</span>
-                                    </div>
-                                  )}
-
-                                  {/* Pending Manual Notice */}
-                                  {isPending && (
-                                    <div style={{
-                                      display: 'flex', alignItems: 'center', gap: 7,
-                                      background: 'rgba(245, 158, 11, 0.12)', padding: '8px 12px',
-                                      borderRadius: 'var(--radius-md)', border: '1px solid rgba(245, 158, 11, 0.4)',
-                                      fontSize: 12, fontWeight: 700, color: '#fbbf24'
-                                    }}>
-                                      <span className="icon icon--sm" style={{ fontSize: 14 }}>hourglass_top</span>
-                                      <span>Manual Delivery in Progress</span>
-                                    </div>
-                                  )}
-
-                                  {/* Delivered Credentials */}
-                                  {isDelivered && (item.delivered_content || order.credentials) && !item.download_token && (
-                                    <div className="dashboard-credentials-box">
-                                      <span className="dashboard-credentials-text">
-                                        {item.delivered_content || order.credentials}
-                                      </span>
-                                      <button
-                                        className="btn btn--ghost btn--icon"
-                                        onClick={() => {
-                                          navigator.clipboard.writeText(item.delivered_content || order.credentials);
-                                          toast.success('Credentials copied to clipboard');
-                                        }}
-                                        style={{ width: 28, height: 28, color: '#10b981', flexShrink: 0 }}
-                                        title="Copy to clipboard"
-                                      >
-                                        <span className="icon" style={{ fontSize: 15 }}>content_copy</span>
-                                      </button>
-                                    </div>
-                                  )}
-
-                                  {/* Download Token Button */}
-                                  {item.download_token && (
-                                    <a
-                                      href={`${process.env.NEXT_PUBLIC_API_URL}/api/download/${item.download_token}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="btn btn--primary btn--sm dashboard-order-details-btn"
-                                      style={{ gap: 6, padding: '7px 14px' }}
-                                    >
-                                      <span className="icon icon--sm">download</span>
-                                      <span>Download File</span>
-                                    </a>
-                                  )}
-
-                                  {/* View Receipt Details Button */}
-                                  <Link
-                                    href={`/dashboard/order/${order.id}`}
-                                    className="btn btn--outline btn--sm dashboard-order-details-btn"
-                                    style={{
-                                      gap: 6,
-                                      padding: '7px 14px',
-                                      borderColor: 'rgba(255, 255, 255, 0.15)',
-                                      fontWeight: 700,
-                                      background: 'rgba(255, 255, 255, 0.03)'
-                                    }}
-                                  >
-                                    <span>Details</span>
-                                    <span className="icon icon--sm" style={{ fontSize: 14 }}>chevron_right</span>
-                                  </Link>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>
