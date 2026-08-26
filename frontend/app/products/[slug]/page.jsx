@@ -202,7 +202,7 @@ export default function ProductDetailPage() {
       <div style={{ padding: '120px 0 60px' }}>
         <div className="container">
           <div className="product-detail-skeleton-grid">
-            <div className="skeleton" style={{ width: '100%', paddingTop: '65%', borderRadius: 20 }} />
+            <div className="skeleton" style={{ width: '100%', aspectRatio: '4 / 5', borderRadius: 20 }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
               <div className="skeleton" style={{ height: 40, width: '85%' }} />
               <div className="skeleton" style={{ height: 24, width: '50%' }} />
@@ -349,21 +349,35 @@ export default function ProductDetailPage() {
           {/* LEFT COLUMN: Visual Showcase & Guarantees */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             
-            {/* Visual Google Font Material Symbol Graphic Banner */}
+            {/* Visual Graphic Banner / Product Image (4:5 Ratio) */}
             <div style={{
               borderRadius: 'var(--radius-xl, 20px)',
               overflow: 'hidden',
               background: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
               position: 'relative',
-              paddingTop: '62%',
+              width: '100%',
+              aspectRatio: '4 / 5',
               boxShadow: '0 20px 40px -15px rgba(0,0,0,0.6), 0 0 30px rgba(124, 58, 237, 0.15)'
             }}>
-              <ProductIconBanner
-                title={product.title || product.name}
-                category={product.category_id || product.category}
-                size="detail"
-              />
+              {product.images && product.images.length > 0 && product.images[0] ? (
+                <img
+                  src={product.images[0]}
+                  alt={product.title || product.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }}
+                />
+              ) : (
+                <ProductIconBanner
+                  title={product.title || product.name}
+                  category={product.category_id || product.category}
+                  size="detail"
+                />
+              )}
             </div>
 
             {/* 3 Guarantee Highlights Pods */}
