@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '../../store/cartStore';
 import toast from 'react-hot-toast';
@@ -7,6 +8,7 @@ import ProductIconBanner from './ProductIconBanner';
 
 export default function ProductCard({ product: p }) {
   const addItem = useCartStore((s) => s.addItem);
+  const [imgError, setImgError] = useState(false);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -43,7 +45,7 @@ export default function ProductCard({ product: p }) {
     p.website_meta?.description ||
     p.short_description ||
     p.description ||
-    'Instant verified credentials & automated delivery with genuine license.';
+    '';
 
   // Deterministic realistic ratings & orders based on product id
   const charCodeSum = (p.id || 'prod').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
@@ -52,10 +54,13 @@ export default function ProductCard({ product: p }) {
   const reviewsCount = 38 + (charCodeSum % 142);
   const soldCount = 120 + (charCodeSum % 380);
 
+  const imageUrl = p.images?.[0] || p.website_meta?.images?.[0];
+  const hasImage = Boolean(imageUrl && !imgError);
+
   return (
     <Link href={`/products/${p.slug || p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
       <div className="product-card">
-        {/* 1. Visual Graphic Banner (1:1 Square Ratio) */}
+        {/* 1. Visual Graphic Banner / Real Image (1:1 Square Ratio) */}
         <div
           className="product-card__image-container"
           style={{
@@ -63,14 +68,43 @@ export default function ProductCard({ product: p }) {
             aspectRatio: '1 / 1',
             position: 'relative',
             overflow: 'hidden',
-            background: 'var(--color-surface-2)'
+            background: 'var(--color-surface-2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
-          <ProductIconBanner
-            title={displayTitle}
-            category={p.category_id || p.category}
-            size="card"
-          />
+          {hasImage ? (
+            <div style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 24,
+              background: 'radial-gradient(circle at 50% 50%, var(--color-surface-3) 0%, var(--color-surface-2) 100%)',
+              position: 'relative'
+            }}>
+              <img
+                src={imageUrl}
+                alt={displayTitle}
+                onError={() => setImgError(true)}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.5))',
+                  transition: 'transform 0.3s ease'
+                }}
+              />
+            </div>
+          ) : (
+            <ProductIconBanner
+              title={displayTitle}
+              category={p.category_id || p.category}
+              size="card"
+            />
+          )}
 
           {/* Top-Left Floating Badges (Sale / Pre-Order / Custom) */}
           <div className="product-card__floating-badges">

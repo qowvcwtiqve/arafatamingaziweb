@@ -155,6 +155,7 @@ export default function ProductDetailPage() {
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('overview');
+  const [imgError, setImgError] = useState(false);
   
   // Review pagination & filter states
   const [reviewPage, setReviewPage] = useState(1);
@@ -348,19 +349,34 @@ export default function ProductDetailPage() {
               position: 'relative',
               width: '100%',
               aspectRatio: '4 / 5',
-              boxShadow: '0 20px 40px -15px rgba(0,0,0,0.6), 0 0 30px rgba(124, 58, 237, 0.15)'
+              boxShadow: '0 20px 40px -15px rgba(0,0,0,0.6), 0 0 30px rgba(124, 58, 237, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
-              {product.images && product.images.length > 0 && product.images[0] ? (
-                <img
-                  src={product.images[0]}
-                  alt={product.title || product.name}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    display: 'block'
-                  }}
-                />
+              {product.images && product.images.length > 0 && product.images[0] && !imgError ? (
+                <div style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 44,
+                  background: 'radial-gradient(circle at 50% 50%, var(--color-surface-2) 0%, var(--color-surface) 100%)',
+                  position: 'relative'
+                }}>
+                  <img
+                    src={product.images[0]}
+                    alt={product.title || product.name}
+                    onError={() => setImgError(true)}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'contain',
+                      filter: 'drop-shadow(0 14px 32px rgba(0,0,0,0.55))'
+                    }}
+                  />
+                </div>
               ) : (
                 <ProductIconBanner
                   title={product.title || product.name}
