@@ -1,11 +1,11 @@
 'use client';
 import { useCartStore } from '../../store/cartStore';
-import { useCurrencyStore } from '../../store/currencyStore';
+import { useCurrency } from '../../store/currencyStore';
 import Link from 'next/link';
 import ProductIconBanner from '../product/ProductIconBanner';
 
 export default function CartDrawer({ open, onClose }) {
-  const format = useCurrencyStore(s => s.format);
+  const { format } = useCurrency();
   const { items, removeItem, updateQuantity, total } = useCartStore(s => ({
     items: s.items,
     removeItem: s.removeItem,

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCartStore } from '../../store/cartStore';
 import { useAuthStore } from '../../store/authStore';
-import { useCurrencyStore } from '../../store/currencyStore';
+import { useCurrency } from '../../store/currencyStore';
 import api from '../../lib/api';
 import toast from 'react-hot-toast';
 
@@ -56,7 +56,7 @@ function CheckoutContent() {
   const router = useRouter();
   const { items, clearCart } = useCartStore();
   const { user } = useAuthStore();
-  const format = useCurrencyStore(s => s.format);
+  const { format } = useCurrency();
   const [availableMethods, setAvailableMethods] = useState(DEFAULT_METHODS);
   const [paymentMethod, setPaymentMethod] = useState('upi_qr');
   const [coupon, setCoupon] = useState('');

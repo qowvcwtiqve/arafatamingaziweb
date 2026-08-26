@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '../../store/cartStore';
-import { useCurrencyStore } from '../../store/currencyStore';
+import { useCurrency } from '../../store/currencyStore';
 import toast from 'react-hot-toast';
 import ProductIconBanner from './ProductIconBanner';
 
 export default function ProductCard({ product: p }) {
   const addItem = useCartStore((s) => s.addItem);
-  const format = useCurrencyStore((s) => s.format);
+  const { format } = useCurrency();
   const [imgError, setImgError] = useState(false);
 
   const handleAddToCart = (e) => {

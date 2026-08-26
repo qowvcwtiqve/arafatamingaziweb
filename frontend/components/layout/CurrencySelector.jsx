@@ -1,9 +1,9 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { useCurrencyStore, CURRENCIES } from '../../store/currencyStore';
+import { useCurrency, CURRENCIES } from '../../store/currencyStore';
 
 export default function CurrencySelector({ isMobile = false }) {
-  const { currency, setCurrency, fetchRates } = useCurrencyStore();
+  const { currency, setCurrency, fetchRates } = useCurrency();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef(null);

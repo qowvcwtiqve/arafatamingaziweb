@@ -101,3 +101,46 @@ export const useCurrencyStore = create(
     }
   )
 );
+
+/**
+ * Custom React hook ensuring instant reactive re-rendering on any currency change
+ */
+export function useCurrency() {
+  const currency = useCurrencyStore((s) => s.currency);
+  const rates = useCurrencyStore((s) => s.rates);
+  const setCurrency = useCurrencyStore((s) => s.setCurrency);
+  const fetchRates = useCurrencyStore((s) => s.fetchRates);
+
+  const format = (inrAmount, customCurrency = null) => {
+    const val = parseFloat(inrAmount) || 0;
+    const currCode = customCurrency || currency;
+    const currMeta = CURRENCIES[currCode] || CURRENCIES.INR;
+    const rate = rates[currCode] || (currCode === 'INR' ? 1.0 : (DEFAULT_RATES[currCode] || 1.0));
+
+    const converted = val * rate;
+    const decimals = currMeta.decimals;
+
+    let numStr = '';
+    if (decimals === 0) {
+      numStr = Math.round(converted).toLocaleString('en-US');
+    } else {
+      numStr = converted.toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      });
+    }
+
+    if (currMeta.prefix) {
+      return `${currMeta.symbol}${numStr}`;
+    }
+    return `${numStr} ${currMeta.symbol}`;
+  };
+
+  const convert = (inrAmount) => {
+    const val = parseFloat(inrAmount) || 0;
+    const rate = rates[currency] || 1.0;
+    return val * rate;
+  };
+
+  return { currency, rates, setCurrency, fetchRates, format, convert };
+}

@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import api from '../../lib/api';
 import ProductCard from '../../components/product/ProductCard';
 import CustomDropdown from '../../components/ui/CustomDropdown';
-import { useCurrencyStore } from '../../store/currencyStore';
+import { useCurrency } from '../../store/currencyStore';
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest First', icon: 'schedule' },
@@ -17,7 +17,7 @@ const SORT_OPTIONS = [
 function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const format = useCurrencyStore((s) => s.format);
+  const { format } = useCurrency();
 
   const BUDGET_PRESETS = [
     { label: 'All Prices', min: '', max: '' },

@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../../lib/api';
 import { useCartStore } from '../../../store/cartStore';
-import { useCurrencyStore } from '../../../store/currencyStore';
+import { useCurrency } from '../../../store/currencyStore';
 import toast from 'react-hot-toast';
 import ProductIconBanner from '../../../components/product/ProductIconBanner';
 import ProductCard from '../../../components/product/ProductCard';
@@ -147,7 +147,7 @@ export default function ProductDetailPage() {
   const { slug } = useParams();
   const router = useRouter();
   const addItem = useCartStore(s => s.addItem);
-  const format = useCurrencyStore(s => s.format);
+  const { format } = useCurrency();
 
   const [product, setProduct] = useState(null);
   const [variants, setVariants] = useState([]);
