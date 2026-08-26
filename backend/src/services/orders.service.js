@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Sale from '../models/sale.model.js';
 import Product from '../models/product.model.js';
 import { query } from '../config/db.js';
@@ -342,14 +343,16 @@ export const updateOrderStatus = async (orderId, newStatus, credentials = null, 
       updateObj.admin_notes = adminNotes;
     }
 
+    const orConditions = [
+      { sale_id: idRegex },
+      { sale_id: cleanId }
+    ];
+    if (mongoose.Types.ObjectId.isValid(cleanId) && cleanId.length === 24) {
+      orConditions.push({ _id: cleanId });
+    }
+
     updatedSale = await Sale.findOneAndUpdate(
-      {
-        $or: [
-          { sale_id: idRegex },
-          { sale_id: cleanId },
-          { _id: cleanId }
-        ]
-      },
+      { $or: orConditions },
       { $set: updateObj },
       { new: true }
     );

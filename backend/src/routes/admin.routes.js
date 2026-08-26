@@ -99,14 +99,17 @@ router.delete('/orders/:id', async (req, res, next) => {
     const orderId = String(req.params.id || '').trim();
     const idRegex = new RegExp(`^${orderId}$`, 'i');
 
+    const orConditions = [
+      { sale_id: idRegex },
+      { sale_id: orderId }
+    ];
+    const mongoose = (await import('mongoose')).default;
+    if (mongoose.Types.ObjectId.isValid(orderId) && orderId.length === 24) {
+      orConditions.push({ _id: orderId });
+    }
+
     // 1. Delete from MongoDB website_sales
-    await Sale.deleteMany({
-      $or: [
-        { sale_id: idRegex },
-        { sale_id: orderId },
-        { _id: orderId }
-      ]
-    });
+    await Sale.deleteMany({ $or: orConditions });
 
     // 2. Delete from PostgreSQL orders
     await query('DELETE FROM orders WHERE id=$1 OR order_number=$1 OR sale_id=$1', [orderId]).catch(() => {});
