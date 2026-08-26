@@ -30,8 +30,12 @@ export const viewport = {
 const themeScript = `
   (function() {
     try {
-      localStorage.removeItem('quantumxd-theme');
-      document.documentElement.setAttribute('data-theme', 'dark');
+      var saved = localStorage.getItem('quantumxd-theme');
+      if (saved === 'light' || saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', saved);
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
     } catch (e) {}
   })();
 `;

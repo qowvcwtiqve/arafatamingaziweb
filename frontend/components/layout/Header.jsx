@@ -27,16 +27,20 @@ export default function Header() {
   const { items, isOpen, openCart, closeCart } = useCartStore();
   const { user, logout, refreshUser } = useAuthStore();
   const { format } = useCurrency();
+  const [theme, setTheme] = useState('dark');
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [categoryLinks, setCategoryLinks] = useState([]);
 
   useEffect(() => {
     setMounted(true);
-    // Enforce dark mode across all devices
-    try {
-      localStorage.removeItem('quantumxd-theme');
+    const saved = localStorage.getItem('quantumxd-theme');
+    if (saved === 'light' || saved === 'dark') {
+      setTheme(saved);
+      document.documentElement.setAttribute('data-theme', saved);
+    } else {
+      setTheme('dark');
       document.documentElement.setAttribute('data-theme', 'dark');
-    } catch (e) {}
+    }
 
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -72,6 +76,13 @@ export default function Header() {
       document.removeEventListener('click', handleClickOutside);
     };
   }, [user?.id]);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('quantumxd-theme', nextTheme);
+  };
 
   const primaryLinks = [
     { href: '/', label: 'Home', icon: 'home' },
@@ -349,6 +360,32 @@ export default function Header() {
                             )}
                           </div>
 
+                          {/* Theme Mode Toggle in Bottom Sheet */}
+                          <div style={{ marginBottom: 14 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
+                              Appearance
+                            </div>
+                            <button
+                              type="button"
+                              onClick={toggleTheme}
+                              className="user-bottom-sheet__nav-item"
+                              style={{ width: '100%', cursor: 'pointer', border: '1px solid var(--color-border)' }}
+                            >
+                              <div className="user-bottom-sheet__nav-item-left">
+                                <div className="user-bottom-sheet__nav-icon-box">
+                                  <span className="icon icon--md icon--cyan">{theme === 'light' ? 'light_mode' : 'dark_mode'}</span>
+                                </div>
+                                <div>
+                                  <div className="user-bottom-sheet__nav-title">Theme Mode</div>
+                                  <div className="user-bottom-sheet__nav-subtitle">Currently {theme === 'light' ? 'Light Mode' : 'Dark Mode'}</div>
+                                </div>
+                              </div>
+                              <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: 'capitalize', color: 'var(--color-cyan)', background: 'rgba(56, 189, 248, 0.1)', padding: '4px 10px', borderRadius: 8 }}>
+                                Switch to {theme === 'light' ? 'Dark' : 'Light'}
+                              </span>
+                            </button>
+                          </div>
+
                           {/* Currency Switcher in Bottom Sheet */}
                           <div style={{ marginBottom: 16 }}>
                             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
@@ -435,6 +472,32 @@ export default function Header() {
                           </Link>
                         </div>
 
+                        {/* Theme Mode in Guest Bottom Sheet */}
+                        <div style={{ marginBottom: 14 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
+                            Appearance
+                          </div>
+                          <button
+                            type="button"
+                            onClick={toggleTheme}
+                            className="user-bottom-sheet__nav-item"
+                            style={{ width: '100%', cursor: 'pointer', border: '1px solid var(--color-border)' }}
+                          >
+                            <div className="user-bottom-sheet__nav-item-left">
+                              <div className="user-bottom-sheet__nav-icon-box">
+                                <span className="icon icon--md icon--cyan">{theme === 'light' ? 'light_mode' : 'dark_mode'}</span>
+                              </div>
+                              <div>
+                                <div className="user-bottom-sheet__nav-title">Theme Mode</div>
+                                <div className="user-bottom-sheet__nav-subtitle">Currently {theme === 'light' ? 'Light Mode' : 'Dark Mode'}</div>
+                              </div>
+                            </div>
+                            <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: 'capitalize', color: 'var(--color-cyan)', background: 'rgba(56, 189, 248, 0.1)', padding: '4px 10px', borderRadius: 8 }}>
+                              Switch to {theme === 'light' ? 'Dark' : 'Light'}
+                            </span>
+                          </button>
+                        </div>
+
                         {/* Currency Selector in Guest Bottom Sheet */}
                         <div style={{ marginBottom: 16 }}>
                           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
@@ -446,6 +509,19 @@ export default function Header() {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* Theme Toggle (PC Header) */}
+              {mounted && (
+                <button
+                  type="button"
+                  className="header__theme-toggle"
+                  onClick={toggleTheme}
+                  aria-label="Toggle theme"
+                  title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                >
+                  <span className="icon icon--md">{theme === 'light' ? 'dark_mode' : 'light_mode'}</span>
+                </button>
               )}
 
               {/* Mobile Menu Toggle */}
