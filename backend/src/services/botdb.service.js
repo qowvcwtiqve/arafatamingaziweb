@@ -267,7 +267,7 @@ export function formatProductForAPI(p, full = false) {
       stock: stockCount,
       is_infinite: isInfinite,
       is_preorder: isPreorder,
-      in_stock: isInfinite || stockCount > 0 || isPreorder,
+      in_stock: isInfinite || stockCount > 0 || isPreorder || deliveryMethod === 'manual',
       // Website-meta fields
       compare_price: varMeta.compare_price ? parseFloat(varMeta.compare_price) : null,
       description: varMeta.description || '',
@@ -284,11 +284,12 @@ export function formatProductForAPI(p, full = false) {
   const minPrice = prices.length ? Math.min(...prices) : 0;
   const maxPrice = prices.length ? Math.max(...prices) : 0;
   const isInfiniteProduct = variantList.some((v) => v.is_infinite) || Object.values(infinitePools).some(Boolean);
-  const totalStock = isInfiniteProduct
+  const isManualProduct = p.delivery_process === 'manual' || variantList.some((v) => v.delivery_method === 'manual');
+  const totalStock = (isInfiniteProduct || isManualProduct)
     ? 9999
     : variantList.reduce((sum, v) => sum + (typeof v.stock === 'number' ? v.stock : 0), 0);
   const isPreorderProduct = variantList.some((v) => v.is_preorder) || Object.values(preorderPools || {}).some(Boolean) || (p.name && /pre[- ]?order/i.test(p.name)) || false;
-  const hasAnyStock = isInfiniteProduct || totalStock > 0 || variantList.some((v) => v.in_stock || v.is_preorder);
+  const hasAnyStock = isInfiniteProduct || isManualProduct || totalStock > 0 || variantList.some((v) => v.in_stock || v.is_preorder);
 
   const displayTitle = websiteMeta.title || p.name;
   const slug = generateProductSlug(displayTitle, p._id);
