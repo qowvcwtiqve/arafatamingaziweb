@@ -360,32 +360,6 @@ export default function Header() {
                             )}
                           </div>
 
-                          {/* Theme Mode Toggle in Bottom Sheet */}
-                          <div style={{ marginBottom: 14 }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
-                              Appearance
-                            </div>
-                            <button
-                              type="button"
-                              onClick={toggleTheme}
-                              className="user-bottom-sheet__nav-item"
-                              style={{ width: '100%', cursor: 'pointer', border: '1px solid var(--color-border)' }}
-                            >
-                              <div className="user-bottom-sheet__nav-item-left">
-                                <div className="user-bottom-sheet__nav-icon-box">
-                                  <span className="icon icon--md icon--cyan">{theme === 'light' ? 'light_mode' : 'dark_mode'}</span>
-                                </div>
-                                <div>
-                                  <div className="user-bottom-sheet__nav-title">Theme Mode</div>
-                                  <div className="user-bottom-sheet__nav-subtitle">Currently {theme === 'light' ? 'Light Mode' : 'Dark Mode'}</div>
-                                </div>
-                              </div>
-                              <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: 'capitalize', color: 'var(--color-cyan)', background: 'rgba(56, 189, 248, 0.1)', padding: '4px 10px', borderRadius: 8 }}>
-                                Switch to {theme === 'light' ? 'Dark' : 'Light'}
-                              </span>
-                            </button>
-                          </div>
-
                           {/* Currency Switcher in Bottom Sheet */}
                           <div style={{ marginBottom: 16 }}>
                             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
@@ -472,32 +446,6 @@ export default function Header() {
                           </Link>
                         </div>
 
-                        {/* Theme Mode in Guest Bottom Sheet */}
-                        <div style={{ marginBottom: 14 }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
-                            Appearance
-                          </div>
-                          <button
-                            type="button"
-                            onClick={toggleTheme}
-                            className="user-bottom-sheet__nav-item"
-                            style={{ width: '100%', cursor: 'pointer', border: '1px solid var(--color-border)' }}
-                          >
-                            <div className="user-bottom-sheet__nav-item-left">
-                              <div className="user-bottom-sheet__nav-icon-box">
-                                <span className="icon icon--md icon--cyan">{theme === 'light' ? 'light_mode' : 'dark_mode'}</span>
-                              </div>
-                              <div>
-                                <div className="user-bottom-sheet__nav-title">Theme Mode</div>
-                                <div className="user-bottom-sheet__nav-subtitle">Currently {theme === 'light' ? 'Light Mode' : 'Dark Mode'}</div>
-                              </div>
-                            </div>
-                            <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: 'capitalize', color: 'var(--color-cyan)', background: 'rgba(56, 189, 248, 0.1)', padding: '4px 10px', borderRadius: 8 }}>
-                              Switch to {theme === 'light' ? 'Dark' : 'Light'}
-                            </span>
-                          </button>
-                        </div>
-
                         {/* Currency Selector in Guest Bottom Sheet */}
                         <div style={{ marginBottom: 16 }}>
                           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
@@ -511,18 +459,7 @@ export default function Header() {
                 </div>
               )}
 
-              {/* Theme Toggle (Desktop Only) */}
-              {mounted && (
-                <button
-                  className="header__theme-toggle"
-                  onClick={toggleTheme}
-                  aria-label="Toggle theme"
-                >
-                  <span className="icon icon--md">{theme === 'light' ? 'dark_mode' : 'light_mode'}</span>
-                </button>
-              )}
-
-              {/* Mobile Menu Toggle (Always Visible on Mobile) */}
+              {/* Mobile Menu Toggle */}
               <button
                 className="header__mobile-toggle"
                 onClick={() => setMobileMenuOpen(true)}
@@ -583,16 +520,8 @@ export default function Header() {
               </div>
             )}
 
-            {/* Mobile Currency Selector */}
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
-                Display Currency
-              </div>
-              <CurrencySelector isMobile={true} />
-            </div>
-
             {/* Mobile Search */}
-            <div className="mobile-drawer__search">
+            <div className="mobile-drawer__search" style={{ marginBottom: 18 }}>
               <span className="icon icon--sm" style={{ color: 'var(--color-text-faint)', marginRight: 8 }}>search</span>
               <input
                 placeholder="Search products..."
@@ -605,23 +534,6 @@ export default function Header() {
                   }
                 }}
               />
-            </div>
-
-            {/* Mobile Theme Toggle Pill */}
-            <div style={{ marginBottom: 16 }}>
-              <button
-                onClick={toggleTheme}
-                className="btn btn--ghost btn--sm btn--full"
-                style={{ justifyContent: 'space-between', padding: '10px 14px' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span className="icon icon--sm icon--cyan">{theme === 'light' ? 'light_mode' : 'dark_mode'}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600 }}>Theme Mode</span>
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'capitalize', color: 'var(--color-cyan)' }}>
-                  {theme === 'light' ? 'Light' : 'Dark'}
-                </span>
-              </button>
             </div>
 
             {/* Main Links */}
