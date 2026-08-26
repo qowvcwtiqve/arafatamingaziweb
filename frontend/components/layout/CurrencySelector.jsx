@@ -25,7 +25,7 @@ export default function CurrencySelector({ isMobile = false }) {
   if (!mounted) {
     return (
       <div style={{
-        height: 38,
+        height: 36,
         padding: '0 10px',
         borderRadius: 'var(--radius-md, 10px)',
         background: 'var(--color-surface-2)',
@@ -43,18 +43,63 @@ export default function CurrencySelector({ isMobile = false }) {
     );
   }
 
+  // 1. INLINE GRID VIEW FOR MOBILE PROFILE BOTTOM SHEET
+  if (isMobile) {
+    return (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: 8,
+        width: '100%'
+      }}>
+        {Object.values(CURRENCIES).map((c) => {
+          const isSelected = c.code === currency;
+          return (
+            <button
+              key={c.code}
+              type="button"
+              onClick={() => setCurrency(c.code)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '9px 6px',
+                borderRadius: 'var(--radius-md, 10px)',
+                background: isSelected ? 'rgba(56, 189, 248, 0.15)' : 'var(--color-surface-2)',
+                border: isSelected ? '1.5px solid var(--color-cyan)' : '1px solid var(--color-border)',
+                color: isSelected ? 'var(--color-cyan)' : 'var(--color-text)',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                userSelect: 'none'
+              }}
+            >
+              <FlagIcon code={c.code} size={15} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                <span style={{ fontWeight: 800, fontSize: 12.5 }}>{c.code}</span>
+                <span style={{ fontSize: 11, opacity: 0.75 }}>{c.symbol}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // 2. COMPACT HEADER DROPDOWN
   const current = CURRENCIES[currency] || CURRENCIES.INR;
 
   return (
-    <div ref={dropdownRef} style={{ position: 'relative', display: isMobile ? 'block' : 'inline-block', width: isMobile ? '100%' : 'auto' }}>
-      {/* Minimal Trigger Button */}
+    <div ref={dropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Trigger Button */}
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="currency-trigger-btn"
         aria-label="Select Currency"
         style={{
-          height: isMobile ? 44 : 38,
-          padding: isMobile ? '0 14px' : '0 10px',
+          height: 38,
+          padding: '0 10px',
           borderRadius: 'var(--radius-md, 10px)',
           background: open ? 'var(--color-surface-3)' : 'var(--color-surface-2)',
           border: `1px solid ${open ? 'var(--color-border-glow, #373E4F)' : 'var(--color-border)'}`,
@@ -67,49 +112,45 @@ export default function CurrencySelector({ isMobile = false }) {
           cursor: 'pointer',
           transition: 'all 0.15s ease',
           whiteSpace: 'nowrap',
-          width: isMobile ? '100%' : 'auto',
-          justifyContent: isMobile ? 'space-between' : 'center',
           userSelect: 'none'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <FlagIcon code={current.code} size={17} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <FlagIcon code={current.code} size={16} />
           <span style={{ fontWeight: 700, letterSpacing: '0.02em' }}>{current.code}</span>
           <span style={{ color: 'var(--color-text-faint)', fontSize: 12, fontWeight: 500 }}>{current.symbol}</span>
         </div>
         <span className="icon icon--sm" style={{
           transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
           transition: 'transform 0.2s ease',
-          fontSize: 16,
+          fontSize: 15,
           color: 'var(--color-text-faint)',
-          marginLeft: isMobile ? 0 : 2
+          marginLeft: 2
         }}>
           expand_more
         </span>
       </button>
 
-      {/* Minimal Dropdown Menu */}
+      {/* Downward Popup Menu */}
       {open && (
         <div
           className="currency-dropdown"
           style={{
             position: 'absolute',
-            top: isMobile ? 'auto' : 'calc(100% + 6px)',
-            bottom: isMobile ? 'calc(100% + 6px)' : 'auto',
+            top: 'calc(100% + 6px)',
             right: 0,
-            left: isMobile ? 0 : 'auto',
-            width: isMobile ? '100%' : 220,
+            width: 210,
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-lg, 12px)',
-            boxShadow: '0 12px 36px -4px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04)',
-            zIndex: 1100,
+            borderRadius: 'var(--radius-md, 12px)',
+            boxShadow: '0 12px 36px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+            zIndex: 3000,
             overflow: 'hidden',
             padding: 4,
             animation: 'fadeIn 0.15s ease-out'
           }}
         >
-          {/* Subtle Minimal Header */}
+          {/* Header */}
           <div style={{
             padding: '7px 10px 5px',
             fontSize: 10.5,
@@ -128,12 +169,13 @@ export default function CurrencySelector({ isMobile = false }) {
           </div>
 
           {/* Currency Rows */}
-          <div style={{ maxHeight: 270, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div style={{ maxHeight: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1 }}>
             {Object.values(CURRENCIES).map((c) => {
               const isSelected = c.code === currency;
               return (
                 <button
                   key={c.code}
+                  type="button"
                   onClick={() => {
                     setCurrency(c.code);
                     setOpen(false);
@@ -168,23 +210,20 @@ export default function CurrencySelector({ isMobile = false }) {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <FlagIcon code={c.code} size={16} />
-                    <div>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 5,
-                        fontWeight: isSelected ? 700 : 600,
-                        color: isSelected ? 'var(--color-text)' : 'inherit'
-                      }}>
-                        <span>{c.code}</span>
-                        <span style={{ color: 'var(--color-text-faint)', fontSize: 12, fontWeight: 400 }}>{c.symbol}</span>
-                      </div>
-                      <div style={{ fontSize: 10.5, color: 'var(--color-text-faint)', marginTop: 1 }}>{c.name}</div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      fontWeight: isSelected ? 700 : 600,
+                      color: isSelected ? 'var(--color-text)' : 'inherit'
+                    }}>
+                      <span>{c.code}</span>
+                      <span style={{ color: 'var(--color-text-faint)', fontSize: 12, fontWeight: 400 }}>{c.symbol}</span>
                     </div>
                   </div>
 
                   {isSelected && (
-                    <span className="icon icon--sm" style={{ fontSize: 16, color: 'var(--color-primary-light)' }}>
+                    <span className="icon icon--sm" style={{ color: 'var(--color-cyan)', fontSize: 15 }}>
                       check
                     </span>
                   )}
