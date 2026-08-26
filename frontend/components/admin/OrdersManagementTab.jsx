@@ -483,6 +483,7 @@ function OrderDetailsModal({ order, onClose, onUpdate }) {
   const [credentials, setCredentials] = useState(order.credentials || '');
   const [adminNotes, setAdminNotes] = useState(order.admin_notes || '');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const selectedStatusOpt =
@@ -505,6 +506,23 @@ function OrderDetailsModal({ order, onClose, onUpdate }) {
       toast.error(err.response?.data?.error || 'Failed to update order');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Are you sure you want to permanently delete Order #${order.order_number || order.id}? This will remove it from the system.`)) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      const orderParam = encodeURIComponent(String(order.id || order.order_number || '').replace(/^#/, '').trim());
+      await api.delete(`/admin/orders/${orderParam}`);
+      toast.success('Order deleted successfully');
+      onUpdate();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to delete order');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -746,13 +764,25 @@ function OrderDetailsModal({ order, onClose, onUpdate }) {
           </div>
 
           {/* Actions */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
-            <button type="button" onClick={onClose} className="btn btn--secondary">
-              Cancel
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginTop: 10 }}>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="btn btn--danger btn--sm"
+              disabled={deleting || saving}
+              style={{ gap: 5, background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '6px 14px' }}
+            >
+              <span className="icon icon--sm">delete</span>
+              {deleting ? 'Deleting...' : 'Delete Order'}
             </button>
-            <button type="submit" className="btn btn--primary" disabled={saving}>
-              {saving ? 'Saving...' : 'Update & Sync Order'}
-            </button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="button" onClick={onClose} className="btn btn--secondary">
+                Cancel
+              </button>
+              <button type="submit" className="btn btn--primary" disabled={saving || deleting}>
+                {saving ? 'Saving...' : 'Update & Sync Order'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

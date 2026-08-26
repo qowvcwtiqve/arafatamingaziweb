@@ -93,6 +93,30 @@ const handleOrderUpdate = async (req, res, next) => {
 router.put('/orders/:id/status', handleOrderUpdate);
 router.put('/orders/:id', handleOrderUpdate);
 
+// DELETE /api/admin/orders/:id — Delete an order permanently
+router.delete('/orders/:id', async (req, res, next) => {
+  try {
+    const orderId = String(req.params.id || '').trim();
+    const idRegex = new RegExp(`^${orderId}$`, 'i');
+
+    // 1. Delete from MongoDB website_sales
+    await Sale.deleteMany({
+      $or: [
+        { sale_id: idRegex },
+        { sale_id: orderId },
+        { _id: orderId }
+      ]
+    });
+
+    // 2. Delete from PostgreSQL orders
+    await query('DELETE FROM orders WHERE id=$1 OR order_number=$1 OR sale_id=$1', [orderId]).catch(() => {});
+
+    res.json({ success: true, message: `Order #${orderId} deleted successfully.` });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/admin/users
 router.get('/users', async (req, res, next) => {
   try {
