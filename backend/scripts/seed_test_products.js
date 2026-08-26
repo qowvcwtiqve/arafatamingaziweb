@@ -29,200 +29,108 @@ const ProductSchema = new mongoose.Schema(
 
 const Product = mongoose.model('Product', ProductSchema);
 
-const testProducts = [
-  // 1. PRE-ORDER TEST PRODUCT
-  {
-    _id: 'p-test-preorder',
-    name: '[TEST] GTA VI Ultimate Edition (Pre-Order)',
-    description: '🎮 Test Product for Pre-Order flow.\n• Queue reservation & automatic receipt\n• Release dispatch queue test\n• Price: ₹1 (Test pricing)',
-    rules: 'Pre-Order Flow Test: No instant stock is popped. Order is saved as PRE-ORDER in queue. Admin fulfills upon release date.',
-    delivery_process: 'manual',
-    delivery_time: 'On Release / Stock',
-    is_active: true,
-    category_id: 'c-gaming',
-    variants: {
-      'v-preorder-1': {
-        name: 'Pre-Order Edition',
-        price: 1,
-        pool_id: 'pool_preorder_test',
-        duration: 0,
-      }
+const singleAllInOneProduct = {
+  _id: 'p-test-all-in-one',
+  name: '[TEST] All-in-One Order Tester (4 Variants)',
+  description: '🧪 All-in-One Testing Product with 4 Delivery Variants:\n• Variant 1: 🚀 Pre-Order (Queue reservation)\n• Variant 2: ⚡ Instant Auto Delivery (Instant credentials)\n• Variant 3: 🛠️ Manual Activation (Admin fulfillment)\n• Variant 4: 🔑 Limited Real Stock (5 serial keys stack)\n\nPrice is ₹1 for each variant for convenient testing.',
+  rules: 'Select your desired test variant from the configurator below to test that specific delivery flow.',
+  delivery_process: 'auto',
+  delivery_time: 'Instant',
+  is_active: true,
+  category_id: 'c-subscriptions',
+  variants: {
+    'v-preorder': {
+      name: '🚀 Pre-Order (Queue)',
+      price: 1,
+      pool_id: 'pool_test_preorder',
+      duration: 0,
     },
-    stock_pools: {
-      'pool_preorder_test': []
+    'v-instant': {
+      name: '⚡ Instant Auto Delivery',
+      price: 1,
+      pool_id: 'pool_test_instant',
+      duration: 30,
     },
-    pool_rules: {
-      'pool_preorder_test': 'Pre-order test rules: Order is preserved for release dispatch.'
+    'v-manual': {
+      name: '🛠️ Manual Activation (Admin)',
+      price: 1,
+      pool_id: 'pool_test_manual',
+      duration: 0,
     },
-    infinite_pools: {},
-    preorder_pools: {
-      'pool_preorder_test': true
-    },
-    website_meta: {
-      title: '[TEST] GTA VI Ultimate Edition (Pre-Order)',
-      description: 'Test Product for Pre-Order flow. Test placing order and reviewing queue dispatch.',
-      badge: 'Pre-Order',
-      is_featured: true,
-      is_published: true,
-      compare_price: 2999,
-      images: [],
-      variants: {
-        'v-preorder-1': {
-          rules: 'Pre-Order Flow Test: No instant stock is popped. Order is saved as PRE-ORDER in queue.',
-          description: 'Pre-Order test variant',
-          delivery_time: 'On Stock / Release',
-          delivery_method: 'preorder'
-        }
-      }
+    'v-limited': {
+      name: '🔑 Limited Stock Stack (5 Keys)',
+      price: 1,
+      pool_id: 'pool_test_limited',
+      duration: 0,
     }
   },
-
-  // 2. INSTANT AUTO ORDER TEST PRODUCT (Infinite Pool)
-  {
-    _id: 'p-test-instant-auto',
-    name: '[TEST] Spotify Premium 1-Month (Instant Auto)',
-    description: '⚡ Test Product for Automated Instant Delivery.\n• Automatic credentials delivered in 5 seconds\n• Instant view on receipt & dashboard\n• Price: ₹1 (Test pricing)',
-    rules: 'Instant Auto Delivery Test: Credential lines are automatically delivered to your screen and order history instantly upon purchase.',
-    delivery_process: 'auto',
-    delivery_time: 'Instant (10-30s)',
-    is_active: true,
-    category_id: 'c-subscriptions',
-    variants: {
-      'v-instant-1': {
-        name: '1-Month Auto',
-        price: 1,
-        pool_id: 'pool_instant_test',
-        duration: 30,
-      }
-    },
-    stock_pools: {
-      'pool_instant_test': [
-        'spotify_test_user@qxd.io:TestPassword#2026',
-        'spotify_test_user2@qxd.io:TestPassword#2026'
-      ]
-    },
-    pool_rules: {
-      'pool_instant_test': 'Instant pool credential delivered immediately.'
-    },
-    infinite_pools: {
-      'pool_instant_test': true
-    },
-    preorder_pools: {},
-    website_meta: {
-      title: '[TEST] Spotify Premium 1-Month (Instant Auto)',
-      description: 'Test Product for Automated Instant Delivery. Tests instant credential dispatch on order completion.',
-      badge: 'Instant ⚡',
-      is_featured: true,
-      is_published: true,
-      compare_price: 199,
-      images: [],
-      variants: {
-        'v-instant-1': {
-          rules: 'Instant delivery test rules.',
-          description: 'Instant auto delivery variant',
-          delivery_time: 'Instant (10-30s)',
-          delivery_method: 'auto'
-        }
-      }
-    }
+  stock_pools: {
+    'pool_test_preorder': [],
+    'pool_test_instant': [
+      'spotify_instant_test@qxd.io:TestPassword#2026',
+      'spotify_instant_test2@qxd.io:TestPassword#2026'
+    ],
+    'pool_test_manual': [],
+    'pool_test_limited': [
+      'KEY-STACK-AAAA-1111-2222',
+      'KEY-STACK-BBBB-3333-4444',
+      'KEY-STACK-CCCC-5555-6666',
+      'KEY-STACK-DDDD-7777-8888',
+      'KEY-STACK-EEEE-9999-0000'
+    ]
   },
-
-  // 3. MANUAL ORDER TEST PRODUCT (Admin Processing)
-  {
-    _id: 'p-test-manual-order',
-    name: '[TEST] Discord Nitro 1-Year (Manual Activation)',
-    description: '🛠️ Test Product for Manual Order Fulfillment flow.\n• Admin processes credentials or gift links manually\n• Status shows Processing / Pending\n• Price: ₹1 (Test pricing)',
-    rules: 'Manual Order Test: Order is created in PENDING status for admin manual delivery. Provide your account email or Discord handle in notes.',
-    delivery_process: 'manual',
-    delivery_time: '15 - 30 Minutes',
-    is_active: true,
-    category_id: 'c-subscriptions',
-    variants: {
-      'v-manual-1': {
-        name: '1-Year Manual Upgrade',
-        price: 1,
-        pool_id: 'pool_manual_test',
-        duration: 365,
-      }
-    },
-    stock_pools: {
-      'pool_manual_test': []
-    },
-    pool_rules: {
-      'pool_manual_test': 'Manual activation required by admin.'
-    },
-    infinite_pools: {},
-    preorder_pools: {},
-    website_meta: {
-      title: '[TEST] Discord Nitro 1-Year (Manual Activation)',
-      description: 'Test Product for Manual Order Fulfillment flow. Tests admin manual fulfillment workflow.',
-      badge: 'Manual Dispatch',
-      is_featured: true,
-      is_published: true,
-      compare_price: 999,
-      images: [],
-      variants: {
-        'v-manual-1': {
-          rules: 'Manual Order Test: Order is created in PENDING status for admin manual delivery.',
-          description: 'Manual activation test variant',
-          delivery_time: '15 - 30 Minutes',
-          delivery_method: 'manual'
-        }
-      }
-    }
+  pool_rules: {
+    'pool_test_preorder': 'Pre-Order Variant: Queue position is reserved. Dispatched on release.',
+    'pool_test_instant': 'Instant Variant: Credentials delivered automatically upon purchase.',
+    'pool_test_manual': 'Manual Variant: Order goes into processing state for admin manual activation.',
+    'pool_test_limited': 'Limited Stack Variant: 1 key is popped and stock decreases by 1.'
   },
-
-  // 4. NORMAL LIMITED STOCK ITEM (5 Serial Keys)
-  {
-    _id: 'p-test-limited-stock',
-    name: '[TEST] Steam $10 Gift Card (5 Keys Stock)',
-    description: '🔑 Test Product for Real Stock Stack.\n• Exactly 5 real serial keys loaded\n• Pops 1 serial key per order and decreases stock\n• Price: ₹1 (Test pricing)',
-    rules: 'Limited Stock Test: Has 5 serial keys in stock. Exactly 1 serial key pops from pool and decreases remaining stock count on every order.',
-    delivery_process: 'auto',
-    delivery_time: 'Instant',
-    is_active: true,
-    category_id: 'c-giftcards',
+  infinite_pools: {
+    'pool_test_instant': true
+  },
+  preorder_pools: {
+    'pool_test_preorder': true
+  },
+  website_meta: {
+    title: '[TEST] All-in-One Order Tester (4 Variants)',
+    description: 'All-in-One Testing Product with 4 Delivery Variants: Pre-Order, Instant Auto, Manual Activation, and Limited Stock Stack.',
+    badge: 'Tester Hub ⚡',
+    is_featured: true,
+    is_published: true,
+    compare_price: 499,
+    images: [],
     variants: {
-      'v-limited-1': {
-        name: '1x $10 Global Key',
-        price: 1,
-        pool_id: 'pool_steam_test',
-        duration: 0,
-      }
-    },
-    stock_pools: {
-      'pool_steam_test': [
-        'STEAM-TEST-KEY-AAAA-1111-2222',
-        'STEAM-TEST-KEY-BBBB-3333-4444',
-        'STEAM-TEST-KEY-CCCC-5555-6666',
-        'STEAM-TEST-KEY-DDDD-7777-8888',
-        'STEAM-TEST-KEY-EEEE-9999-0000'
-      ]
-    },
-    pool_rules: {
-      'pool_steam_test': '1x Serial Key popped per purchase.'
-    },
-    infinite_pools: {},
-    preorder_pools: {},
-    website_meta: {
-      title: '[TEST] Steam $10 Gift Card (5 Keys Stock)',
-      description: 'Test Product for Real Stock Stack. Tests stock decrement and unique serial key distribution.',
-      badge: '5 in Stock',
-      is_featured: true,
-      is_published: true,
-      compare_price: 850,
-      images: [],
-      variants: {
-        'v-limited-1': {
-          rules: 'Limited Stock Test: Has 5 serial keys in stock.',
-          description: 'Limited stock single serial key variant',
-          delivery_time: 'Instant',
-          delivery_method: 'auto'
-        }
+      'v-preorder': {
+        rules: 'Pre-Order Variant: Queue position is reserved. Dispatched on release.',
+        description: 'Tests pre-order queue and status handling.',
+        delivery_time: 'On Release / Stock',
+        delivery_method: 'preorder',
+        compare_price: 499
+      },
+      'v-instant': {
+        rules: 'Instant Variant: Credentials delivered automatically upon purchase.',
+        description: 'Tests automated instant credential delivery on screen.',
+        delivery_time: 'Instant (10-30s)',
+        delivery_method: 'auto',
+        compare_price: 199
+      },
+      'v-manual': {
+        rules: 'Manual Variant: Order goes into processing state for admin manual activation.',
+        description: 'Tests admin manual fulfillment workflow.',
+        delivery_time: '15 - 30 Minutes',
+        delivery_method: 'manual',
+        compare_price: 299
+      },
+      'v-limited': {
+        rules: 'Limited Stack Variant: 1 key is popped and stock decreases by 1.',
+        description: 'Tests real finite stock decrement and unique serial key distribution.',
+        delivery_time: 'Instant',
+        delivery_method: 'auto',
+        compare_price: 850
       }
     }
   }
-];
+};
 
 async function seed() {
   const mongoUri = process.env.MONGO_URI;
@@ -234,12 +142,28 @@ async function seed() {
   await mongoose.connect(mongoUri);
   console.log('Connected to MongoDB Atlas');
 
-  for (const item of testProducts) {
-    const updated = await Product.findByIdAndUpdate(item._id, item, { upsert: true, new: true });
-    console.log(`Upserted test product: ${updated.name} (ID: ${item._id})`);
-  }
+  // Delete previous separate 4 test products
+  await Product.deleteMany({
+    _id: {
+      $in: [
+        'p-test-preorder',
+        'p-test-instant-auto',
+        'p-test-manual-order',
+        'p-test-limited-stock'
+      ]
+    }
+  });
+  console.log('Cleaned up separate test products.');
 
-  console.log('All 4 test products seeded successfully!');
+  // Insert the 1 all-in-one product
+  const updated = await Product.findByIdAndUpdate(
+    singleAllInOneProduct._id,
+    singleAllInOneProduct,
+    { upsert: true, new: true }
+  );
+  console.log(`Upserted All-in-One test product: ${updated.name} (ID: ${singleAllInOneProduct._id})`);
+
+  console.log('Single All-in-One test product seeded successfully with 4 variants!');
   await mongoose.disconnect();
 }
 
