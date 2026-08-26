@@ -360,10 +360,36 @@ export default function Header() {
                             )}
                           </div>
 
-                          {/* Currency Switcher in Bottom Sheet */}
+                          {/* Theme Mode Toggle in Bottom Sheet */}
                           <div style={{ marginBottom: 14 }}>
                             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
-                              Currency
+                              Appearance
+                            </div>
+                            <button
+                              type="button"
+                              onClick={toggleTheme}
+                              className="user-bottom-sheet__nav-item"
+                              style={{ width: '100%', cursor: 'pointer', border: '1px solid var(--color-border)' }}
+                            >
+                              <div className="user-bottom-sheet__nav-item-left">
+                                <div className="user-bottom-sheet__nav-icon-box">
+                                  <span className="icon icon--md icon--cyan">{theme === 'light' ? 'light_mode' : 'dark_mode'}</span>
+                                </div>
+                                <div>
+                                  <div className="user-bottom-sheet__nav-title">Theme Mode</div>
+                                  <div className="user-bottom-sheet__nav-subtitle">Currently {theme === 'light' ? 'Light Mode' : 'Dark Mode'}</div>
+                                </div>
+                              </div>
+                              <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: 'capitalize', color: 'var(--color-cyan)', background: 'rgba(56, 189, 248, 0.1)', padding: '4px 10px', borderRadius: 8 }}>
+                                Switch to {theme === 'light' ? 'Dark' : 'Light'}
+                              </span>
+                            </button>
+                          </div>
+
+                          {/* Currency Switcher in Bottom Sheet */}
+                          <div style={{ marginBottom: 16 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
+                              Display Currency
                             </div>
                             <CurrencySelector isMobile={true} />
                           </div>
@@ -385,17 +411,107 @@ export default function Header() {
                   )}
                 </div>
               ) : (
-                <div className="header__auth-btns">
-                  <Link href="/login" className="btn btn--ghost btn--sm">
-                    Sign In
-                  </Link>
-                  <Link href="/register" className="btn btn--primary btn--sm">
-                    Sign Up
-                  </Link>
+                <div className="header__auth-container" style={{ display: 'flex', alignItems: 'center' }}>
+                  {/* Desktop Auth Buttons */}
+                  <div className="header__auth-btns">
+                    <Link href="/login" className="btn btn--ghost btn--sm">
+                      Sign In
+                    </Link>
+                    <Link href="/register" className="btn btn--primary btn--sm">
+                      Sign Up
+                    </Link>
+                  </div>
+
+                  {/* Mobile Guest Profile Button */}
+                  <button
+                    className="header__user-btn header__user-btn--mobile-guest"
+                    onClick={() => setUserDropdownOpen(true)}
+                    aria-label="Account menu"
+                  >
+                    <span className="icon icon--md">person</span>
+                  </button>
+
+                  {userDropdownOpen && (
+                    <div className="user-bottom-sheet-overlay" onClick={() => setUserDropdownOpen(false)}>
+                      <div className="user-bottom-sheet" onClick={(e) => e.stopPropagation()}>
+                        <div className="user-bottom-sheet__handle-wrapper" onClick={() => setUserDropdownOpen(false)}>
+                          <div className="user-bottom-sheet__handle" />
+                        </div>
+                        <div className="user-bottom-sheet__user-card" style={{ justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div className="user-bottom-sheet__avatar">
+                              <span className="icon icon--md">person</span>
+                            </div>
+                            <div>
+                              <div className="user-bottom-sheet__user-name">Account &amp; Settings</div>
+                              <div className="user-bottom-sheet__user-email">Sign in to manage orders</div>
+                            </div>
+                          </div>
+                          <button
+                            className="user-bottom-sheet__close-btn"
+                            onClick={() => setUserDropdownOpen(false)}
+                          >
+                            <span className="icon icon--md">close</span>
+                          </button>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+                          <Link
+                            href="/login"
+                            className="btn btn--primary btn--full"
+                            onClick={() => setUserDropdownOpen(false)}
+                          >
+                            Sign In
+                          </Link>
+                          <Link
+                            href="/register"
+                            className="btn btn--outline btn--full"
+                            onClick={() => setUserDropdownOpen(false)}
+                          >
+                            Sign Up
+                          </Link>
+                        </div>
+
+                        {/* Theme Mode in Guest Bottom Sheet */}
+                        <div style={{ marginBottom: 14 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
+                            Appearance
+                          </div>
+                          <button
+                            type="button"
+                            onClick={toggleTheme}
+                            className="user-bottom-sheet__nav-item"
+                            style={{ width: '100%', cursor: 'pointer', border: '1px solid var(--color-border)' }}
+                          >
+                            <div className="user-bottom-sheet__nav-item-left">
+                              <div className="user-bottom-sheet__nav-icon-box">
+                                <span className="icon icon--md icon--cyan">{theme === 'light' ? 'light_mode' : 'dark_mode'}</span>
+                              </div>
+                              <div>
+                                <div className="user-bottom-sheet__nav-title">Theme Mode</div>
+                                <div className="user-bottom-sheet__nav-subtitle">Currently {theme === 'light' ? 'Light Mode' : 'Dark Mode'}</div>
+                              </div>
+                            </div>
+                            <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: 'capitalize', color: 'var(--color-cyan)', background: 'rgba(56, 189, 248, 0.1)', padding: '4px 10px', borderRadius: 8 }}>
+                              Switch to {theme === 'light' ? 'Dark' : 'Light'}
+                            </span>
+                          </button>
+                        </div>
+
+                        {/* Currency Selector in Guest Bottom Sheet */}
+                        <div style={{ marginBottom: 16 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
+                            Display Currency
+                          </div>
+                          <CurrencySelector isMobile={true} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Theme Toggle */}
+              {/* Theme Toggle (Desktop Only) */}
               {mounted && (
                 <button
                   className="header__theme-toggle"
@@ -406,7 +522,7 @@ export default function Header() {
                 </button>
               )}
 
-              {/* Mobile Menu Toggle */}
+              {/* Mobile Menu Toggle (Always Visible on Mobile) */}
               <button
                 className="header__mobile-toggle"
                 onClick={() => setMobileMenuOpen(true)}
