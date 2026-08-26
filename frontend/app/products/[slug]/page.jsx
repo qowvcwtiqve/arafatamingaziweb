@@ -258,11 +258,9 @@ export default function ProductDetailPage() {
     : null;
 
   const isPreorder = Boolean(
-    selectedVariant?.is_preorder ||
-    product.is_preorder ||
-    selectedVariant?.delivery_method === 'preorder' ||
-    /pre[- ]?order/i.test(selectedVariant?.name || '') ||
-    /pre[- ]?order/i.test(product.title || '')
+    selectedVariant
+      ? (selectedVariant.is_preorder || selectedVariant.delivery_method === 'preorder' || /pre[- ]?order/i.test(selectedVariant.name || ''))
+      : (product.is_preorder || product.delivery_process === 'preorder')
   );
   const inStock = selectedVariant ? Boolean(selectedVariant.in_stock) : Boolean(product.in_stock);
   const isOutOfStock = !inStock && !isPreorder;

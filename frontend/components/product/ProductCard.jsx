@@ -33,10 +33,11 @@ export default function ProductCard({ product: p }) {
       : null;
   const saveAmount = comparePrice && comparePrice > price ? comparePrice - price : null;
 
-  const isPreorder =
-    p.is_preorder ||
-    p.website_meta?.badge?.toLowerCase().includes('pre-order') ||
-    p.badge?.toLowerCase().includes('pre-order');
+  const isPreorder = Boolean(
+    p.variants && p.variants.length > 0
+      ? (p.variants[0].is_preorder || p.variants[0].delivery_method === 'preorder')
+      : (p.is_preorder || p.badge?.toLowerCase().includes('pre-order'))
+  );
   const isOutOfStock = !p.in_stock && !isPreorder && p.total_stock === 0;
 
   const displayTitle = p.website_meta?.title || p.title || p.name;

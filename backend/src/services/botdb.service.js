@@ -231,13 +231,12 @@ export function formatProductForAPI(p, full = false) {
       p.rules ||
       '';
 
-    // 3. Preorder check
+    // 3. Preorder check: ONLY check if this variant's pool is in preorder_pools or varMeta is preorder or variant name is preorder
     const isPreorder = Boolean(
       preorderPools[poolId] ||
       varMeta.is_preorder ||
       varMeta.delivery_method === 'preorder' ||
-      (v.name && /pre[- ]?order/i.test(v.name)) ||
-      (p.name && /pre[- ]?order/i.test(p.name))
+      (v.name && /pre[- ]?order/i.test(v.name))
     );
 
     // 4. Delivery method: prioritize bot delivery_process / varMeta
