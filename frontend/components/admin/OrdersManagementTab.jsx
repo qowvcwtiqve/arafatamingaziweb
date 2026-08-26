@@ -491,15 +491,16 @@ function OrderDetailsModal({ order, onClose, onUpdate }) {
     e?.preventDefault();
     setSaving(true);
     try {
-      await api.put(`/admin/orders/${order.id}/status`, {
+      const orderParam = encodeURIComponent(String(order.id || order.order_number || '').replace(/^#/, '').trim());
+      await api.put(`/admin/orders/${orderParam}/status`, {
         status,
         credentials,
         admin_notes: adminNotes,
       });
-      toast.success('Order updated successfully & synced with Bot database');
+      toast.success('Order status updated successfully');
       onUpdate();
-    } catch {
-      toast.error('Failed to update order');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update order');
     } finally {
       setSaving(false);
     }

@@ -81,11 +81,17 @@ export const walletPurchase = async (req, res, next) => {
     if (!variant) return res.status(404).json({ error: 'Variant not found' });
 
     const poolId = variant.pool_id;
-    const isPreorder = variant.is_preorder;
+    const isPreorder = Boolean(variant.is_preorder || variant.delivery_method === 'preorder' || (/pre[- ]?order/i.test(variant.name || '')));
+    const isManual = !isPreorder && Boolean(
+      variant.delivery_method === 'manual' ||
+      String(variant.delivery_time || '').toLowerCase().includes('manual') ||
+      String(variant.name || '').toLowerCase().includes('manual') ||
+      String(product.delivery_process || '').toLowerCase().includes('manual')
+    );
     const isInfinite = variant.is_infinite;
     const stockCount = variant.stock;
-    const deliveryMethod = variant.delivery_method || product.delivery_process || 'auto';
-    const isManual = deliveryMethod === 'manual';
+    const deliveryMethod = isPreorder ? 'preorder' : isManual ? 'manual' : isInfinite ? 'infinite' : 'auto';
+    const saleStatus = isPreorder ? 'Pre-Order' : isManual ? 'Pending' : 'Delivered';
 
     // 3. Check stock (only for automated instant delivery)
     if (!isInfinite && !isPreorder && !isManual && stockCount < qty) {
@@ -132,11 +138,6 @@ export const walletPurchase = async (req, res, next) => {
     if (!isPreorder && !isManual) {
       for (let i = 0; i < qty; i++) {
         if (isInfinite) {
-          // For infinite stock, we get first item without removing
-          const { rows: pRows } = await query('SELECT 1', []); // dummy
-          // Get the pool's first item without popping
-          const { getProductById: getRaw } = await import('../services/botdb.service.js');
-          // We need raw product to get first infinite item
           const Product = (await import('../models/product.model.js')).default;
           const raw = await Product.findById(product_id).lean();
           const pool = (raw?.stock_pools || {})[poolId] || [];
@@ -157,7 +158,7 @@ export const walletPurchase = async (req, res, next) => {
     const now = Math.floor(Date.now() / 1000);
     const endTs = variant.duration > 0 ? now + variant.duration * 30 * 24 * 3600 : null;
     const { rows: userRows } = await query('SELECT name,email FROM users WHERE id=$1', [req.user.id]);
-    const userName = userRows[0]?.name || 'Unknown';
+    const userName = userRows[0]?.name || 'Customer';
     const userEmail = userRows[0]?.email || '';
 
     const createdSales = [];
@@ -170,7 +171,7 @@ export const walletPurchase = async (req, res, next) => {
         product_id,
         variant_id,
         pool_id: poolId,
-        product_name: product.name,
+        product_name: product.website_meta?.title || product.name,
         variant_name: variant.name,
         price: unitPrice,
         original_price: unitPrice,
@@ -179,7 +180,7 @@ export const walletPurchase = async (req, res, next) => {
         user_email: userEmail,
         user_name: userName,
         credentials: deliveredItems[i] || '',
-        status: isPreorder ? 'Pre-Order' : isManual ? 'Pending' : 'Delivered',
+        status: saleStatus,
         delivery_method: deliveryMethod,
         purchase_ts: now,
         end_ts: endTs,
@@ -356,7 +357,7 @@ export const initiatePayment = async (req, res, next) => {
       INSERT INTO orders (id, order_number, buyer_id, buyer_email, total_amount, discount_amount,
         coupon_code, payment_method, payment_status, base_amount, timeout_at,
         meta_product_id, meta_variant_id, meta_qty)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,'pending',$8,$9,$10,$11,$12,$13)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'pending',$9,$10,$11,$12,$13)
       RETURNING *
     `, [
       orderId,
@@ -474,20 +475,16 @@ export const fulfillPaidOrder = async (orderId) => {
     const isPreorder = Boolean(
       variant?.is_preorder ||
       variant?.delivery_method === 'preorder' ||
-      product?.delivery_method === 'preorder' ||
-      product?.is_preorder ||
-      (/pre[- ]?order/i.test(variant?.name || '')) ||
-      (/pre[- ]?order/i.test(product?.name || ''))
+      (/pre[- ]?order/i.test(variant?.name || ''))
     );
     const isManual = !isPreorder && Boolean(
       variant?.delivery_method === 'manual' ||
-      product?.delivery_method === 'manual' ||
-      String(product?.delivery_process || '').toLowerCase().includes('manual') ||
+      String(variant?.delivery_time || '').toLowerCase().includes('manual') ||
       String(variant?.name || '').toLowerCase().includes('manual') ||
-      String(product?.name || '').toLowerCase().includes('manual')
+      String(product?.delivery_process || '').toLowerCase().includes('manual')
     );
     const isInfinite = variant?.is_infinite || product?.is_infinite;
-    const deliveryMethod = isPreorder ? 'preorder' : isManual ? 'manual' : isInfinite ? 'infinite' : 'instant';
+    const deliveryMethod = isPreorder ? 'preorder' : isManual ? 'manual' : isInfinite ? 'infinite' : 'auto';
     const saleStatus = isPreorder ? 'Pre-Order' : isManual ? 'Pending' : 'Delivered';
 
     const deliveredItems = [];
@@ -517,7 +514,7 @@ export const fulfillPaidOrder = async (orderId) => {
       product_id: product_id || product?.id || 'p-devtest-item',
       variant_id: variant_id || variant?.id || 'var-test-instant',
       pool_id: poolId || 'main',
-      product_name: product?.name || 'Product',
+      product_name: product?.website_meta?.title || product?.name || 'Product',
       variant_name: variant?.name || 'Standard',
       price: parseFloat(order.total_amount || 0),
       original_price: parseFloat(order.base_amount || order.total_amount || 0),

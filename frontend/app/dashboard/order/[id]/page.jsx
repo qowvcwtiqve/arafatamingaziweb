@@ -42,6 +42,15 @@ const STATUS_CONFIG = {
   },
 };
 
+const getStatusCfg = (st) => {
+  const s = String(st || '').toLowerCase().replace(/[^a-z]/g, '');
+  if (s === 'delivered' || s === 'paid') return STATUS_CONFIG['Delivered'];
+  if (s === 'preorder') return STATUS_CONFIG['Pre-Order'];
+  if (s === 'pending' || s === 'processing' || s === 'underreview' || s === 'hold') return STATUS_CONFIG['Pending'];
+  if (s === 'canceled' || s === 'cancelled' || s === 'failed') return STATUS_CONFIG['Canceled'];
+  return STATUS_CONFIG['Pending'];
+};
+
 export default function OrderReceiptPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -144,7 +153,8 @@ Telegram: @${order.support_username || 'qxdbotowner'}`;
     );
   }
 
-  const statusCfg = STATUS_CONFIG[order.status] || STATUS_CONFIG['Pending'];
+  const statusCfg = getStatusCfg(order.status);
+  const isPreorderOrder = String(order.status || '').toLowerCase().includes('pre');
 
   return (
     <div style={{ paddingTop: 'calc(var(--header-height) + 24px)', paddingBottom: 90 }}>
@@ -314,10 +324,12 @@ Telegram: @${order.support_username || 'qxdbotowner'}`;
                 color: 'var(--color-text-faint)',
                 fontSize: 13
               }}>
-                <span className="icon icon--lg" style={{ display: 'block', margin: '0 auto 8px', color: 'var(--color-primary-light)' }}>
-                  hourglass_empty
+                <span className="icon icon--lg" style={{ display: 'block', margin: '0 auto 8px', color: isPreorderOrder ? '#a855f7' : '#f59e0b' }}>
+                  {isPreorderOrder ? 'rocket_launch' : 'hourglass_empty'}
                 </span>
-                Credentials are not yet dispatched. As soon as the pre-order stock is added, your credentials will automatically appear here.
+                {isPreorderOrder
+                  ? 'Pre-Order Queue Reserved. As soon as the pre-order stock is added by administrator, your credentials will automatically appear here.'
+                  : 'Manual Order is being processed by administrator. Your credentials or activation details will be delivered here shortly.'}
               </div>
             )}
           </div>

@@ -18,9 +18,15 @@ export const fulfillWebsitePreorders = async (productId, poolId, stockItems) => 
   // Find pending Pre-Order website sales for this product, FIFO (oldest first)
   const pendingOrders = await Sale.find({
     $and: [
-      { $or: [{ product_id: productId }, { product_id: String(productId) }] },
-      { $or: [{ pool_id: poolId }, { pool_id: 'default' }, { pool_id: 'main' }, { pool_id: { $exists: false } }, { pool_id: null }] },
-      { status: { $regex: /^pre[- ]?order$/i } }
+      {
+        $or: [
+          { product_id: productId },
+          { product_id: String(productId) },
+        ]
+      },
+      {
+        status: { $regex: /^pre[- ]?order$/i }
+      }
     ]
   }).sort({ purchase_ts: 1 }).lean(); // ASC = oldest first (FIFO)
 
@@ -43,14 +49,14 @@ export const fulfillWebsitePreorders = async (productId, poolId, stockItems) => 
           status: 'Delivered',
           credentials: credential,
           last_edited_at: now,
-          admin_notes: `Auto-delivered from pre-order queue. Stock added by admin.`,
+          admin_notes: `Auto-delivered from pre-order queue upon stock arrival.`,
         }
       }
     );
 
     // Also update SQL orders table
     await query(
-      "UPDATE orders SET payment_status='paid', order_status='Delivered', delivered_items=$1 WHERE id=$2 OR order_number=$2 OR sale_id=$2",
+      "UPDATE orders SET payment_status='paid', order_status='Delivered', delivered_items=$1, updated_at=NOW() WHERE id=$2 OR order_number=$2 OR sale_id=$2",
       [credential, order.sale_id]
     ).catch(() => {});
 
@@ -81,11 +87,16 @@ export const syncAndFulfillPreordersFromBotStock = async () => {
       const prod = await Product.findById(order.product_id);
       if (!prod) continue;
 
-      const poolStock = (prod.stock_pools || {})[order.pool_id] || (prod.stock_pools || {})['main'] || (prod.stock_pools || {})['default'] || [];
-      if (Array.isArray(poolStock) && poolStock.length > 0) {
-        // Take first available credential
-        const credential = poolStock[0];
-        const remainingPoolStock = poolStock.slice(1);
+      // Check pool specified or any available stock pool on the product
+      const pools = prod.stock_pools || {};
+      let targetPoolId = (pools[order.pool_id] && pools[order.pool_id].length > 0) ? order.pool_id : null;
+      if (!targetPoolId) {
+        targetPoolId = Object.keys(pools).find(k => Array.isArray(pools[k]) && pools[k].length > 0);
+      }
+
+      if (targetPoolId && pools[targetPoolId] && pools[targetPoolId].length > 0) {
+        const credential = pools[targetPoolId][0];
+        const remainingPoolStock = pools[targetPoolId].slice(1);
         const now = Math.floor(Date.now() / 1000);
 
         // 1. Update Sale to Delivered
@@ -96,26 +107,23 @@ export const syncAndFulfillPreordersFromBotStock = async () => {
               status: 'Delivered',
               credentials: credential,
               last_edited_at: now,
-              admin_notes: `Auto-delivered from bot stock pool.`,
+              admin_notes: `Auto-delivered from stock pool (${targetPoolId}).`,
             }
           }
         );
 
         // 2. Update SQL orders table
         await query(
-          "UPDATE orders SET payment_status='paid', order_status='Delivered', delivered_items=$1 WHERE id=$2 OR order_number=$2 OR sale_id=$2",
+          "UPDATE orders SET payment_status='paid', order_status='Delivered', delivered_items=$1, updated_at=NOW() WHERE id=$2 OR order_number=$2 OR sale_id=$2",
           [credential, order.sale_id]
         ).catch(() => {});
 
         // 3. Remove consumed credential from MongoDB Product pool
-        const targetPoolId = (prod.stock_pools || {})[order.pool_id] ? order.pool_id : Object.keys(prod.stock_pools || {})[0];
-        if (targetPoolId) {
-          await Product.findByIdAndUpdate(order.product_id, {
-            $set: { [`stock_pools.${targetPoolId}`]: remainingPoolStock }
-          });
-        }
+        await Product.findByIdAndUpdate(order.product_id, {
+          $set: { [`stock_pools.${targetPoolId}`]: remainingPoolStock }
+        });
 
-        console.log(`[BotSync Pre-Order] Auto-fulfilled order ${order.sale_id} from Bot Stock Pool (${order.pool_id}). Remaining pool stock: ${remainingPoolStock.length}`);
+        console.log(`[BotSync Pre-Order] Auto-fulfilled order ${order.sale_id} from Stock Pool (${targetPoolId}). Remaining pool stock: ${remainingPoolStock.length}`);
       }
     }
   } catch (err) {
@@ -123,9 +131,18 @@ export const syncAndFulfillPreordersFromBotStock = async () => {
   }
 };
 
+const normalizeStatusKey = (st) => {
+  const s = String(st || '').toLowerCase().replace(/[^a-z]/g, '');
+  if (s === 'delivered' || s === 'paid') return 'delivered';
+  if (s === 'preorder') return 'preorder';
+  if (s === 'pending' || s === 'processing' || s === 'underreview' || s === 'hold') return 'pending';
+  if (s === 'refunded') return 'refunded';
+  if (s === 'canceled' || s === 'cancelled' || s === 'failed') return 'canceled';
+  return s;
+};
+
 /**
  * Fetch all Website orders from MongoDB (website_sales) + Postgres (orders)
- * Bot sales remain strictly on the bot.
  */
 export const getWebsiteOrders = async () => {
   let webSales = [];
@@ -184,6 +201,7 @@ export const getWebsiteOrders = async () => {
     const sid = o.order_number || o.id;
     if (seenIds.has(sid)) continue;
     seenIds.add(sid);
+    const orderStatus = o.order_status || (o.payment_status === 'paid' ? 'Delivered' : (o.payment_status === 'pending' || o.payment_status === 'under_review' ? 'Pending' : 'Canceled'));
     websiteOrders.push({
       id: o.id,
       order_number: o.order_number || o.id,
@@ -198,13 +216,13 @@ export const getWebsiteOrders = async () => {
       price: parseFloat(o.total_amount || 0),
       total_amount: parseFloat(o.total_amount || 0),
       quantity: 1,
-      status: o.order_status || (o.payment_status === 'paid' ? 'Delivered' : (o.payment_status === 'pending' ? 'Pending' : 'Canceled')),
+      status: orderStatus,
       credentials: o.credentials || o.delivered_items || '',
       purchase_ts: o.created_at ? new Date(o.created_at).getTime() : Date.now(),
       created_at: o.created_at || new Date().toISOString(),
       end_ts: null,
       delivery_method: o.payment_method || 'upi',
-      admin_notes: '',
+      admin_notes: o.admin_notes || '',
     });
   }
 
@@ -227,21 +245,22 @@ export const getFilteredOrders = async ({
   // Live status counts strictly for website orders
   const stats = {
     total: all.length,
-    delivered: all.filter(o => o.status === 'Delivered').length,
-    pending: all.filter(o => o.status === 'Pending').length,
-    preorder: all.filter(o => o.status === 'Pre-Order').length,
-    refunded: all.filter(o => o.status === 'Refunded').length,
-    canceled: all.filter(o => o.status === 'Canceled').length,
+    delivered: all.filter(o => normalizeStatusKey(o.status) === 'delivered').length,
+    pending: all.filter(o => normalizeStatusKey(o.status) === 'pending').length,
+    preorder: all.filter(o => normalizeStatusKey(o.status) === 'preorder').length,
+    refunded: all.filter(o => normalizeStatusKey(o.status) === 'refunded').length,
+    canceled: all.filter(o => normalizeStatusKey(o.status) === 'canceled').length,
     total_revenue: all
-      .filter(o => o.status === 'Delivered')
+      .filter(o => normalizeStatusKey(o.status) === 'delivered')
       .reduce((sum, o) => sum + o.total_amount, 0),
   };
 
   let filtered = all;
 
   // Filter by Status Tab
-  if (status !== 'all') {
-    filtered = filtered.filter(o => o.status.toLowerCase() === status.toLowerCase());
+  if (status && status !== 'all') {
+    const targetKey = normalizeStatusKey(status);
+    filtered = filtered.filter(o => normalizeStatusKey(o.status) === targetKey);
   }
 
   // Search filter
@@ -281,25 +300,58 @@ export const getFilteredOrders = async ({
  * Update website order status or credentials
  */
 export const updateOrderStatus = async (orderId, newStatus, credentials = null, adminNotes = null) => {
-  // 1. Try updating in website_sales
+  const cleanId = String(orderId || '').trim();
+  const idRegex = new RegExp(`^${cleanId}$`, 'i');
+  let updatedSale = null;
+
+  // 1. Try updating in website_sales (MongoDB)
   try {
-    const updateObj = { status: newStatus, last_edited_at: Date.now() / 1000 };
-    if (credentials !== null) updateObj.credentials = credentials;
-    if (adminNotes !== null) updateObj.admin_notes = adminNotes;
-    const res = await Sale.findOneAndUpdate({ sale_id: orderId }, { $set: updateObj }, { new: true });
-    if (res) return { success: true, source: 'website' };
+    const updateObj = {
+      status: newStatus,
+      last_edited_at: Math.floor(Date.now() / 1000)
+    };
+    if (credentials !== null && credentials !== undefined) {
+      updateObj.credentials = credentials;
+    }
+    if (adminNotes !== null && adminNotes !== undefined) {
+      updateObj.admin_notes = adminNotes;
+    }
+
+    updatedSale = await Sale.findOneAndUpdate(
+      {
+        $or: [
+          { sale_id: idRegex },
+          { sale_id: cleanId },
+          { _id: cleanId }
+        ]
+      },
+      { $set: updateObj },
+      { new: true }
+    );
   } catch (err) {
     console.error('Error updating website sale status:', err.message);
   }
 
-  // 2. Try updating in Postgres orders
+  // 2. Always sync with Postgres orders table
   try {
-    const pgStatus = newStatus === 'Delivered' ? 'paid' : (newStatus === 'Pending' ? 'pending' : 'failed');
-    await query('UPDATE orders SET payment_status=$1, updated_at=NOW() WHERE id=$2 OR order_number=$3', [pgStatus, orderId, orderId]);
-    return { success: true, source: 'postgres' };
-  } catch {
-    // ignore
+    const pgPaymentStatus = newStatus === 'Delivered' ? 'paid' : (newStatus === 'Pending' || newStatus === 'Pre-Order' ? 'paid' : 'failed');
+    await query(
+      `UPDATE orders 
+       SET order_status=$1, 
+           payment_status=$2, 
+           delivered_items=COALESCE($3, delivered_items), 
+           admin_notes=COALESCE($4, admin_notes), 
+           updated_at=NOW() 
+       WHERE id=$5 OR order_number=$5 OR sale_id=$5`,
+      [newStatus, pgPaymentStatus, credentials, adminNotes, cleanId]
+    );
+  } catch (err) {
+    console.error('Error syncing Postgres order status:', err.message);
   }
 
-  return { success: true };
+  return {
+    success: true,
+    sale: updatedSale,
+    status: newStatus
+  };
 };
