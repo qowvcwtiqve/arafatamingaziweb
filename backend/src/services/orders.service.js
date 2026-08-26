@@ -16,13 +16,14 @@ import { query } from '../config/db.js';
 export const fulfillWebsitePreorders = async (productId, poolId, stockItems) => {
   if (!stockItems || stockItems.length === 0) return [];
 
-  // Find pending Pre-Order website sales for this product, FIFO (oldest first)
+  // Find pending Pre-Order website sales for this product or pool, FIFO (oldest first)
   const pendingOrders = await Sale.find({
     $and: [
       {
         $or: [
           { product_id: productId },
           { product_id: String(productId) },
+          { pool_id: poolId },
         ]
       },
       {
