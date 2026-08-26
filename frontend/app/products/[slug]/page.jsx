@@ -331,16 +331,6 @@ export default function ProductDetailPage() {
             <span className="icon icon--sm">chevron_right</span>
             <span style={{ color: 'var(--color-text)', fontWeight: 600 }}>{product.title}</span>
           </div>
-
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '4px 12px', borderRadius: 'var(--radius-full)',
-            background: 'rgba(0, 212, 255, 0.1)', border: '1px solid rgba(0, 212, 255, 0.25)',
-            fontSize: 12, fontWeight: 700, color: 'var(--color-cyan)'
-          }}>
-            <span className="icon icon--sm icon--cyan icon--filled">bolt</span>
-            <span>Automated 24/7 Dispatch</span>
-          </div>
         </div>
 
         {/* Main Product Showcase Grid */}
