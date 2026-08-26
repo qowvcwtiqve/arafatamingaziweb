@@ -476,12 +476,16 @@ export const fulfillPaidOrder = async (orderId) => {
     const isPreorder = Boolean(
       variant?.is_preorder ||
       variant?.delivery_method === 'preorder' ||
-      (/pre[- ]?order/i.test(variant?.name || ''))
+      product?.preorder_pools?.[poolId] ||
+      (/pre[- ]?order/i.test(variant?.name || '')) ||
+      (/pre[- ]?order/i.test(variant?.id || '')) ||
+      (/pre[- ]?order/i.test(poolId || ''))
     );
     const isManual = !isPreorder && Boolean(
       variant?.delivery_method === 'manual' ||
       String(variant?.delivery_time || '').toLowerCase().includes('manual') ||
       String(variant?.name || '').toLowerCase().includes('manual') ||
+      String(variant?.id || '').toLowerCase().includes('manual') ||
       String(product?.delivery_process || '').toLowerCase().includes('manual')
     );
     const isInfinite = variant?.is_infinite || product?.is_infinite;

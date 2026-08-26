@@ -32,6 +32,14 @@ const STATUS_CONFIG = {
     title: 'Manual Order Processing',
     subtitle: 'Admin is preparing your account credentials. You will receive them shortly.',
   },
+  Refunded: {
+    bg: 'rgba(59, 130, 246, 0.12)',
+    border: 'rgba(59, 130, 246, 0.35)',
+    color: '#3b82f6',
+    icon: 'currency_exchange',
+    title: 'Order Refunded',
+    subtitle: 'This order has been refunded to your wallet or original payment source.',
+  },
   Canceled: {
     bg: 'rgba(239, 68, 68, 0.12)',
     border: 'rgba(239, 68, 68, 0.35)',
@@ -47,6 +55,7 @@ const getStatusCfg = (st) => {
   if (s === 'delivered' || s === 'paid') return STATUS_CONFIG['Delivered'];
   if (s === 'preorder') return STATUS_CONFIG['Pre-Order'];
   if (s === 'pending' || s === 'processing' || s === 'underreview' || s === 'hold') return STATUS_CONFIG['Pending'];
+  if (s === 'refunded') return STATUS_CONFIG['Refunded'];
   if (s === 'canceled' || s === 'cancelled' || s === 'failed') return STATUS_CONFIG['Canceled'];
   return STATUS_CONFIG['Pending'];
 };

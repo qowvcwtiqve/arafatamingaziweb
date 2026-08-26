@@ -89,14 +89,11 @@ export const syncAndFulfillPreordersFromBotStock = async () => {
       const prod = await Product.findById(order.product_id);
       if (!prod) continue;
 
-      // Check pool specified or any available stock pool on the product
+      // STRICT: Must match the order's specific pool_id ONLY. Never steal from other pools!
+      const targetPoolId = order.pool_id;
       const pools = prod.stock_pools || {};
-      let targetPoolId = (pools[order.pool_id] && pools[order.pool_id].length > 0) ? order.pool_id : null;
-      if (!targetPoolId) {
-        targetPoolId = Object.keys(pools).find(k => Array.isArray(pools[k]) && pools[k].length > 0);
-      }
 
-      if (targetPoolId && pools[targetPoolId] && pools[targetPoolId].length > 0) {
+      if (targetPoolId && Array.isArray(pools[targetPoolId]) && pools[targetPoolId].length > 0) {
         const credential = pools[targetPoolId][0];
         const remainingPoolStock = pools[targetPoolId].slice(1);
         const now = Math.floor(Date.now() / 1000);
@@ -109,12 +106,12 @@ export const syncAndFulfillPreordersFromBotStock = async () => {
               status: 'Delivered',
               credentials: credential,
               last_edited_at: now,
-              admin_notes: `Auto-delivered from stock pool (${targetPoolId}).`,
+              admin_notes: `Auto-delivered from pre-order stock pool (${targetPoolId}).`,
             }
           }
         );
 
-        // 2. Update SQL orders table
+        // 2. Update SQL orders table and local_db.json
         await query(
           "UPDATE orders SET payment_status='paid', order_status='Delivered', delivered_items=$1, updated_at=NOW() WHERE id=$2 OR order_number=$2 OR sale_id=$2",
           [credential, order.sale_id]
