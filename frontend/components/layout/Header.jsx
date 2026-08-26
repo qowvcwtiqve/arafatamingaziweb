@@ -160,8 +160,13 @@ export default function Header() {
               </div>
             </div>
 
-            {/* 3. RIGHT: Cart, Auth & Theme */}
+            {/* 3. RIGHT: Currency, Cart, Auth & Theme */}
             <div className="header__right">
+              {/* Currency Selector */}
+              <div className="header__currency-box">
+                <CurrencySelector />
+              </div>
+
               {/* Cart Button */}
               <button
                 className="header__cart-btn"
@@ -387,11 +392,6 @@ export default function Header() {
                   </Link>
                 </div>
               )}
-
-              {/* Currency Selector (Desktop) */}
-              <div className="header__currency-desktop">
-                <CurrencySelector />
-              </div>
 
               {/* Theme Toggle */}
               {mounted && (
