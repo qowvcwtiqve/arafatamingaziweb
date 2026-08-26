@@ -7,22 +7,26 @@ import api from '../../lib/api';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
-const renderOrderStatusBadge = (order) => {
+const renderOrderStatusBadge = (order, isCompact = false) => {
   const rawStatus = String(order?.status || order?.order_status || order?.payment_status || '').trim();
   const s = rawStatus.toLowerCase().replace(/[^a-z]/g, '');
+
+  const pad = isCompact ? '2px 8px' : '5px 14px';
+  const fSize = isCompact ? 10.5 : 12;
+  const iconSize = isCompact ? 12 : 14;
 
   if (s === 'refunded') {
     return (
       <span style={{
-        padding: '5px 14px', borderRadius: 'var(--radius-full)',
+        padding: pad, borderRadius: 'var(--radius-full)',
         background: 'rgba(59, 130, 246, 0.15)',
         border: '1px solid rgba(59, 130, 246, 0.45)',
         color: '#60a5fa',
-        fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        boxShadow: '0 0 16px rgba(59, 130, 246, 0.2)'
+        fontSize: fSize, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em',
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        flexShrink: 0
       }}>
-        <span className="icon icon--sm" style={{ fontSize: 14 }}>currency_exchange</span>
+        <span className="icon icon--sm" style={{ fontSize: iconSize }}>currency_exchange</span>
         <span>Refunded</span>
       </span>
     );
@@ -31,15 +35,15 @@ const renderOrderStatusBadge = (order) => {
   if (s === 'canceled' || s === 'cancelled' || s === 'failed') {
     return (
       <span style={{
-        padding: '5px 14px', borderRadius: 'var(--radius-full)',
+        padding: pad, borderRadius: 'var(--radius-full)',
         background: 'rgba(239, 68, 68, 0.15)',
         border: '1px solid rgba(239, 68, 68, 0.45)',
         color: '#f87171',
-        fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        boxShadow: '0 0 16px rgba(239, 68, 68, 0.2)'
+        fontSize: fSize, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em',
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        flexShrink: 0
       }}>
-        <span className="icon icon--sm" style={{ fontSize: 14 }}>cancel</span>
+        <span className="icon icon--sm" style={{ fontSize: iconSize }}>cancel</span>
         <span>Canceled</span>
       </span>
     );
@@ -48,15 +52,15 @@ const renderOrderStatusBadge = (order) => {
   if (s === 'delivered' || s === 'completed' || (s === 'paid' && Boolean(order?.credentials || order?.items?.[0]?.delivered_content))) {
     return (
       <span style={{
-        padding: '5px 14px', borderRadius: 'var(--radius-full)',
+        padding: pad, borderRadius: 'var(--radius-full)',
         background: 'rgba(16, 185, 129, 0.15)',
         border: '1px solid rgba(16, 185, 129, 0.45)',
         color: '#10b981',
-        fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        boxShadow: '0 0 16px rgba(16, 185, 129, 0.2)'
+        fontSize: fSize, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em',
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        flexShrink: 0
       }}>
-        <span className="icon icon--sm" style={{ fontSize: 14 }}>check_circle</span>
+        <span className="icon icon--sm" style={{ fontSize: iconSize }}>check_circle</span>
         <span>Delivered</span>
       </span>
     );
@@ -65,15 +69,15 @@ const renderOrderStatusBadge = (order) => {
   if (s === 'preorder') {
     return (
       <span style={{
-        padding: '5px 14px', borderRadius: 'var(--radius-full)',
+        padding: pad, borderRadius: 'var(--radius-full)',
         background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(99, 102, 241, 0.2) 100%)',
         border: '1px solid rgba(168, 85, 247, 0.6)',
         color: '#c084fc',
-        fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        boxShadow: '0 0 16px rgba(168, 85, 247, 0.25)'
+        fontSize: fSize, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em',
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        flexShrink: 0
       }}>
-        <span className="icon icon--sm" style={{ fontSize: 14 }}>rocket_launch</span>
+        <span className="icon icon--sm" style={{ fontSize: iconSize }}>rocket_launch</span>
         <span>Pre-Order</span>
       </span>
     );
@@ -82,16 +86,16 @@ const renderOrderStatusBadge = (order) => {
   // Pending / Manual Processing
   return (
     <span style={{
-      padding: '5px 14px', borderRadius: 'var(--radius-full)',
+      padding: pad, borderRadius: 'var(--radius-full)',
       background: 'rgba(245, 158, 11, 0.15)',
       border: '1px solid rgba(245, 158, 11, 0.45)',
       color: '#fbbf24',
-      fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      boxShadow: '0 0 16px rgba(245, 158, 11, 0.2)'
+      fontSize: fSize, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em',
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      flexShrink: 0
     }}>
-      <span className="icon icon--sm" style={{ fontSize: 14 }}>hourglass_top</span>
-      <span>Pending Manual</span>
+      <span className="icon icon--sm" style={{ fontSize: iconSize }}>hourglass_top</span>
+      <span>Pending</span>
     </span>
   );
 };
@@ -380,18 +384,9 @@ function DashboardContent() {
                 ) : (
                   <div className="orders-list-container">
                     {orders.map((order) => {
-                      const rawStatus = String(order?.status || order?.order_status || order?.payment_status || '').trim();
-                      const s = rawStatus.toLowerCase().replace(/[^a-z]/g, '');
-                      const isRefunded = s === 'refunded';
-                      const isCanceled = s === 'canceled' || s === 'cancelled' || s === 'failed';
-                      const isDelivered = (s === 'delivered' || s === 'completed' || (s === 'paid' && Boolean(order?.credentials || order?.items?.[0]?.delivered_content))) && !isRefunded && !isCanceled;
-                      const isPreorder = s === 'preorder' && !isRefunded && !isCanceled && !isDelivered;
-
-                      // Primary item details
                       const primaryItem = order.items?.[0] || {};
                       const itemTitle = primaryItem.title || 'Order #' + (order.order_number || order.id);
                       const variantName = primaryItem.variant_name || order.variant_name;
-                      const extraItemsCount = (order.items?.length || 1) - 1;
 
                       return (
                         <Link
@@ -402,64 +397,34 @@ function DashboardContent() {
                           {/* Left: Icon & Info */}
                           <div className="order-list-left">
                             <div className="order-list-icon">
-                              <span className="icon">
-                                {isPreorder ? 'rocket_launch' : isDelivered ? 'verified' : isRefunded ? 'currency_exchange' : isCanceled ? 'cancel' : 'inventory_2'}
-                              </span>
+                              <span className="icon" style={{ fontSize: 18 }}>inventory_2</span>
                             </div>
 
                             <div className="order-list-content">
-                              <div className="order-list-title-row">
-                                <span className="order-list-title">{itemTitle}</span>
-                                {variantName && (
-                                  <span style={{
-                                    fontSize: 11, fontWeight: 700, color: 'var(--color-cyan)',
-                                    background: 'rgba(0, 212, 255, 0.08)', padding: '2px 7px', borderRadius: 6
-                                  }}>
-                                    {variantName}
-                                  </span>
-                                )}
-                                {extraItemsCount > 0 && (
-                                  <span style={{
-                                    fontSize: 10.5, fontWeight: 600, color: 'var(--color-text-faint)',
-                                    background: 'rgba(255, 255, 255, 0.06)', padding: '2px 6px', borderRadius: 4
-                                  }}>
-                                    +{extraItemsCount} more
-                                  </span>
-                                )}
+                              <div className="order-list-title">
+                                {itemTitle}
                               </div>
-
                               <div className="order-list-meta">
-                                <span style={{ fontWeight: 700, color: 'var(--color-text-muted)' }}>
-                                  #{order.order_number || order.id}
-                                </span>
+                                {variantName && (
+                                  <>
+                                    <span style={{ color: 'var(--color-cyan)', fontWeight: 600 }}>{variantName}</span>
+                                    <span>•</span>
+                                  </>
+                                )}
+                                <span>#{order.order_number || order.id}</span>
                                 <span>•</span>
-                                <span>
-                                  {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                                <span>•</span>
-                                <span style={{ textTransform: 'uppercase' }}>
-                                  {order.payment_method || 'Online'}
-                                </span>
+                                <span>{new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
                               </div>
                             </div>
                           </div>
 
-                          {/* Right: Status & Price & View Receipt CTA */}
+                          {/* Right: Price & Status */}
                           <div className="order-list-right">
-                            {renderOrderStatusBadge(order)}
-
-                            <div className="order-list-price-block">
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
                               <div className="order-list-price">{format(order.total_amount)}</div>
+                              {renderOrderStatusBadge(order, true)}
                             </div>
-
-                            <span className="btn btn--outline btn--sm" style={{
-                              gap: 4, padding: '6px 12px', fontSize: 12, fontWeight: 700,
-                              borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.03)',
-                              pointerEvents: 'none'
-                            }}>
-                              <span>View Receipt</span>
-                              <span className="icon icon--sm" style={{ fontSize: 14 }}>chevron_right</span>
-                            </span>
+                            <span className="icon icon--sm" style={{ color: 'var(--color-text-faint)', fontSize: 16 }}>chevron_right</span>
                           </div>
                         </Link>
                       );
