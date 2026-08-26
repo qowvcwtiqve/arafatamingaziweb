@@ -732,8 +732,10 @@ function ProfileTab({ user, refreshUser }) {
 
 
 function WalletTopup({ user, refreshUser }) {
-  const { format } = useCurrency();
-  const [amount, setAmount] = useState('500');
+  const { currency, current, presets, format, formatDirect, toINR, currentRate } = useCurrency();
+  
+  // Set default preset on load or currency change
+  const [amount, setAmount] = useState(String(presets[2] || 500));
   const [paymentMethod, setPaymentMethod] = useState('');
   const [availableMethods, setAvailableMethods] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -741,7 +743,12 @@ function WalletTopup({ user, refreshUser }) {
   const [manualTxInput, setManualTxInput] = useState('');
   const [submittingManual, setSubmittingManual] = useState(false);
 
-  const presets = ['100', '250', '500', '1000', '2000'];
+  // When currency changes, automatically set amount to the 3rd preset of that currency!
+  useEffect(() => {
+    if (presets && presets.length > 2) {
+      setAmount(String(presets[2]));
+    }
+  }, [currency]);
 
   useEffect(() => {
     api.get('/payments/methods')
@@ -758,9 +765,10 @@ function WalletTopup({ user, refreshUser }) {
   }, []);
 
   const handleTopup = async () => {
-    const num = parseFloat(amount);
-    if (!num || num < 10) {
-      toast.error('Minimum topup amount is ₹10');
+    const entered = parseFloat(amount);
+    const minVal = current.minDeposit || 10;
+    if (!entered || entered < minVal) {
+      toast.error(`Minimum topup amount is ${formatDirect(minVal)}`);
       return;
     }
     if (!paymentMethod) {
@@ -768,10 +776,15 @@ function WalletTopup({ user, refreshUser }) {
       return;
     }
 
+    // Convert entered amount in active currency to INR canonical base for gateway & database
+    const inrAmount = toINR(entered);
+
     setLoading(true);
     try {
       const res = await api.post('/users/wallet/topup', {
-        amount: num,
+        amount: inrAmount,
+        currency_amount: entered,
+        currency: currency,
         payment_method: paymentMethod,
       });
 
@@ -782,9 +795,15 @@ function WalletTopup({ user, refreshUser }) {
         window.open(res.data.invoice_url, '_blank');
         toast.success('Crypto payment page opened!');
       } else if (res.data.upi_id || res.data.binance_pay_id) {
-        setManualPayData({ ...res.data, method: paymentMethod, amount: num });
+        setManualPayData({
+          ...res.data,
+          method: paymentMethod,
+          displayAmount: entered,
+          displayCurrency: currency,
+          inrAmount: inrAmount,
+        });
       } else if (res.data.balance !== undefined) {
-        toast.success(res.data.message || `₹${num} added to wallet!`);
+        toast.success(res.data.message || `${formatDirect(entered)} added to wallet!`);
         await refreshUser();
       }
     } catch (err) {
@@ -804,7 +823,7 @@ function WalletTopup({ user, refreshUser }) {
         order_id: manualPayData?.orderId,
         transaction_id: manualTxInput.trim(),
         gateway: manualPayData?.method || 'upi',
-        amount: manualPayData?.amount || amount,
+        amount: manualPayData?.inrAmount || toINR(amount),
       });
       toast.success(data.message || 'Deposit proof submitted!');
       setManualPayData(null);
@@ -817,6 +836,9 @@ function WalletTopup({ user, refreshUser }) {
     }
   };
 
+  const parsedAmount = parseFloat(amount) || 0;
+  const convertedINR = Math.round(toINR(parsedAmount));
+
   return (
     <div className="dashboard-content-card">
       <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
@@ -826,38 +848,74 @@ function WalletTopup({ user, refreshUser }) {
         Current Balance: <strong style={{ color: 'var(--color-accent)', fontSize: 16 }}>{format(user?.balance || 0)}</strong>
       </p>
 
-      {/* Preset Pills */}
+      {/* Preset Pills in Active Currency */}
       <div style={{ marginBottom: 20 }}>
-        <label className="form-label" style={{ fontWeight: 700, marginBottom: 8, display: 'block', fontSize: 12.5 }}>Choose Amount</label>
-        <div className="wallet-presets-row">
-          {presets.map(p => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setAmount(p)}
-              style={{
-                padding: '9px 0', borderRadius: 'var(--radius-md)',
-                background: amount === p ? 'var(--gradient-primary)' : 'var(--color-surface-2)',
-                color: amount === p ? '#fff' : 'var(--color-text)',
-                border: `1px solid ${amount === p ? 'transparent' : 'var(--color-border)'}`,
-                fontSize: 13.5, fontWeight: 700, cursor: 'pointer',
-                boxShadow: amount === p ? 'var(--shadow-glow)' : 'none'
-              }}
-            >
-              {format(p)}
-            </button>
-          ))}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <label className="form-label" style={{ fontWeight: 700, margin: 0, fontSize: 12.5 }}>
+            Choose Amount ({currency})
+          </label>
+          <span style={{ fontSize: 11.5, color: 'var(--color-cyan)', fontWeight: 600 }}>
+            Currency: {current.name} ({current.code})
+          </span>
         </div>
 
-        <input
-          type="number"
-          className="form-input"
-          placeholder="Or enter custom amount in ₹"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-          min="10"
-          style={{ fontSize: 15 }}
-        />
+        <div className="wallet-presets-row">
+          {presets.map(p => {
+            const isSelected = String(amount) === String(p);
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setAmount(String(p))}
+                style={{
+                  padding: '9px 0', borderRadius: 'var(--radius-md)',
+                  background: isSelected ? 'var(--gradient-primary)' : 'var(--color-surface-2)',
+                  color: isSelected ? '#fff' : 'var(--color-text)',
+                  border: `1px solid ${isSelected ? 'transparent' : 'var(--color-border)'}`,
+                  fontSize: 13.5, fontWeight: 700, cursor: 'pointer',
+                  boxShadow: isSelected ? 'var(--shadow-glow)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {formatDirect(p)}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Custom Amount Input with Currency Symbol */}
+        <div style={{ position: 'relative', marginTop: 10 }}>
+          <span style={{
+            position: 'absolute',
+            left: 14,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            fontSize: 15,
+            fontWeight: 700,
+            color: 'var(--color-accent)',
+            pointerEvents: 'none'
+          }}>
+            {current.symbol}
+          </span>
+          <input
+            type="number"
+            className="form-input"
+            placeholder={`Enter amount in ${currency}`}
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            min={current.minDeposit || 1}
+            style={{ fontSize: 15, fontWeight: 700, paddingLeft: 34 }}
+          />
+        </div>
+
+        {currency !== 'INR' && parsedAmount > 0 && (
+          <div style={{ fontSize: 11.5, color: 'var(--color-text-faint)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="icon icon--sm icon--cyan" style={{ fontSize: 13 }}>info</span>
+            <span>
+              {formatDirect(parsedAmount)} will be converted to <strong>₹{convertedINR} INR</strong> canonical balance at live rate (1 {currency} ≈ {(1 / currentRate).toFixed(2)} INR).
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Payment Gateway Options */}
@@ -910,7 +968,7 @@ function WalletTopup({ user, refreshUser }) {
         }}>
           <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span className="icon icon--sm icon--cyan">qr_code_2</span>
-            Complete Your Payment of {format(manualPayData.amount)}
+            Complete Payment of {formatDirect(manualPayData.displayAmount, manualPayData.displayCurrency)} {manualPayData.displayCurrency !== 'INR' && `(≈ ₹${Math.round(manualPayData.inrAmount)} INR)`}
           </h4>
 
           {manualPayData.upi_id && (
@@ -989,7 +1047,7 @@ function WalletTopup({ user, refreshUser }) {
         style={{ gap: 8, boxShadow: 'var(--shadow-glow)' }}
       >
         <span className="icon icon--md icon--filled">bolt</span>
-        <span>{loading ? 'Processing Gateway...' : `Proceed to Pay ${format(amount || 0)}`}</span>
+        <span>{loading ? 'Processing Gateway...' : `Proceed to Pay ${formatDirect(amount || 0)}`}</span>
       </button>
     </div>
   );

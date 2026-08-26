@@ -3,15 +3,27 @@ import { persist } from 'zustand/middleware';
 import api from '../lib/api';
 
 export const CURRENCIES = {
-  INR: { code: 'INR', symbol: '₹', name: 'Indian Rupee', flag: '🇮🇳', decimals: 0, prefix: true },
-  USD: { code: 'USD', symbol: '$', name: 'US Dollar', flag: '🇺🇸', decimals: 2, prefix: true },
-  EUR: { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺', decimals: 2, prefix: true },
-  GBP: { code: 'GBP', symbol: '£', name: 'British Pound', flag: '🇬🇧', decimals: 2, prefix: true },
-  BDT: { code: 'BDT', symbol: '৳', name: 'Bangladeshi Taka', flag: '🇧🇩', decimals: 0, prefix: true },
-  PKR: { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee', flag: '🇵🇰', decimals: 0, prefix: true },
-  VND: { code: 'VND', symbol: '₫', name: 'Vietnamese Dong', flag: '🇻🇳', decimals: 0, prefix: false },
-  SGD: { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar', flag: '🇸🇬', decimals: 2, prefix: true },
-  RUB: { code: 'RUB', symbol: '₽', name: 'Russian Ruble', flag: '🇷🇺', decimals: 0, prefix: false },
+  INR: { code: 'INR', symbol: '₹', name: 'Indian Rupee', flag: '🇮🇳', decimals: 0, prefix: true, minDeposit: 10 },
+  USD: { code: 'USD', symbol: '$', name: 'US Dollar', flag: '🇺🇸', decimals: 2, prefix: true, minDeposit: 1 },
+  EUR: { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺', decimals: 2, prefix: true, minDeposit: 1 },
+  GBP: { code: 'GBP', symbol: '£', name: 'British Pound', flag: '🇬🇧', decimals: 2, prefix: true, minDeposit: 1 },
+  BDT: { code: 'BDT', symbol: '৳', name: 'Bangladeshi Taka', flag: '🇧🇩', decimals: 0, prefix: true, minDeposit: 20 },
+  PKR: { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee', flag: '🇵🇰', decimals: 0, prefix: true, minDeposit: 50 },
+  VND: { code: 'VND', symbol: '₫', name: 'Vietnamese Dong', flag: '🇻🇳', decimals: 0, prefix: false, minDeposit: 10000 },
+  SGD: { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar', flag: '🇸🇬', decimals: 2, prefix: true, minDeposit: 1 },
+  RUB: { code: 'RUB', symbol: '₽', name: 'Russian Ruble', flag: '🇷🇺', decimals: 0, prefix: false, minDeposit: 50 },
+};
+
+export const CURRENCY_PRESETS = {
+  INR: [100, 250, 500, 1000, 2000],
+  USD: [5, 10, 25, 50, 100],
+  EUR: [5, 10, 25, 50, 100],
+  GBP: [5, 10, 20, 50, 100],
+  BDT: [200, 500, 1000, 2500, 5000],
+  PKR: [500, 1000, 2500, 5000, 10000],
+  VND: [100000, 250000, 500000, 1000000, 2000000],
+  SGD: [10, 25, 50, 100, 200],
+  RUB: [500, 1000, 2500, 5000, 10000],
 };
 
 const DEFAULT_RATES = {
@@ -70,6 +82,14 @@ export const useCurrencyStore = create(
         return val * rate;
       },
 
+      toINR: (currencyAmount, currCode = null) => {
+        const val = parseFloat(currencyAmount) || 0;
+        const curr = currCode || get().currency;
+        const rate = get().rates[curr] || (curr === 'INR' ? 1.0 : (DEFAULT_RATES[curr] || 1.0));
+        if (rate <= 0) return val;
+        return val / rate;
+      },
+
       format: (inrAmount, customCurrency = null) => {
         const val = parseFloat(inrAmount) || 0;
         const currCode = customCurrency || get().currency;
@@ -111,6 +131,10 @@ export function useCurrency() {
   const setCurrency = useCurrencyStore((s) => s.setCurrency);
   const fetchRates = useCurrencyStore((s) => s.fetchRates);
 
+  const current = CURRENCIES[currency] || CURRENCIES.INR;
+  const presets = CURRENCY_PRESETS[currency] || CURRENCY_PRESETS.INR;
+  const currentRate = rates[currency] || (currency === 'INR' ? 1.0 : (DEFAULT_RATES[currency] || 1.0));
+
   const format = (inrAmount, customCurrency = null) => {
     const val = parseFloat(inrAmount) || 0;
     const currCode = customCurrency || currency;
@@ -136,11 +160,50 @@ export function useCurrency() {
     return `${numStr} ${currMeta.symbol}`;
   };
 
-  const convert = (inrAmount) => {
-    const val = parseFloat(inrAmount) || 0;
-    const rate = rates[currency] || 1.0;
-    return val * rate;
+  const formatDirect = (amountInSelectedCurrency, customCurrency = null) => {
+    const val = parseFloat(amountInSelectedCurrency) || 0;
+    const currCode = customCurrency || currency;
+    const currMeta = CURRENCIES[currCode] || CURRENCIES.INR;
+    const decimals = currMeta.decimals;
+
+    let numStr = '';
+    if (decimals === 0) {
+      numStr = Math.round(val).toLocaleString('en-US');
+    } else {
+      numStr = val.toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      });
+    }
+
+    if (currMeta.prefix) {
+      return `${currMeta.symbol}${numStr}`;
+    }
+    return `${numStr} ${currMeta.symbol}`;
   };
 
-  return { currency, rates, setCurrency, fetchRates, format, convert };
+  const convert = (inrAmount) => {
+    const val = parseFloat(inrAmount) || 0;
+    return val * currentRate;
+  };
+
+  const toINR = (amountInSelectedCurrency) => {
+    const val = parseFloat(amountInSelectedCurrency) || 0;
+    if (currentRate <= 0) return val;
+    return val / currentRate;
+  };
+
+  return {
+    currency,
+    rates,
+    setCurrency,
+    fetchRates,
+    format,
+    formatDirect,
+    convert,
+    toINR,
+    current,
+    presets,
+    currentRate,
+  };
 }
