@@ -732,6 +732,7 @@ function ProfileTab({ user, refreshUser }) {
 
 
 function WalletTopup({ user, refreshUser }) {
+  const { format } = useCurrency();
   const [amount, setAmount] = useState('500');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [availableMethods, setAvailableMethods] = useState([]);
@@ -822,7 +823,7 @@ function WalletTopup({ user, refreshUser }) {
         Wallet Balance &amp; Deposit
       </h2>
       <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24 }}>
-        Current Balance: <strong style={{ color: 'var(--color-accent)', fontSize: 16 }}>₹{parseFloat(user?.balance || 0).toFixed(2)}</strong>
+        Current Balance: <strong style={{ color: 'var(--color-accent)', fontSize: 16 }}>{format(user?.balance || 0)}</strong>
       </p>
 
       {/* Preset Pills */}
@@ -843,7 +844,7 @@ function WalletTopup({ user, refreshUser }) {
                 boxShadow: amount === p ? 'var(--shadow-glow)' : 'none'
               }}
             >
-              ₹{p}
+              {format(p)}
             </button>
           ))}
         </div>
@@ -909,7 +910,7 @@ function WalletTopup({ user, refreshUser }) {
         }}>
           <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span className="icon icon--sm icon--cyan">qr_code_2</span>
-            Complete Your Payment of ₹{manualPayData.amount}
+            Complete Your Payment of {format(manualPayData.amount)}
           </h4>
 
           {manualPayData.upi_id && (
@@ -988,7 +989,7 @@ function WalletTopup({ user, refreshUser }) {
         style={{ gap: 8, boxShadow: 'var(--shadow-glow)' }}
       >
         <span className="icon icon--md icon--filled">bolt</span>
-        <span>{loading ? 'Processing Gateway...' : `Proceed to Pay ₹${amount || 0}`}</span>
+        <span>{loading ? 'Processing Gateway...' : `Proceed to Pay ${format(amount || 0)}`}</span>
       </button>
     </div>
   );
