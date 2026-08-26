@@ -742,6 +742,11 @@ h5 { font-size: 1.15rem; }
   align-items: center;
 }
 
+.currency-trigger-btn:hover {
+  background: var(--color-surface-3) !important;
+  border-color: var(--color-border-glow, #373E4F) !important;
+}
+
 @media (max-width: 768px) {
   .header__currency-desktop {
     display: none;
