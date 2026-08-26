@@ -113,20 +113,20 @@ export default function ProductCard({ product: p }) {
           <div className="product-card__floating-badges">
             {discount && (
               <span className="badge-pill badge-pill--sale">
-                <span className="icon icon--sm" style={{ fontSize: 10 }}>local_fire_department</span>
-                -{discount}%
+                <span className="icon icon--sm" style={{ fontSize: 11 }}>local_fire_department</span>
+                <span>-{discount}%</span>
               </span>
             )}
             {isPreorder && (
               <span className="badge-pill badge-pill--preorder">
-                <span className="icon icon--sm" style={{ fontSize: 10 }}>rocket_launch</span>
-                Pre-Order
+                <span className="icon icon--sm" style={{ fontSize: 11 }}>rocket_launch</span>
+                <span>Pre-Order</span>
               </span>
             )}
             {displayBadge && !isPreorder && !discount && (
               <span className="badge-pill badge-pill--custom">
-                <span className="icon icon--sm" style={{ fontSize: 10 }}>stars</span>
-                {displayBadge}
+                <span className="icon icon--sm" style={{ fontSize: 11 }}>stars</span>
+                <span>{displayBadge}</span>
               </span>
             )}
           </div>
