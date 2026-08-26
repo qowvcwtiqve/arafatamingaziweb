@@ -459,10 +459,16 @@ export async function query(sql, params = []) {
   }
 
   if (lowerSql.startsWith('update orders')) {
-    const id = params[params.length - 1];
-    const order = (db.orders || []).find(o => o.id === id || o.order_number === id);
+    const id = String(params[params.length - 1] || '').trim();
+    const order = (db.orders || []).find(o => o.id === id || o.order_number === id || o.sale_id === id);
     if (order) {
-      if (lowerSql.includes('payment_status=')) {
+      if (lowerSql.includes('order_status=$1') && lowerSql.includes('payment_status=$2')) {
+        order.order_status = params[0];
+        order.payment_status = params[1];
+        if (params[2] !== undefined && params[2] !== null) order.delivered_items = params[2];
+        if (params[3] !== undefined && params[3] !== null) order.admin_notes = params[3];
+        if (params[1] === 'paid' || params[0] === 'Delivered') order.paid_at = order.paid_at || new Date().toISOString();
+      } else if (lowerSql.includes('payment_status=')) {
         const pMatch = lowerSql.match(/payment_status='([^']+)'/);
         if (pMatch && pMatch[1]) {
           order.payment_status = pMatch[1];
@@ -477,9 +483,18 @@ export async function query(sql, params = []) {
         order.gateway_payment_id = params[0];
         if (params[1]) order.invoice_url = params[1];
       }
+      order.updated_at = new Date().toISOString();
       writeLocalDb(db);
     }
     return { rows: [], rowCount: order ? 1 : 0 };
+  }
+
+  if (lowerSql.startsWith('delete from orders')) {
+    const id = String(params[0] || '').trim();
+    const initialLen = (db.orders || []).length;
+    db.orders = (db.orders || []).filter(o => o.id !== id && o.order_number !== id && o.sale_id !== id);
+    writeLocalDb(db);
+    return { rows: [], rowCount: initialLen - (db.orders || []).length };
   }
 
   // 8. Order items
