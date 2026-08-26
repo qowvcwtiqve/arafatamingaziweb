@@ -4930,6 +4930,7 @@ select option, select optgroup {
   line-height: 1.2;
 }
 
+@media (max-width: 640px) {
   /* Receipt Page Mobile Overrides */
   .receipt-page-container {
     padding-left: 12px !important;
