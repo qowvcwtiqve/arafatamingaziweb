@@ -152,6 +152,19 @@ export const getWebsiteOrders = async () => {
     console.error('Error fetching website sales:', err.message);
   }
 
+  // Fetch users map for robust customer name enrichment
+  const userMapById = {};
+  const userMapByEmail = {};
+  try {
+    const { rows: allUsers } = await query('SELECT id, name, email, telegram_username FROM users');
+    (allUsers || []).forEach((u) => {
+      if (u.id) userMapById[u.id] = u;
+      if (u.email) userMapByEmail[String(u.email).toLowerCase()] = u;
+    });
+  } catch (err) {
+    console.error('Error fetching users map:', err.message);
+  }
+
   // Also fetch any postgres orders
   let pgOrders = [];
   try {
@@ -172,13 +185,20 @@ export const getWebsiteOrders = async () => {
   for (const s of webSales) {
     if (seenIds.has(s.sale_id)) continue;
     seenIds.add(s.sale_id);
+
+    const matchedUser = userMapById[s.user_id] || userMapByEmail[String(s.user_email || '').toLowerCase()];
+    const resolvedName = (s.user_name && s.user_name !== 'Customer' && s.user_name !== 'Website Customer' && s.user_name !== 'Unknown')
+      ? s.user_name
+      : (matchedUser?.name || matchedUser?.telegram_username || (s.user_email ? s.user_email.split('@')[0] : 'Customer'));
+    const resolvedEmail = s.user_email || matchedUser?.email || '';
+
     websiteOrders.push({
       id: s.sale_id,
       order_number: s.sale_id,
       source: 'website',
       user_id: s.user_id,
-      username: s.user_name || 'Website Customer',
-      user_email: s.user_email || '',
+      username: resolvedName,
+      user_email: resolvedEmail,
       product_id: s.product_id,
       product_name: s.product_name,
       variant_name: s.variant_name || '',
@@ -201,14 +221,19 @@ export const getWebsiteOrders = async () => {
     const sid = o.order_number || o.id;
     if (seenIds.has(sid)) continue;
     seenIds.add(sid);
+
+    const matchedUser = userMapById[o.buyer_id] || userMapByEmail[String(o.buyer_email || '').toLowerCase()];
+    const resolvedName = o.buyer_name || matchedUser?.name || matchedUser?.telegram_username || (o.buyer_email ? o.buyer_email.split('@')[0] : 'Buyer');
+    const resolvedEmail = o.buyer_email || matchedUser?.email || '';
     const orderStatus = o.order_status || (o.payment_status === 'paid' ? 'Delivered' : (o.payment_status === 'pending' || o.payment_status === 'under_review' ? 'Pending' : 'Canceled'));
+
     websiteOrders.push({
       id: o.id,
       order_number: o.order_number || o.id,
       source: 'website',
       user_id: o.buyer_id,
-      username: o.buyer_name || 'Website Buyer',
-      user_email: o.buyer_email || '',
+      username: resolvedName,
+      user_email: resolvedEmail,
       product_id: o.product_id || '',
       product_name: o.title || 'Website Order',
       variant_name: o.variant_name || '',

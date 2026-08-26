@@ -292,7 +292,9 @@ export default function OrdersManagementTab() {
 
                     {/* Customer */}
                     <td>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>{o.username}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
+                        {o.username && o.username !== 'Customer' ? o.username : (o.user_email ? o.user_email.split('@')[0] : 'Customer')}
+                      </div>
                       {o.user_email && <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>{o.user_email}</div>}
                     </td>
 
@@ -567,8 +569,10 @@ function OrderDetailsModal({ order, onClose, onUpdate }) {
             </div>
             <div>
               <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', fontWeight: 600 }}>Customer / Buyer</div>
-              <div style={{ fontWeight: 600, fontSize: 13, marginTop: 2 }}>{order.username}</div>
-              <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{order.user_email || `ID: ${order.user_id}`}</div>
+              <div style={{ fontWeight: 700, fontSize: 14, marginTop: 2, color: 'var(--color-text)' }}>
+                {order.username && order.username !== 'Customer' ? order.username : (order.user_email ? order.user_email.split('@')[0] : 'Customer')}
+              </div>
+              {order.user_email && <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{order.user_email}</div>}
             </div>
             <div>
               <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', fontWeight: 600 }}>Amount Paid</div>
