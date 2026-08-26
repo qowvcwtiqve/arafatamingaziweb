@@ -88,6 +88,7 @@ export default function ProductCard({ product: p }) {
               <img
                 src={imageUrl}
                 alt={displayTitle}
+                referrerPolicy="no-referrer"
                 onError={() => setImgError(true)}
                 style={{
                   maxWidth: '100%',
