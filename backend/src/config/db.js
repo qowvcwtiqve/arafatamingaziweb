@@ -195,6 +195,33 @@ if (!isPlaceholderDb) {
 
 // Unified Query Function with smart SQL parser for Local DB fallback
 export async function query(sql, params = []) {
+  const lowerSql = sql.trim().toLowerCase();
+
+  // Always keep local_db.json in sync for order modifications
+  if (lowerSql.startsWith('delete from orders')) {
+    const id = String(params[0] || '').trim();
+    const db = readLocalDb();
+    db.orders = (db.orders || []).filter((o) => o.id !== id && o.order_number !== id && o.sale_id !== id);
+    writeLocalDb(db);
+  }
+
+  if (lowerSql.startsWith('update orders')) {
+    const id = String(params[params.length - 1] || '').trim();
+    const db = readLocalDb();
+    const order = (db.orders || []).find((o) => o.id === id || o.order_number === id || o.sale_id === id);
+    if (order) {
+      if (lowerSql.includes('order_status=$1') && lowerSql.includes('payment_status=$2')) {
+        order.order_status = params[0];
+        order.payment_status = params[1];
+        if (params[2] !== undefined && params[2] !== null) order.delivered_items = params[2];
+        if (params[3] !== undefined && params[3] !== null) order.admin_notes = params[3];
+        if (params[1] === 'paid' || params[0] === 'Delivered') order.paid_at = order.paid_at || new Date().toISOString();
+      }
+      order.updated_at = new Date().toISOString();
+      writeLocalDb(db);
+    }
+  }
+
   if (pgPool) {
     try {
       return await pgPool.query(sql, params);
@@ -205,7 +232,6 @@ export async function query(sql, params = []) {
 
   // === LOCAL DB EMULATOR ===
   const db = readLocalDb();
-  const lowerSql = sql.trim().toLowerCase();
 
   // 1. SELECT products
   if (lowerSql.startsWith('select p.id, p.title') || lowerSql.startsWith('select p.*') || (lowerSql.includes('from products') && lowerSql.startsWith('select'))) {

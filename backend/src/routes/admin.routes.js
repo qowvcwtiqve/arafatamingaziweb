@@ -111,8 +111,17 @@ router.delete('/orders/:id', async (req, res, next) => {
     // 1. Delete from MongoDB website_sales
     const mongoDel = await Sale.deleteMany({ $or: orConditions });
 
-    // 2. Delete from PostgreSQL / SQL emulator orders
+    // 2. Delete from PostgreSQL orders
     const pgDel = await query('DELETE FROM orders WHERE id=$1 OR order_number=$1 OR sale_id=$1', [orderId]).catch(() => ({ rowCount: 0 }));
+
+    // 3. Directly clean from local_db.json
+    try {
+      const { readLocalDb, writeLocalDb } = await import('../config/db.js');
+      const db = readLocalDb();
+      const initialCount = (db.orders || []).length;
+      db.orders = (db.orders || []).filter((o) => o.id !== orderId && o.order_number !== orderId && o.sale_id !== orderId);
+      writeLocalDb(db);
+    } catch {}
 
     console.log(`[DELETE ORDER] Deleted order #${orderId}: Mongo count=${mongoDel.deletedCount}, PG count=${pgDel?.rowCount || 0}`);
 
