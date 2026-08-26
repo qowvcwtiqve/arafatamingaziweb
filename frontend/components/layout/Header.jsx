@@ -53,8 +53,11 @@ export default function Header() {
     }
     
     const handleClickOutside = (e) => {
-      if (!e.target.closest('.header__user-dropdown-container') && !e.target.closest('.header__auth-container')) {
-        setUserDropdownOpen(false);
+      // Only close desktop dropdown on click outside; mobile uses backdrop overlay
+      if (window.innerWidth > 992) {
+        if (!e.target.closest('.header__user-dropdown-container') && !e.target.closest('.header__auth-container')) {
+          setUserDropdownOpen(false);
+        }
       }
     };
     document.addEventListener('click', handleClickOutside);
@@ -424,8 +427,9 @@ export default function Header() {
 
                   {/* Mobile Guest Profile Button */}
                   <button
+                    type="button"
                     className="header__user-btn header__user-btn--mobile-guest"
-                    onClick={() => setUserDropdownOpen(true)}
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                     aria-label="Account menu"
                   >
                     <span className="icon icon--md">person</span>
