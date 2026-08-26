@@ -389,22 +389,11 @@ function DashboardContent() {
                       const isPending = !isDelivered && !isPreorder && !isRefunded && !isCanceled;
 
                       return (
-                        <div
-                          key={order.id}
-                          style={{
-                            padding: '24px 28px',
-                            borderRadius: 'var(--radius-xl)',
-                            background: 'linear-gradient(180deg, rgba(26, 23, 44, 0.7) 0%, rgba(17, 15, 29, 0.9) 100%)',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
-                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                            backdropFilter: 'blur(12px)',
-                            transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
-                          }}
-                        >
+                        <div key={order.id} className="dashboard-order-card">
                           {/* Order Header */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 12, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 16 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: 17, color: 'var(--color-text)', letterSpacing: '0.02em' }}>
+                          <div className="dashboard-order-header">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: 16, color: 'var(--color-text)', letterSpacing: '0.02em' }}>
                                 #{order.order_number || order.id}
                               </span>
 
@@ -412,49 +401,34 @@ function DashboardContent() {
                               {renderOrderStatusBadge(order)}
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                              <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 900, color: 'var(--color-accent)' }}>
-                                  {format(order.total_amount)}
-                                </div>
-                                <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
-                                  {order.payment_method || 'Online'}
-                                </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 19, fontWeight: 900, color: 'var(--color-accent)' }}>
+                                {format(order.total_amount)}
+                              </div>
+                              <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                                {order.payment_method || 'Online'}
                               </div>
                             </div>
                           </div>
 
                           {/* Purchase Date Bar */}
-                          <div style={{ fontSize: 12.5, color: 'var(--color-text-faint)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div style={{ fontSize: 12, color: 'var(--color-text-faint)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span className="icon icon--sm" style={{ fontSize: 14 }}>calendar_today</span>
                             <span>{new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
 
                           {/* Items & Deliverables List */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                             {order.items?.filter(Boolean).map((item, i) => (
-                              <div
-                                key={i}
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  flexWrap: 'wrap',
-                                  gap: 14,
-                                  padding: '14px 16px',
-                                  background: 'rgba(255, 255, 255, 0.025)',
-                                  borderRadius: 'var(--radius-lg)',
-                                  border: '1px solid rgba(255, 255, 255, 0.04)',
-                                }}
-                              >
-                                <div style={{ flex: '1 1 240px' }}>
-                                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text)', marginBottom: 4 }}>
+                              <div key={i} className="dashboard-order-item-row">
+                                <div style={{ flex: '1 1 200px' }}>
+                                  <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--color-text)', marginBottom: 4 }}>
                                     {item.title}
                                   </div>
                                   {item.variant_name && (
                                     <div style={{
                                       display: 'inline-flex', alignItems: 'center', gap: 5,
-                                      fontSize: 12, fontWeight: 700, color: 'var(--color-cyan)',
+                                      fontSize: 11.5, fontWeight: 700, color: 'var(--color-cyan)',
                                       background: 'rgba(0, 212, 255, 0.08)', padding: '2px 8px', borderRadius: 6
                                     }}>
                                       <span>{item.variant_name}</span>
@@ -462,17 +436,17 @@ function DashboardContent() {
                                   )}
                                 </div>
 
-                                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                                <div className="dashboard-order-actions-wrap">
                                   {/* Pre-order Queue Notice */}
                                   {isPreorder && (
                                     <div style={{
                                       display: 'flex', alignItems: 'center', gap: 7,
                                       background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%)',
-                                      padding: '8px 14px', borderRadius: 'var(--radius-md)',
+                                      padding: '8px 12px', borderRadius: 'var(--radius-md)',
                                       border: '1px solid rgba(168, 85, 247, 0.4)',
-                                      fontSize: 12.5, fontWeight: 700, color: '#c084fc'
+                                      fontSize: 12, fontWeight: 700, color: '#c084fc'
                                     }}>
-                                      <span className="icon icon--sm" style={{ fontSize: 15 }}>rocket_launch</span>
+                                      <span className="icon icon--sm" style={{ fontSize: 14 }}>rocket_launch</span>
                                       <span>Pre-Order Queued (Auto-dispatch on stock)</span>
                                     </div>
                                   )}
@@ -481,12 +455,12 @@ function DashboardContent() {
                                   {isRefunded && (
                                     <div style={{
                                       display: 'flex', alignItems: 'center', gap: 7,
-                                      background: 'rgba(59, 130, 246, 0.12)', padding: '8px 14px',
+                                      background: 'rgba(59, 130, 246, 0.12)', padding: '8px 12px',
                                       borderRadius: 'var(--radius-md)', border: '1px solid rgba(59, 130, 246, 0.4)',
-                                      fontSize: 12.5, fontWeight: 700, color: '#60a5fa'
+                                      fontSize: 12, fontWeight: 700, color: '#60a5fa'
                                     }}>
-                                      <span className="icon icon--sm" style={{ fontSize: 15 }}>currency_exchange</span>
-                                      <span>Refunded to Wallet / Payment Source</span>
+                                      <span className="icon icon--sm" style={{ fontSize: 14 }}>currency_exchange</span>
+                                      <span>Refunded to Wallet / Source</span>
                                     </div>
                                   )}
 
@@ -494,11 +468,11 @@ function DashboardContent() {
                                   {isCanceled && (
                                     <div style={{
                                       display: 'flex', alignItems: 'center', gap: 7,
-                                      background: 'rgba(239, 68, 68, 0.12)', padding: '8px 14px',
+                                      background: 'rgba(239, 68, 68, 0.12)', padding: '8px 12px',
                                       borderRadius: 'var(--radius-md)', border: '1px solid rgba(239, 68, 68, 0.4)',
-                                      fontSize: 12.5, fontWeight: 700, color: '#f87171'
+                                      fontSize: 12, fontWeight: 700, color: '#f87171'
                                     }}>
-                                      <span className="icon icon--sm" style={{ fontSize: 15 }}>cancel</span>
+                                      <span className="icon icon--sm" style={{ fontSize: 14 }}>cancel</span>
                                       <span>Order Canceled</span>
                                     </div>
                                   )}
@@ -507,23 +481,19 @@ function DashboardContent() {
                                   {isPending && (
                                     <div style={{
                                       display: 'flex', alignItems: 'center', gap: 7,
-                                      background: 'rgba(245, 158, 11, 0.12)', padding: '8px 14px',
+                                      background: 'rgba(245, 158, 11, 0.12)', padding: '8px 12px',
                                       borderRadius: 'var(--radius-md)', border: '1px solid rgba(245, 158, 11, 0.4)',
-                                      fontSize: 12.5, fontWeight: 700, color: '#fbbf24'
+                                      fontSize: 12, fontWeight: 700, color: '#fbbf24'
                                     }}>
-                                      <span className="icon icon--sm" style={{ fontSize: 15 }}>hourglass_top</span>
+                                      <span className="icon icon--sm" style={{ fontSize: 14 }}>hourglass_top</span>
                                       <span>Manual Delivery in Progress</span>
                                     </div>
                                   )}
 
                                   {/* Delivered Credentials */}
                                   {isDelivered && (item.delivered_content || order.credentials) && !item.download_token && (
-                                    <div style={{
-                                      display: 'flex', alignItems: 'center', gap: 8,
-                                      background: 'rgba(16, 185, 129, 0.08)', padding: '7px 14px',
-                                      borderRadius: 'var(--radius-md)', border: '1px solid rgba(16, 185, 129, 0.35)'
-                                    }}>
-                                      <span style={{ fontSize: 13, fontFamily: 'monospace', color: '#10b981', fontWeight: 600, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <div className="dashboard-credentials-box">
+                                      <span className="dashboard-credentials-text">
                                         {item.delivered_content || order.credentials}
                                       </span>
                                       <button
@@ -532,7 +502,7 @@ function DashboardContent() {
                                           navigator.clipboard.writeText(item.delivered_content || order.credentials);
                                           toast.success('Credentials copied to clipboard');
                                         }}
-                                        style={{ width: 28, height: 28, color: '#10b981' }}
+                                        style={{ width: 28, height: 28, color: '#10b981', flexShrink: 0 }}
                                         title="Copy to clipboard"
                                       >
                                         <span className="icon" style={{ fontSize: 15 }}>content_copy</span>
@@ -546,7 +516,7 @@ function DashboardContent() {
                                       href={`${process.env.NEXT_PUBLIC_API_URL}/api/download/${item.download_token}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="btn btn--primary btn--sm"
+                                      className="btn btn--primary btn--sm dashboard-order-details-btn"
                                       style={{ gap: 6, padding: '7px 14px' }}
                                     >
                                       <span className="icon icon--sm">download</span>
@@ -557,7 +527,7 @@ function DashboardContent() {
                                   {/* View Receipt Details Button */}
                                   <Link
                                     href={`/dashboard/order/${order.id}`}
-                                    className="btn btn--outline btn--sm"
+                                    className="btn btn--outline btn--sm dashboard-order-details-btn"
                                     style={{
                                       gap: 6,
                                       padding: '7px 14px',
@@ -575,6 +545,7 @@ function DashboardContent() {
                           </div>
                         </div>
                       );
+                    })}
                     })}
                   </div>
                 )}
