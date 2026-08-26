@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '../../store/cartStore';
+import { useCurrencyStore } from '../../store/currencyStore';
 import toast from 'react-hot-toast';
 import ProductIconBanner from './ProductIconBanner';
 
 export default function ProductCard({ product: p }) {
   const addItem = useCartStore((s) => s.addItem);
+  const format = useCurrencyStore((s) => s.format);
   const [imgError, setImgError] = useState(false);
 
   const handleAddToCart = (e) => {
@@ -166,17 +168,17 @@ export default function ProductCard({ product: p }) {
             <div className="product-card__price-wrapper">
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
                 <span className="product-card__current-price">
-                  ₹{price.toLocaleString('en-IN')}
+                  {format(price)}
                 </span>
                 {comparePrice && comparePrice > price && (
                   <span className="product-card__old-price">
-                    ₹{comparePrice.toLocaleString('en-IN')}
+                    {format(comparePrice)}
                   </span>
                 )}
               </div>
               {saveAmount && saveAmount > 0 && (
                 <span className="product-card__save-tag">
-                  Save ₹{saveAmount.toLocaleString('en-IN')}
+                  Save {format(saveAmount)}
                 </span>
               )}
             </div>

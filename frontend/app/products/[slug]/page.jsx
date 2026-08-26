@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../../lib/api';
 import { useCartStore } from '../../../store/cartStore';
+import { useCurrencyStore } from '../../../store/currencyStore';
 import toast from 'react-hot-toast';
 import ProductIconBanner from '../../../components/product/ProductIconBanner';
 import ProductCard from '../../../components/product/ProductCard';
@@ -146,6 +147,7 @@ export default function ProductDetailPage() {
   const { slug } = useParams();
   const router = useRouter();
   const addItem = useCartStore(s => s.addItem);
+  const format = useCurrencyStore(s => s.format);
 
   const [product, setProduct] = useState(null);
   const [variants, setVariants] = useState([]);
@@ -513,7 +515,7 @@ export default function ProductDetailPage() {
                   color: 'var(--color-accent)',
                   lineHeight: 1
                 }}>
-                  ₹{price.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                  {format(price)}
                 </span>
                 {comparePrice > price && (
                   <span style={{
@@ -522,7 +524,7 @@ export default function ProductDetailPage() {
                     textDecoration: 'line-through',
                     fontWeight: 500
                   }}>
-                    ₹{comparePrice.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                    {format(comparePrice)}
                   </span>
                 )}
               </div>
@@ -610,7 +612,7 @@ export default function ProductDetailPage() {
                           fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 800,
                           color: isSelected ? 'var(--color-accent)' : 'var(--color-text)'
                         }}>
-                          ₹{parseFloat(v.price).toLocaleString('en-IN')}
+                          {format(v.price)}
                         </div>
                       </button>
                     );
@@ -723,7 +725,7 @@ export default function ProductDetailPage() {
                   }}
                 >
                   <span className="icon icon--md">rocket_launch</span>
-                  <span>Pre-Order Now (₹{(price * quantity).toLocaleString('en-IN')})</span>
+                  <span>Pre-Order Now ({format(price * quantity)})</span>
                 </button>
               ) : isOutOfStock ? (
                 <button className="btn btn--outline" disabled style={{ flex: 1, opacity: 0.6, height: 52 }}>

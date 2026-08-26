@@ -1,9 +1,11 @@
 'use client';
 import { useCartStore } from '../../store/cartStore';
+import { useCurrencyStore } from '../../store/currencyStore';
 import Link from 'next/link';
 import ProductIconBanner from '../../components/product/ProductIconBanner';
 
 export default function CartPage() {
+  const format = useCurrencyStore(s => s.format);
   const { items, removeItem, updateQuantity } = useCartStore(s => ({
     items: s.items,
     removeItem: s.removeItem,
@@ -117,7 +119,7 @@ export default function CartPage() {
                       flexWrap: 'wrap', gap: 10, marginTop: 4
                     }}>
                       <div style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 800, color: 'var(--color-accent)' }}>
-                        ₹{(parseFloat(item.price) * (item.quantity || 1)).toLocaleString('en-IN')}
+                        {format(parseFloat(item.price) * (item.quantity || 1))}
                       </div>
 
                       {/* Quantity Modifier */}
@@ -187,13 +189,13 @@ export default function CartPage() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                     <span style={{ color: 'var(--color-text-muted)' }}>Service / Tax Fee</span>
-                    <span style={{ color: 'var(--color-success)', fontWeight: 700 }}>₹0 (Free)</span>
+                    <span style={{ color: 'var(--color-success)', fontWeight: 700 }}>Free</span>
                   </div>
                   <div style={{ height: 1, background: 'var(--color-border)', margin: '4px 0' }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 16, fontWeight: 700 }}>Total Price</span>
                     <span style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 800, color: 'var(--color-accent)' }}>
-                      ₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                      {format(subtotal)}
                     </span>
                   </div>
                 </div>

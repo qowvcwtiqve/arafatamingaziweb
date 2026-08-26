@@ -12,6 +12,7 @@ import userRoutes from './routes/user.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import downloadRoutes from './routes/download.routes.js';
 import realtimeRoutes, { initRealtimeWatcher } from './routes/realtime.routes.js';
+import currencyRoutes from './routes/currency.routes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { connectMongoDB } from './config/mongodb.js';
 
@@ -61,6 +62,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/download', downloadRoutes);
 app.use('/api/realtime', realtimeRoutes);
+app.use('/api/currency', currencyRoutes);
 
 // =====================================================
 // ERROR HANDLING

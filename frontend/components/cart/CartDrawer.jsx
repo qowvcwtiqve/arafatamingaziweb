@@ -1,9 +1,11 @@
 'use client';
 import { useCartStore } from '../../store/cartStore';
+import { useCurrencyStore } from '../../store/currencyStore';
 import Link from 'next/link';
 import ProductIconBanner from '../product/ProductIconBanner';
 
 export default function CartDrawer({ open, onClose }) {
+  const format = useCurrencyStore(s => s.format);
   const { items, removeItem, updateQuantity, total } = useCartStore(s => ({
     items: s.items,
     removeItem: s.removeItem,
@@ -130,7 +132,7 @@ export default function CartDrawer({ open, onClose }) {
                       marginTop: 8, flexWrap: 'wrap', gap: 6
                     }}>
                       <div style={{ fontFamily: 'var(--font-heading)', fontSize: 15, fontWeight: 800, color: 'var(--color-accent)' }}>
-                        ₹{(parseFloat(item.price) * (item.quantity || 1)).toLocaleString('en-IN')}
+                        {format(parseFloat(item.price) * (item.quantity || 1))}
                       </div>
 
                       {/* Quantity Stepper */}
@@ -189,7 +191,7 @@ export default function CartDrawer({ open, onClose }) {
                 <div style={{ fontSize: 11, color: 'var(--color-cyan)', fontWeight: 600 }}>Automated Dispatch</div>
               </div>
               <span style={{ fontFamily: 'var(--font-heading)', fontSize: 24, fontWeight: 800, color: 'var(--color-accent)' }}>
-                ₹{total.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                {format(total)}
               </span>
             </div>
 

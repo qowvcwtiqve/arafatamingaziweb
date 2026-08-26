@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCartStore } from '../../store/cartStore';
 import { useAuthStore } from '../../store/authStore';
+import { useCurrencyStore } from '../../store/currencyStore';
 import api from '../../lib/api';
 import toast from 'react-hot-toast';
 
@@ -55,6 +56,7 @@ function CheckoutContent() {
   const router = useRouter();
   const { items, clearCart } = useCartStore();
   const { user } = useAuthStore();
+  const format = useCurrencyStore(s => s.format);
   const [availableMethods, setAvailableMethods] = useState(DEFAULT_METHODS);
   const [paymentMethod, setPaymentMethod] = useState('upi_qr');
   const [coupon, setCoupon] = useState('');
@@ -484,7 +486,7 @@ function CheckoutContent() {
                             {m.label || m.title}
                             {isWallet && (
                               <span style={{ fontSize: 12, color: walletBal >= total ? '#10B981' : '#F59E0B', fontWeight: 700 }}>
-                                (₹{walletBal.toFixed(2)})
+                                ({format(walletBal)})
                               </span>
                             )}
                           </div>
@@ -512,7 +514,7 @@ function CheckoutContent() {
                   {loading ? 'Processing...' : (
                     <>
                       <span className="icon icon--md">lock</span>
-                      Pay ₹{total.toLocaleString('en-IN', { minimumFractionDigits: 0 })} Now
+                      Pay {format(total)} Now
                     </>
                   )}
                 </button>
@@ -705,7 +707,7 @@ function CheckoutContent() {
                         <div style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>{item.variant_name}</div>
                       )}
                     </div>
-                    <div style={{ fontWeight: 600, flexShrink: 0, color: 'var(--color-text)' }}>₹{(parseFloat(item.price) * (item.quantity || 1)).toFixed(2)}</div>
+                    <div style={{ fontWeight: 600, flexShrink: 0, color: 'var(--color-text)' }}>{format(parseFloat(item.price) * (item.quantity || 1))}</div>
                   </div>
                 ))}
               </div>
@@ -713,17 +715,17 @@ function CheckoutContent() {
               <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--color-text-muted)' }}>
                   <span>Subtotal</span>
-                  <span>₹{subtotal.toFixed(2)}</span>
+                  <span>{format(subtotal)}</span>
                 </div>
                 {couponDiscount > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#10B981' }}>
                     <span>Discount</span>
-                    <span>-₹{couponDiscount.toFixed(2)}</span>
+                    <span>-{format(couponDiscount)}</span>
                   </div>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 800, borderTop: '1px solid var(--color-border)', paddingTop: 12, marginTop: 4 }}>
                   <span style={{ color: 'var(--color-text)' }}>Total</span>
-                  <span style={{ color: 'var(--color-primary-light)' }}>₹{total.toFixed(2)}</span>
+                  <span style={{ color: 'var(--color-primary-light)' }}>{format(total)}</span>
                 </div>
               </div>
             </div>

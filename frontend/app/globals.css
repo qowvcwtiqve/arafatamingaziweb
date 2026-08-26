@@ -737,6 +737,17 @@ h5 { font-size: 1.15rem; }
   height: 100%;
 }
 
+.header__currency-desktop {
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .header__currency-desktop {
+    display: none;
+  }
+}
+
 .header__user-menu .btn,
 .header__auth-btns .btn {
   height: 38px;

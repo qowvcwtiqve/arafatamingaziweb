@@ -6,6 +6,7 @@ import { useCartStore } from '../../store/cartStore';
 import { useAuthStore } from '../../store/authStore';
 import CartDrawer from '../cart/CartDrawer';
 import Logo from './Logo';
+import CurrencySelector from './CurrencySelector';
 import api from '../../lib/api';
 
 export default function Header() {
@@ -352,6 +353,14 @@ export default function Header() {
                             )}
                           </div>
 
+                          {/* Currency Switcher in Bottom Sheet */}
+                          <div style={{ marginBottom: 14 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
+                              Currency
+                            </div>
+                            <CurrencySelector isMobile={true} />
+                          </div>
+
                           {/* Logout Button */}
                           <div className="user-bottom-sheet__footer">
                             <button
@@ -378,6 +387,11 @@ export default function Header() {
                   </Link>
                 </div>
               )}
+
+              {/* Currency Selector (Desktop) */}
+              <div className="header__currency-desktop">
+                <CurrencySelector />
+              </div>
 
               {/* Theme Toggle */}
               {mounted && (
@@ -450,6 +464,14 @@ export default function Header() {
                 </Link>
               </div>
             )}
+
+            {/* Mobile Currency Selector */}
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6, letterSpacing: '0.05em' }}>
+                Display Currency
+              </div>
+              <CurrencySelector isMobile={true} />
+            </div>
 
             {/* Mobile Search */}
             <div className="mobile-drawer__search">

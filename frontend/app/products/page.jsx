@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import api from '../../lib/api';
 import ProductCard from '../../components/product/ProductCard';
 import CustomDropdown from '../../components/ui/CustomDropdown';
+import { useCurrencyStore } from '../../store/currencyStore';
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest First', icon: 'schedule' },
@@ -13,17 +14,19 @@ const SORT_OPTIONS = [
   { value: 'price_desc', label: 'Price: High to Low', icon: 'arrow_downward' },
 ];
 
-const BUDGET_PRESETS = [
-  { label: 'All Prices', min: '', max: '' },
-  { label: 'Under ₹299', min: '', max: '299' },
-  { label: '₹300 – ₹699', min: '300', max: '699' },
-  { label: '₹700 – ₹1,499', min: '700', max: '1499' },
-  { label: '₹1,500 & Above', min: '1500', max: '' },
-];
-
 function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const format = useCurrencyStore((s) => s.format);
+
+  const BUDGET_PRESETS = [
+    { label: 'All Prices', min: '', max: '' },
+    { label: `Under ${format(299)}`, min: '', max: '299' },
+    { label: `${format(300)} – ${format(699)}`, min: '300', max: '699' },
+    { label: `${format(700)} – ${format(1499)}`, min: '700', max: '1499' },
+    { label: `${format(1500)} & Above`, min: '1500', max: '' },
+  ];
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([{ id: '', name: 'All Categories', icon: 'grid_view' }]);
   const [loading, setLoading] = useState(true);
@@ -270,7 +273,7 @@ function ProductsContent() {
         <form onSubmit={handleApplyCustomPrice} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <input
             type="number"
-            placeholder="Min ₹"
+            placeholder="Min Price"
             value={customMinPrice}
             onChange={(e) => setCustomMinPrice(e.target.value)}
             className="form-input"
@@ -279,7 +282,7 @@ function ProductsContent() {
           <span style={{ color: 'var(--color-text-faint)', fontSize: 12 }}>–</span>
           <input
             type="number"
-            placeholder="Max ₹"
+            placeholder="Max Price"
             value={customMaxPrice}
             onChange={(e) => setCustomMaxPrice(e.target.value)}
             className="form-input"
@@ -592,7 +595,7 @@ function ProductsContent() {
                       color: '#10b981',
                     }}
                   >
-                    Budget: {filters.min_price ? `₹${filters.min_price}` : '₹0'} – {filters.max_price ? `₹${filters.max_price}` : 'Any'}
+                    Budget: {filters.min_price ? format(filters.min_price) : format(0)} – {filters.max_price ? format(filters.max_price) : 'Any'}
                     <span
                       className="icon icon--sm"
                       style={{ cursor: 'pointer', fontSize: 14 }}
