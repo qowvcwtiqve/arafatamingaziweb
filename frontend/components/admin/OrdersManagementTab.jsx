@@ -82,6 +82,21 @@ export default function OrdersManagementTab() {
     { id: 'Canceled', label: 'Canceled', count: stats.canceled, icon: 'cancel', color: '#ef4444' },
   ];
 
+  const handleDirectDelete = async (e, o) => {
+    e?.stopPropagation();
+    const targetId = String(o.id || o.order_number || '').replace(/^#/, '').trim();
+    if (!window.confirm(`Are you sure you want to permanently delete Order #${o.order_number || o.id}?`)) return;
+    try {
+      await api.delete(`/admin/orders/${encodeURIComponent(targetId)}`);
+      toast.success('Order deleted successfully');
+      setOrders((prev) => prev.filter((item) => item.id !== targetId && item.order_number !== targetId));
+      setStats((prev) => ({ ...prev, total: Math.max(0, (prev.total || 1) - 1) }));
+      fetchOrders(pagination.page);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to delete order');
+    }
+  };
+
   return (
     <div>
       {/* Header */}
@@ -138,7 +153,7 @@ export default function OrdersManagementTab() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-card__icon" style={{ color: '#a855f7', background: 'rgba(168,85,247,0.15)' }}>
+          <div className="stat-card__icon" style={{ color: '#a855f7', background: 'rgba(168,85,247,0.12)' }}>
             <span className="icon icon--md">rocket_launch</span>
           </div>
           <div className="stat-card__label">Active Pre-Orders</div>
@@ -148,145 +163,186 @@ export default function OrdersManagementTab() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-card__icon" style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.15)' }}>
+          <div className="stat-card__icon" style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.12)' }}>
             <span className="icon icon--md">hourglass_empty</span>
           </div>
-          <div className="stat-card__label">Pending Fulfillment</div>
+          <div className="stat-card__label">Pending Manual Queue</div>
           <div className="stat-card__value" style={{ color: '#f59e0b' }}>
             {stats.pending || 0}
           </div>
         </div>
       </div>
 
-      {/* Main Filter & Tabs Card */}
-      <div style={{ background: 'var(--color-surface)', borderRadius: 12, border: '1px solid var(--color-border)', padding: 16, marginBottom: 20 }}>
-        {/* Category Tabs Ribbon */}
-        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, borderBottom: '1px solid var(--color-border)', marginBottom: 14 }}>
-          {ORDER_TABS.map((t) => {
-            const isActive = statusTab === t.id;
-            return (
-              <button
-                key={t.id}
-                onClick={() => setStatusTab(t.id)}
+      {/* Ribbon Navigation Tabs */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 6,
+          overflowX: 'auto',
+          paddingBottom: 10,
+          marginBottom: 16,
+          borderBottom: '1px solid var(--color-border)',
+        }}
+      >
+        {ORDER_TABS.map((t) => {
+          const isActive = statusTab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setStatusTab(t.id)}
+              className={`btn ${isActive ? 'btn--primary' : 'btn--ghost'}`}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                padding: '6px 14px',
+                borderRadius: 'var(--radius-md)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 7,
+                whiteSpace: 'nowrap',
+                background: isActive ? undefined : 'var(--color-surface-2)',
+                border: isActive ? undefined : '1px solid var(--color-border)',
+              }}
+            >
+              <span className="icon icon--sm" style={{ color: t.color || 'inherit' }}>
+                {t.icon}
+              </span>
+              <span>{t.label}</span>
+              <span
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '8px 14px',
-                  borderRadius: 8,
-                  border: isActive ? '1px solid var(--color-primary-light)' : '1px solid var(--color-border)',
-                  background: isActive ? 'rgba(110, 58, 255, 0.15)' : 'var(--color-surface-2)',
-                  color: isActive ? 'var(--color-primary-light)' : 'var(--color-text-muted)',
-                  fontSize: 13,
-                  fontWeight: isActive ? 700 : 500,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.15s ease',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  padding: '1px 6px',
+                  borderRadius: 10,
+                  background: isActive ? 'rgba(255,255,255,0.25)' : 'var(--color-surface-3)',
+                  color: isActive ? '#fff' : 'var(--color-text-muted)',
                 }}
               >
-                <span className="icon icon--sm" style={{ color: t.color || 'inherit' }}>{t.icon}</span>
-                {t.label}
-                <span
-                  style={{
-                    fontSize: 11,
-                    padding: '1px 6px',
-                    borderRadius: 10,
-                    background: isActive ? 'var(--color-primary)' : 'rgba(255,255,255,0.08)',
-                    color: isActive ? '#fff' : 'var(--color-text-faint)',
-                    fontWeight: 700,
-                  }}
-                >
-                  {t.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Search Control */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: 8, flex: 1, minWidth: 260, maxWidth: 500 }}>
-            <div style={{ position: 'relative', flex: 1 }}>
-              <span
-                className="icon icon--sm"
-                style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-faint)' }}
-              >
-                search
+                {t.count || 0}
               </span>
-              <input
-                className="form-input"
-                placeholder="Search Order #, Customer, Product or Key..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{ paddingLeft: 34, height: 38, fontSize: 13 }}
-              />
-            </div>
-            <button type="submit" className="btn btn--secondary btn--sm" style={{ height: 38, padding: '0 16px' }}>
-              Search
             </button>
-          </form>
-        </div>
+          );
+        })}
       </div>
 
+      {/* Filter / Search Bar */}
+      <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <span
+            className="icon icon--sm"
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--color-text-faint)',
+            }}
+          >
+            search
+          </span>
+          <input
+            type="text"
+            className="form-input"
+            placeholder="Search by Order ID (#QXD-...), buyer email, product name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ paddingLeft: 36, height: 38, fontSize: 13 }}
+          />
+        </div>
+        <button type="submit" className="btn btn--secondary" style={{ height: 38, gap: 6 }}>
+          <span className="icon icon--sm">filter_alt</span>
+          <span>Search</span>
+        </button>
+        {(search || statusTab !== 'all') && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearch('');
+              setStatusTab('all');
+            }}
+            className="btn btn--ghost"
+            style={{ height: 38 }}
+          >
+            Reset
+          </button>
+        )}
+      </form>
+
       {/* Orders Table */}
-      <div className="table-wrapper">
-        <table className="table">
+      <div className="table-responsive" style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+        <table className="table" style={{ margin: 0, width: '100%' }}>
           <thead>
             <tr>
-              <th>Order Ref</th>
-              <th>Product & Plan</th>
+              <th>Order ID</th>
+              <th>Product &amp; Plan</th>
               <th>Customer</th>
               <th>Price</th>
               <th>Status</th>
-              <th>Delivered Keys</th>
-              <th>Date & Time</th>
-              <th style={{ textAlign: 'right' }}>Action</th>
+              <th>Delivered Keys / Content</th>
+              <th>Date</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: 40 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                    <div className="skeleton" style={{ width: 40, height: 40, borderRadius: '50%' }} />
-                    <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>Loading orders from live MongoDB Atlas...</span>
-                  </div>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0' }}>
+                  <div className="skeleton" style={{ height: 20, width: 140, margin: '0 auto 8px' }} />
+                  <div style={{ color: 'var(--color-text-faint)', fontSize: 12 }}>Loading website orders...</div>
                 </td>
               </tr>
             ) : orders.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--color-text-faint)' }}>
-                  <span className="icon icon--lg" style={{ display: 'block', margin: '0 auto 8px', opacity: 0.5 }}>receipt_long</span>
-                  No orders found for this status tab or search filter.
+                <td colSpan={8} style={{ textAlign: 'center', padding: '50px 0', color: 'var(--color-text-faint)' }}>
+                  <span className="icon icon--xl" style={{ display: 'block', margin: '0 auto 8px', color: 'var(--color-text-faint)' }}>
+                    receipt_long
+                  </span>
+                  No website orders found matching this filter.
                 </td>
               </tr>
             ) : (
               orders.map((o) => {
                 const badge = getStatusBadge(o.status);
-                const hasKeys = !!(o.credentials && o.credentials.trim());
-                const dateObj = new Date(o.purchase_ts);
-                const dateStr = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                const d = new Date(o.purchase_ts || o.created_at || Date.now());
+                const dateStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
                 return (
-                  <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedOrder(o)}>
+                  <tr
+                    key={o.id || o.order_number}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => setSelectedOrder(o)}
+                    className="hover-row"
+                  >
                     {/* Order ID */}
                     <td>
-                      <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--color-primary-light)', fontSize: 13 }}>
-                        #{o.order_number}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: 'var(--color-primary-light)' }}>
+                          #{o.order_number || o.id}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopy(o.order_number || o.id, 'Order ID');
+                          }}
+                          className="btn btn--ghost btn--sm"
+                          style={{ padding: 2, height: 20, width: 20 }}
+                          title="Copy ID"
+                        >
+                          <span className="icon icon--sm" style={{ fontSize: 12 }}>content_copy</span>
+                        </button>
+                      </div>
                     </td>
 
                     {/* Product & Variant */}
                     <td>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>{o.product_name}</div>
-                      <div style={{ fontSize: 11, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-text)' }}>
+                        {o.product_name}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--color-text-faint)', display: 'flex', gap: 6, marginTop: 2 }}>
                         <span>{o.variant_name || 'Standard'}</span>
-                        {o.pool_id && (
-                          <span style={{ padding: '1px 4px', background: 'var(--color-surface-2)', borderRadius: 3, fontSize: 10 }}>
-                            📦 {o.pool_id}
-                          </span>
-                        )}
+                        <span>•</span>
+                        <span style={{ fontFamily: 'monospace' }}>Pool: {o.pool_id || 'default'}</span>
                       </div>
                     </td>
 
@@ -311,32 +367,37 @@ export default function OrdersManagementTab() {
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: 4,
-                          padding: '3px 8px',
-                          borderRadius: 6,
-                          background: badge.bg,
-                          color: badge.color,
+                          gap: 5,
+                          padding: '3px 9px',
+                          borderRadius: 20,
                           fontSize: 11,
                           fontWeight: 700,
+                          background: badge.bg,
+                          color: badge.color,
+                          border: `1px solid ${badge.color}40`,
                         }}
                       >
-                        <span className="icon icon--sm" style={{ fontSize: 13 }}>{badge.icon}</span>
+                        <span className="icon icon--sm" style={{ fontSize: 13 }}>
+                          {badge.icon}
+                        </span>
                         {badge.label}
                       </span>
                     </td>
 
-                    {/* Delivered Credentials */}
+                    {/* Credentials Preview */}
                     <td onClick={(e) => e.stopPropagation()}>
-                      {hasKeys ? (
+                      {o.credentials ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span
                             style={{
                               fontFamily: 'monospace',
                               fontSize: 11,
-                              background: 'var(--color-surface-2)',
-                              padding: '3px 6px',
+                              background: 'rgba(16,185,129,0.08)',
+                              border: '1px solid rgba(16,185,129,0.25)',
+                              color: '#10b981',
+                              padding: '2px 8px',
                               borderRadius: 4,
-                              maxWidth: 140,
+                              maxWidth: 160,
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
@@ -357,7 +418,7 @@ export default function OrdersManagementTab() {
                         </div>
                       ) : (
                         <span style={{ fontSize: 12, color: 'var(--color-text-faint)', fontStyle: 'italic' }}>
-                          {o.status === 'Pre-Order' ? '⏳ Pre-order queue' : 'No credentials'}
+                          {o.status === 'Pre-Order' ? '⏳ Pre-order' : 'No content'}
                         </span>
                       )}
                     </td>
@@ -368,16 +429,26 @@ export default function OrdersManagementTab() {
                       <div style={{ fontSize: 10, color: 'var(--color-text-faint)' }}>{timeStr}</div>
                     </td>
 
-                    {/* Action */}
+                    {/* Actions */}
                     <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => setSelectedOrder(o)}
-                        className="btn btn--secondary btn--sm"
-                        style={{ padding: '4px 10px', height: 28, fontSize: 11, gap: 4 }}
-                      >
-                        <span className="icon icon--sm" style={{ fontSize: 13 }}>visibility</span>
-                        Manage
-                      </button>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
+                        <button
+                          onClick={() => setSelectedOrder(o)}
+                          className="btn btn--secondary btn--sm"
+                          style={{ padding: '4px 10px', height: 28, fontSize: 11, gap: 4 }}
+                        >
+                          <span className="icon icon--sm" style={{ fontSize: 13 }}>visibility</span>
+                          Manage
+                        </button>
+                        <button
+                          onClick={(e) => handleDirectDelete(e, o)}
+                          className="btn btn--ghost btn--sm"
+                          style={{ padding: '4px 6px', height: 28, color: 'var(--color-text-faint)' }}
+                          title="Delete Order"
+                        >
+                          <span className="icon icon--sm" style={{ fontSize: 14, color: '#ef4444' }}>delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -394,23 +465,21 @@ export default function OrdersManagementTab() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
+            className="btn btn--secondary btn--sm"
             disabled={pagination.page <= 1}
             onClick={() => fetchOrders(pagination.page - 1)}
-            className="btn btn--secondary btn--sm"
-            style={{ height: 32, padding: '0 12px' }}
           >
-            ◀ Previous
+            Previous
           </button>
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text)' }}>
-            Page {pagination.page} of {pagination.total_pages}
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-muted)' }}>
+            Page {pagination.page} of {pagination.total_pages || 1}
           </span>
           <button
-            disabled={pagination.page >= pagination.total_pages}
-            onClick={() => fetchOrders(pagination.page + 1)}
             className="btn btn--secondary btn--sm"
-            style={{ height: 32, padding: '0 12px' }}
+            disabled={pagination.page >= (pagination.total_pages || 1)}
+            onClick={() => fetchOrders(pagination.page + 1)}
           >
-            Next ▶
+            Next
           </button>
         </div>
       </div>
@@ -422,6 +491,12 @@ export default function OrdersManagementTab() {
           onClose={() => setSelectedOrder(null)}
           onUpdate={() => {
             setSelectedOrder(null);
+            fetchOrders(pagination.page);
+          }}
+          onDelete={(deletedId) => {
+            setSelectedOrder(null);
+            setOrders((prev) => prev.filter((item) => item.id !== deletedId && item.order_number !== deletedId));
+            setStats((prev) => ({ ...prev, total: Math.max(0, (prev.total || 1) - 1) }));
             fetchOrders(pagination.page);
           }}
         />
@@ -478,7 +553,7 @@ const STATUS_DROPDOWN_OPTIONS = [
   },
 ];
 
-function OrderDetailsModal({ order, onClose, onUpdate }) {
+function OrderDetailsModal({ order, onClose, onUpdate, onDelete }) {
   const [status, setStatus] = useState(order.status || 'Delivered');
   const [credentials, setCredentials] = useState(order.credentials || '');
   const [adminNotes, setAdminNotes] = useState(order.admin_notes || '');
@@ -510,15 +585,20 @@ function OrderDetailsModal({ order, onClose, onUpdate }) {
   };
 
   const handleDelete = async () => {
+    const targetId = String(order.id || order.order_number || '').replace(/^#/, '').trim();
     if (!window.confirm(`Are you sure you want to permanently delete Order #${order.order_number || order.id}? This will remove it from the system.`)) {
       return;
     }
     setDeleting(true);
     try {
-      const orderParam = encodeURIComponent(String(order.id || order.order_number || '').replace(/^#/, '').trim());
+      const orderParam = encodeURIComponent(targetId);
       await api.delete(`/admin/orders/${orderParam}`);
       toast.success('Order deleted successfully');
-      onUpdate();
+      if (typeof onDelete === 'function') {
+        onDelete(targetId);
+      } else {
+        onUpdate();
+      }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to delete order');
     } finally {

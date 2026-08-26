@@ -109,12 +109,19 @@ router.delete('/orders/:id', async (req, res, next) => {
     }
 
     // 1. Delete from MongoDB website_sales
-    await Sale.deleteMany({ $or: orConditions });
+    const mongoDel = await Sale.deleteMany({ $or: orConditions });
 
-    // 2. Delete from PostgreSQL orders
-    await query('DELETE FROM orders WHERE id=$1 OR order_number=$1 OR sale_id=$1', [orderId]).catch(() => {});
+    // 2. Delete from PostgreSQL / SQL emulator orders
+    const pgDel = await query('DELETE FROM orders WHERE id=$1 OR order_number=$1 OR sale_id=$1', [orderId]).catch(() => ({ rowCount: 0 }));
 
-    res.json({ success: true, message: `Order #${orderId} deleted successfully.` });
+    console.log(`[DELETE ORDER] Deleted order #${orderId}: Mongo count=${mongoDel.deletedCount}, PG count=${pgDel?.rowCount || 0}`);
+
+    res.json({
+      success: true,
+      message: `Order #${orderId} deleted successfully.`,
+      mongoDeleted: mongoDel.deletedCount,
+      pgDeleted: pgDel?.rowCount || 0
+    });
   } catch (err) {
     next(err);
   }
