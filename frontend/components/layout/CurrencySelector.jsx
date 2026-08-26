@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useCurrency, CURRENCIES } from '../../store/currencyStore';
+import FlagIcon from '../ui/FlagIcon';
 
 export default function CurrencySelector({ isMobile = false }) {
   const { currency, setCurrency, fetchRates } = useCurrency();
@@ -25,7 +26,7 @@ export default function CurrencySelector({ isMobile = false }) {
     return (
       <div style={{
         height: 38,
-        padding: '0 12px',
+        padding: '0 10px',
         borderRadius: 'var(--radius-md, 10px)',
         background: 'var(--color-surface-2)',
         border: '1px solid var(--color-border)',
@@ -36,8 +37,8 @@ export default function CurrencySelector({ isMobile = false }) {
         fontWeight: 600,
         color: 'var(--color-text)'
       }}>
-        <span style={{ fontSize: 15 }}>🇮🇳</span>
-        <span style={{ letterSpacing: '0.02em' }}>INR</span>
+        <FlagIcon code="INR" size={16} />
+        <span style={{ letterSpacing: '0.02em', fontWeight: 700 }}>INR</span>
       </div>
     );
   }
@@ -53,14 +54,14 @@ export default function CurrencySelector({ isMobile = false }) {
         aria-label="Select Currency"
         style={{
           height: isMobile ? 44 : 38,
-          padding: isMobile ? '0 14px' : '0 12px',
+          padding: isMobile ? '0 14px' : '0 10px',
           borderRadius: 'var(--radius-md, 10px)',
           background: open ? 'var(--color-surface-3)' : 'var(--color-surface-2)',
           border: `1px solid ${open ? 'var(--color-border-glow, #373E4F)' : 'var(--color-border)'}`,
           color: 'var(--color-text)',
           display: 'inline-flex',
           alignItems: 'center',
-          gap: 7,
+          gap: 6,
           fontSize: 13,
           fontWeight: 600,
           cursor: 'pointer',
@@ -71,8 +72,8 @@ export default function CurrencySelector({ isMobile = false }) {
           userSelect: 'none'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <span style={{ fontSize: 15, lineHeight: 1 }}>{current.flag}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <FlagIcon code={current.code} size={17} />
           <span style={{ fontWeight: 700, letterSpacing: '0.02em' }}>{current.code}</span>
           <span style={{ color: 'var(--color-text-faint)', fontSize: 12, fontWeight: 500 }}>{current.symbol}</span>
         </div>
@@ -166,7 +167,7 @@ export default function CurrencySelector({ isMobile = false }) {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 15, lineHeight: 1 }}>{c.flag}</span>
+                    <FlagIcon code={c.code} size={16} />
                     <div>
                       <div style={{
                         display: 'flex',

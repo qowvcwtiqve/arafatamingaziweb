@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCartStore } from '../../store/cartStore';
 import { useAuthStore } from '../../store/authStore';
+import { useCurrency } from '../../store/currencyStore';
 import CartDrawer from '../cart/CartDrawer';
 import Logo from './Logo';
 import CurrencySelector from './CurrencySelector';
@@ -25,6 +26,7 @@ export default function Header() {
 
   const { items, isOpen, openCart, closeCart } = useCartStore();
   const { user, logout, refreshUser } = useAuthStore();
+  const { format } = useCurrency();
   const [theme, setTheme] = useState('dark');
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [categoryLinks, setCategoryLinks] = useState([]);
@@ -218,7 +220,7 @@ export default function Header() {
                             <span className="icon icon--sm icon--cyan">receipt_long</span> Order History
                           </Link>
                           <Link href="/dashboard?tab=wallet" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
-                            <span className="icon icon--sm icon--accent">account_balance_wallet</span> Wallet: ₹{parseFloat(user.balance || 0).toFixed(2)}
+                            <span className="icon icon--sm icon--accent">account_balance_wallet</span> Wallet: {format(user.balance || 0)}
                           </Link>
                           {user.role === 'admin' && (
                             <Link href="/admin" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
@@ -271,7 +273,7 @@ export default function Header() {
                               <span className="icon icon--md icon--accent" style={{ fontSize: 24 }}>account_balance_wallet</span>
                               <div>
                                 <div className="user-bottom-sheet__wallet-label">Available Balance</div>
-                                <div className="user-bottom-sheet__wallet-amount">₹{parseFloat(user.balance || 0).toFixed(2)}</div>
+                                <div className="user-bottom-sheet__wallet-amount">{format(user.balance || 0)}</div>
                               </div>
                             </div>
                             <Link
@@ -442,7 +444,7 @@ export default function Header() {
               <div className="mobile-drawer__user-box">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <div style={{ fontWeight: 600, fontSize: 15 }}>{user.name}</div>
-                  <div style={{ fontSize: 13, color: 'var(--color-accent)', fontWeight: 700 }}>₹{parseFloat(user.balance || 0).toFixed(2)}</div>
+                  <div style={{ fontSize: 13, color: 'var(--color-accent)', fontWeight: 700 }}>{format(user.balance || 0)}</div>
                 </div>
                 <Link
                   href="/dashboard"

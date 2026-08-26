@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useCurrency } from '../../../../store/currencyStore';
 import api from '../../../../lib/api';
 import toast from 'react-hot-toast';
 
@@ -44,6 +45,7 @@ const STATUS_CONFIG = {
 export default function OrderReceiptPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { format } = useCurrency();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copiedCreds, setCopiedCreds] = useState(false);
@@ -236,7 +238,7 @@ Telegram: @${order.support_username || 'qxdbotowner'}`;
                 Total Paid
               </div>
               <div style={{ fontFamily: 'var(--font-heading)', fontSize: 28, fontWeight: 800, color: 'var(--color-accent)' }}>
-                ₹{parseFloat(order.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                {format(order.total_amount)}
               </div>
             </div>
           </div>

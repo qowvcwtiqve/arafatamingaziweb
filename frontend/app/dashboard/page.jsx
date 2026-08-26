@@ -2,6 +2,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
+import { useCurrency } from '../../store/currencyStore';
 import api from '../../lib/api';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -16,6 +17,7 @@ const STATUS_COLORS = {
 function DashboardContent() {
   const router = useRouter();
   const { user, logout, refreshUser, _hasHydrated } = useAuthStore();
+  const { format } = useCurrency();
   const [mounted, setMounted] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -147,7 +149,7 @@ function DashboardContent() {
                 Wallet Balance
               </div>
               <div style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, color: 'var(--color-accent)' }}>
-                ₹{displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                {format(displayBalance)}
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -372,7 +374,7 @@ function DashboardContent() {
 
                           <div style={{ textAlign: 'right' }}>
                             <div style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 800, color: 'var(--color-accent)' }}>
-                              ₹{parseFloat(order.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                              {format(order.total_amount)}
                             </div>
                             <div style={{ fontSize: 12, color: 'var(--color-text-faint)', textTransform: 'uppercase' }}>
                               {order.payment_method || 'Online'}
@@ -576,6 +578,7 @@ function DashboardContent() {
 }
 
 function ProfileTab({ user, refreshUser }) {
+  const { format } = useCurrency();
   const [form, setForm] = useState({ name: user.name || '', telegram_username: user.telegram_username || '' });
   const [saving, setSaving] = useState(false);
   const [liveUser, setLiveUser] = useState(null);
@@ -610,13 +613,13 @@ function ProfileTab({ user, refreshUser }) {
         {[
           {
             label: 'Wallet Balance',
-            value: `₹${parseFloat(profile.balance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+            value: format(profile.balance || 0),
             icon: 'account_balance_wallet',
             color: 'var(--color-accent)',
           },
           {
             label: 'All-Time Topup',
-            value: `₹${parseFloat(profile.all_time_topup || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+            value: format(profile.all_time_topup || 0),
             icon: 'savings',
             color: '#10b981',
           },
