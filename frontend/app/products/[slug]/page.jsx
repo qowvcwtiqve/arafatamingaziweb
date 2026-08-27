@@ -440,312 +440,243 @@ export default function ProductDetailPage() {
 
           {/* RIGHT COLUMN: Configurator & Action Center */}
           <div className="product-detail-action-sidebar">
-            
-            {/* Badges Bar */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-              {product.is_featured && <span className="badge badge--featured">Featured</span>}
-              {product.badge && <span className="badge badge--new">{product.badge}</span>}
-              {product.category && <span className="badge badge--new" style={{ textTransform: 'capitalize' }}>{product.category}</span>}
-              {discount && <span className="badge badge--sale">-{discount}% Off</span>}
-              {isPreorder && (
-                <span className="badge" style={{ background: 'linear-gradient(135deg, #6E3AFF 0%, #00D4FF 100%)', color: '#fff' }}>
-                  Pre-Order
-                </span>
-              )}
-            </div>
-
-            {/* Main Title */}
-            <h1 style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 'clamp(24px, 3.5vw, 32px)',
-              fontWeight: 800,
-              lineHeight: 1.2,
-              margin: '0 0 12px 0',
-              color: 'var(--color-text)'
-            }}>
-              {product.title}
-            </h1>
-
-            {/* Rating & Sold count */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ display: 'flex', gap: 2 }}>
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <span key={s} className="icon icon--filled" style={{ fontSize: 15, color: '#F59E0B' }}>star</span>
-                  ))}
-                </div>
-                <span style={{ fontSize: 14, color: 'var(--color-text)', marginLeft: 2, fontWeight: 800 }}>
-                  {ratingValue}
-                </span>
-                <span style={{ fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                  ({totalReviewsCount} reviews)
-                </span>
-              </div>
-              <span style={{ color: 'var(--color-text-faint)' }}>•</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-cyan)', fontWeight: 700 }}>
-                <span className="icon icon--sm icon--cyan icon--filled">bolt</span>
-                {totalSoldCount}+ Sold
-              </span>
-            </div>
-
-            {/* Price Box */}
-            <div style={{
-              padding: '18px 20px',
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-lg)',
-              marginBottom: 24,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap' }}>
-                <span style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: 'clamp(30px, 4vw, 40px)',
-                  fontWeight: 800,
-                  color: 'var(--color-accent)',
-                  lineHeight: 1
-                }}>
-                  {format(price)}
-                </span>
-                {comparePrice > price && (
-                  <span style={{
-                    fontSize: 20,
-                    color: 'var(--color-text-faint)',
-                    textDecoration: 'line-through',
-                    fontWeight: 500
-                  }}>
-                    {format(comparePrice)}
+            <div className="pro-configurator">
+              
+              {/* Badges Bar */}
+              <div className="pro-badges-row">
+                {discount ? (
+                  <span className="pro-badge pro-badge--sale">
+                    <span className="icon icon--xs">local_offer</span>
+                    Save {discount}%
                   </span>
-                )}
+                ) : null}
+                {product.is_featured && <span className="pro-badge pro-badge--featured">Featured</span>}
+                {isPreorder && <span className="pro-badge pro-badge--preorder">Pre-Order</span>}
+                {product.category && <span className="pro-badge pro-badge--category">{product.category}</span>}
               </div>
 
-              {discount && (
-                <div style={{
-                  padding: '6px 12px', borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)',
-                  color: 'var(--color-error)', fontSize: 13, fontWeight: 700
-                }}>
-                  Save {discount}%
-                </div>
-              )}
-            </div>
+              {/* Main Title */}
+              <h1 className="pro-title">
+                {product.website_meta?.title || product.title || product.name}
+              </h1>
 
-            {/* Plan / Variant Selector Cards */}
-            {variants.length > 0 && (
-              <div style={{ marginBottom: 24 }}>
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  marginBottom: 10, fontSize: 13, fontWeight: 700, color: 'var(--color-text)'
-                }}>
-                  <span>Select Plan / License</span>
-                  <span style={{ color: 'var(--color-text-faint)', fontWeight: 500 }}>
-                    {variants.length} available options
+              {/* Rating & Social Proof Bar */}
+              <div className="pro-rating-bar">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div className="pro-rating-stars">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <span key={s} className="icon icon--filled" style={{ fontSize: 14 }}>star</span>
+                    ))}
+                  </div>
+                  <span className="pro-rating-score">{ratingValue}</span>
+                  <span
+                    className="pro-rating-count"
+                    onClick={() => setActiveTab('reviews')}
+                  >
+                    ({totalReviewsCount} reviews)
                   </span>
                 </div>
+                <span style={{ color: 'var(--color-text-faint)' }}>•</span>
+                <span className="pro-sales-tag">
+                  <span className="pro-pulse-dot" />
+                  {totalSoldCount}+ Items Delivered
+                </span>
+              </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {variants.map(v => {
-                    const isSelected = selectedVariant?.id === v.id;
-                    return (
-                      <button
-                        key={v.id}
-                        onClick={() => setSelectedVariant(v)}
-                        style={{
-                          width: '100%',
-                          padding: '12px 18px',
-                          borderRadius: 'var(--radius-md)',
-                          border: `1.5px solid ${isSelected ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                          background: isSelected ? 'rgba(27, 78, 245, 0.12)' : 'var(--color-surface)',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.2s ease',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          boxShadow: isSelected ? '0 0 20px rgba(27, 78, 245, 0.25)' : 'none'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <span className="icon icon--md" style={{
-                            color: isSelected ? '#3874FF' : 'var(--color-text-faint)',
-                            fontVariationSettings: isSelected ? "'FILL' 1" : "'FILL' 0"
-                          }}>
-                            {isSelected ? 'radio_button_checked' : 'radio_button_unchecked'}
-                          </span>
-                          <div>
-                            <div style={{
-                              fontSize: 14, fontWeight: 700,
-                              color: isSelected ? 'var(--color-text)' : 'var(--color-text-muted)'
-                            }}>
-                              {v.name}
+              {/* Hero Price Box */}
+              <div className="pro-price-card">
+                <div className="pro-price-row">
+                  <div className="pro-price-values">
+                    <span className="pro-price-current">
+                      {format(price)}
+                    </span>
+                    {comparePrice > price && (
+                      <span className="pro-price-compare">
+                        {format(comparePrice)}
+                      </span>
+                    )}
+                  </div>
+                  {discount ? (
+                    <span className="pro-save-pill">
+                      -{discount}% OFF
+                    </span>
+                  ) : null}
+                </div>
+                <div className="pro-delivery-promise">
+                  <span className="icon icon--sm icon--cyan icon--filled">bolt</span>
+                  <span>{isPreorder ? 'Pre-Order: Immediate reservation & priority dispatch' : 'Automated Digital Fulfillment — Ready in seconds'}</span>
+                </div>
+              </div>
+
+              {/* Plan / Variant Selector Cards */}
+              {variants.length > 0 && (
+                <div className="pro-variants-section">
+                  <div className="pro-variants-header">
+                    <span>Select License / Package</span>
+                    <span className="pro-variants-count">{variants.length} options</span>
+                  </div>
+
+                  <div className="pro-variants-list">
+                    {variants.map(v => {
+                      const isSelected = selectedVariant?.id === v.id;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setSelectedVariant(v)}
+                          className={`pro-variant-card ${isSelected ? 'pro-variant-card--active' : ''}`}
+                        >
+                          <div className="pro-variant-left">
+                            <div className="pro-variant-radio">
+                              {isSelected && <div className="pro-variant-radio-inner" />}
                             </div>
-                            <div style={{
-                              fontSize: 12, color: 'var(--color-text-faint)', marginTop: 2,
-                              display: 'flex', alignItems: 'center', gap: 8
-                            }}>
-                              {v.is_preorder ? (
-                                <span style={{ color: '#3874FF' }}>Pre-Order</span>
-                              ) : v.is_infinite ? (
-                                <span style={{ color: 'var(--color-cyan)' }}>Instant Auto Stock</span>
-                              ) : v.stock > 0 ? (
-                                <span style={{ color: 'var(--color-success)' }}>{v.stock} in stock</span>
-                              ) : (
-                                <span style={{ color: 'var(--color-error)' }}>Out of stock</span>
-                              )}
-                              <span>•</span>
-                              <span>{v.delivery_time || 'Instant'}</span>
+                            <div>
+                              <div className="pro-variant-name">{v.name}</div>
+                              <div className="pro-variant-sub">
+                                {v.is_preorder ? (
+                                  <span style={{ color: '#3874FF', fontWeight: 700 }}>Pre-Order</span>
+                                ) : v.is_infinite ? (
+                                  <span style={{ color: '#10B981', fontWeight: 700 }}>✓ Instant Auto Stock</span>
+                                ) : v.stock > 0 ? (
+                                  <span style={{ color: '#10B981', fontWeight: 700 }}>✓ {v.stock} in stock</span>
+                                ) : (
+                                  <span style={{ color: '#EF4444', fontWeight: 700 }}>Out of stock</span>
+                                )}
+                                <span>•</span>
+                                <span>{v.delivery_time || 'Instant'}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div style={{
-                          fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 800,
-                          color: isSelected ? '#3874FF' : 'var(--color-text)'
-                        }}>
-                          {format(v.price)}
-                        </div>
-                      </button>
-                    );
-                  })}
+                          <div className="pro-variant-price">
+                            {format(v.price)}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* 4 Technical Specs Grid */}
-            <div style={{
-              padding: 16, background: 'var(--color-surface-2)', borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)', marginBottom: 24, display: 'grid',
-              gridTemplateColumns: '1fr 1fr', gap: 14
-            }}>
-              {/* Delivery timing */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--color-text-muted)' }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(0, 212, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  <span className="icon icon--sm icon--cyan">schedule</span>
+              {/* 4 Technical Specs Grid */}
+              <div className="pro-specs-grid">
+                {/* 1. Delivery Time */}
+                <div className="pro-spec-item">
+                  <div className="pro-spec-icon-box" style={{ background: 'rgba(6, 182, 212, 0.12)', color: '#06B6D4' }}>
+                    <span className="icon icon--sm">schedule</span>
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="pro-spec-label">Delivery Time</div>
+                    <div className="pro-spec-val">{deliveryTimeText}</div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>Delivery Time</div>
-                  <div style={{ fontWeight: 700, color: 'var(--color-text)' }}>{deliveryTimeText}</div>
-                </div>
-              </div>
 
-              {/* Delivery process */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--color-text-muted)' }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(27, 78, 245, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  <span className="icon icon--sm icon--primary icon--filled">bolt</span>
+                {/* 2. Delivery Method */}
+                <div className="pro-spec-item">
+                  <div className="pro-spec-icon-box" style={{ background: 'rgba(56, 116, 255, 0.12)', color: '#3874FF' }}>
+                    <span className="icon icon--sm icon--filled">bolt</span>
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="pro-spec-label">Method</div>
+                    <div className="pro-spec-val">{deliveryMethodText}</div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>Delivery Method</div>
-                  <div style={{ fontWeight: 700, color: 'var(--color-text)' }}>{deliveryMethodText}</div>
-                </div>
-              </div>
 
-              {/* Stock Status */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--color-text-muted)' }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 'var(--radius-sm)',
-                  background: isPreorder ? 'rgba(27, 78, 245, 0.12)' : inStock ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  <span className="icon icon--sm" style={{ color: isPreorder ? '#3874FF' : inStock ? 'var(--color-success)' : 'var(--color-error)' }}>
-                    {isPreorder ? 'update' : inStock ? 'inventory_2' : 'do_not_disturb'}
-                  </span>
+                {/* 3. Stock Status */}
+                <div className="pro-spec-item">
+                  <div className="pro-spec-icon-box" style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10B981' }}>
+                    <span className="icon icon--sm">inventory_2</span>
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="pro-spec-label">Availability</div>
+                    <div className="pro-spec-val">
+                      {isPreorder
+                        ? 'Pre-Order'
+                        : selectedVariant?.is_infinite
+                        ? 'Instant Ready'
+                        : selectedVariant?.stock > 0
+                        ? `${selectedVariant.stock} Left`
+                        : inStock
+                        ? 'In Stock'
+                        : 'Out of Stock'}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>Stock Status</div>
-                  <div style={{ fontWeight: 700, color: isPreorder ? '#3874FF' : inStock ? 'var(--color-success)' : 'var(--color-error)' }}>
-                    {isPreorder
-                      ? 'Pre-Order Active'
-                      : selectedVariant?.is_infinite
-                      ? 'Instant Ready (Unlimited)'
-                      : selectedVariant?.stock > 0
-                      ? `${selectedVariant.stock} units left`
-                      : inStock
-                      ? 'In Stock'
-                      : 'Out of Stock'}
+
+                {/* 4. Verification */}
+                <div className="pro-spec-item">
+                  <div className="pro-spec-icon-box" style={{ background: 'rgba(168, 85, 247, 0.12)', color: '#A855F7' }}>
+                    <span className="icon icon--sm">verified</span>
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="pro-spec-label">License</div>
+                    <div className="pro-spec-val">100% Genuine</div>
                   </div>
                 </div>
               </div>
 
-              {/* Quality verification */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--color-text-muted)' }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(0, 255, 204, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  <span className="icon icon--sm icon--accent">verified</span>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>Quality Check</div>
-                  <div style={{ fontWeight: 700, color: 'var(--color-text)' }}>Verified &amp; Guaranteed</div>
-                </div>
-              </div>
-            </div>
+              {/* CTAs Row */}
+              <div className="pro-cta-row">
+                {!isOutOfStock && (
+                  <div className="pro-qty-stepper">
+                    <button
+                      type="button"
+                      className="pro-qty-btn"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      aria-label="Decrease quantity"
+                    >
+                      <span className="icon icon--sm">remove</span>
+                    </button>
+                    <span className="pro-qty-num">{quantity}</span>
+                    <button
+                      type="button"
+                      className="pro-qty-btn"
+                      onClick={() => setQuantity(quantity + 1)}
+                      aria-label="Increase quantity"
+                    >
+                      <span className="icon icon--sm">add</span>
+                    </button>
+                  </div>
+                )}
 
-            {/* CTA Container */}
-            <div className="product-cta-container">
-              {!isOutOfStock && (
-                <div className="product-qty-selector">
-                  <button className="product-qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))} aria-label="Decrease quantity">
-                    <span className="icon">remove</span>
-                  </button>
-                  <span className="product-qty-value">{quantity}</span>
-                  <button className="product-qty-btn" onClick={() => setQuantity(quantity + 1)} aria-label="Increase quantity">
-                    <span className="icon">add</span>
-                  </button>
-                </div>
-              )}
-
-              {isPreorder ? (
-                <button
-                  className="btn btn--primary product-btn-buy"
-                  onClick={handleBuyNow}
-                  style={{
-                    flex: 1,
-                    background: 'var(--gradient-primary)',
-                    boxShadow: '0 4px 20px rgba(27, 78, 245, 0.4)',
-                    height: 52,
-                    fontSize: 16,
-                    fontWeight: 700
-                  }}
-                >
-                  <span className="icon icon--filled">rocket_launch</span>
-                  <span>Pre-Order Now ({format(price * quantity)})</span>
-                </button>
-              ) : isOutOfStock ? (
-                <button className="btn btn--outline" disabled style={{ flex: 1, opacity: 0.6, height: 52 }}>
-                  <span className="icon icon--md">do_not_disturb</span>
-                  <span>Currently Out of Stock</span>
-                </button>
-              ) : (
-                <>
-                  <button className="btn btn--ghost product-btn-cart" onClick={handleAddToCart}>
-                    <span className="icon icon--md">shopping_cart</span>
-                    <span>Add to Cart</span>
-                  </button>
+                {isPreorder ? (
                   <button
-                    className="btn btn--primary product-btn-buy"
+                    type="button"
+                    className="pro-btn-buy"
                     onClick={handleBuyNow}
-                    style={{
-                      boxShadow: '0 4px 20px rgba(27, 78, 245, 0.4)'
-                    }}
                   >
-                    <span className="icon icon--md icon--filled">bolt</span>
-                    <span>Buy Now</span>
+                    <span className="icon icon--filled">rocket_launch</span>
+                    <span>Pre-Order Now ({format(price * quantity)})</span>
                   </button>
-                </>
-              )}
-            </div>
-</div>
+                ) : isOutOfStock ? (
+                  <button type="button" className="btn btn--outline" disabled style={{ flex: 1, height: 48, opacity: 0.5 }}>
+                    <span className="icon icon--sm">do_not_disturb</span>
+                    <span>Currently Out of Stock</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="pro-btn-cart"
+                      onClick={handleAddToCart}
+                    >
+                      <span className="icon icon--sm">shopping_cart</span>
+                      <span>Add to Cart</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="pro-btn-buy"
+                      onClick={handleBuyNow}
+                    >
+                      <span className="icon icon--sm icon--filled">bolt</span>
+                      <span>Buy Now</span>
+                    </button>
+                  </>
+                )}
+              </div>
 
+            </div>
+          </div>
         </div>
 
         {/* TABBED INFORMATION SECTION (Description, Rules, Delivery Flow, Reviews) */}
