@@ -1,4 +1,13 @@
-import './globals.css';
+import '../styles/variables.css';
+import '../styles/base.css';
+import '../styles/components.css';
+import '../styles/header.css';
+import '../styles/product.css';
+import '../styles/checkout.css';
+import '../styles/dashboard.css';
+import '../styles/home.css';
+import '../styles/admin.css';
+import '../styles/layout.css';
 import { Toaster } from 'react-hot-toast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';

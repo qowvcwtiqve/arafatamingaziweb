@@ -1,0 +1,289 @@
+/* ============================================================
+   PAYMENT METHODS
+   ============================================================ */
+.payment-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.payment-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-base);
+  text-align: center;
+}
+
+.payment-tab:hover {
+  border-color: var(--color-border-glow);
+  background: var(--color-surface-3);
+}
+
+.payment-tab.active {
+  border-color: var(--color-primary);
+  background: rgba(110,58,255,0.1);
+  box-shadow: 0 0 0 1px var(--color-primary), var(--shadow-glow);
+}
+
+.payment-tab__logo {
+  width: 48px;
+  height: 32px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.6;
+  transition: var(--transition-fast);
+}
+
+.payment-tab.active .payment-tab__logo { opacity: 1; }
+
+.payment-tab__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.payment-tab.active .payment-tab__name { color: var(--color-text); }
+
+/* UPI Amount box */
+.upi-amount-box {
+  background: var(--color-surface-3);
+  border: 1px solid rgba(110,58,255,0.3);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.upi-amount-value {
+  font-family: var(--font-heading);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.upi-amount-warning {
+  font-size: 13px;
+  color: var(--color-warning);
+  margin-top: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+/* ============================================================
+   CART DRAWER
+   ============================================================ */
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  z-index: 1100;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.cart-overlay.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.cart-drawer.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.cart-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cart-drawer__items {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cart-drawer__footer {
+  padding: var(--space-5) var(--space-6);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+}
+
+.cart-item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.cart-item__image {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--color-surface-3);
+  flex-shrink: 0;
+}
+
+.cart-item__info { flex: 1; min-width: 0; }
+.cart-item__title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cart-item__price { font-size: 15px; font-weight: 700; color: var(--color-primary-light); margin-top: 4px; }
+
+
+/* ============================================================
+   STYLISH THEME-MATCHED CUSTOM AGREEMENT CHECKBOX
+   ============================================================ */
+.agreement-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.agreement-card:hover {
+  border-color: var(--color-border-hover);
+  background: var(--color-surface-3);
+}
+
+.agreement-card.agreed {
+  background: rgba(27, 78, 245, 0.08);
+  border-color: rgba(27, 78, 245, 0.35);
+  box-shadow: 0 0 16px rgba(27, 78, 245, 0.08);
+}
+
+[data-theme='light'] .agreement-card {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+[data-theme='light'] .agreement-card:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+[data-theme='light'] .agreement-card.agreed {
+  background: #EFF4FF;
+  border-color: rgba(27, 78, 245, 0.4);
+}
+
+.agreement-checkbox-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-text-faint);
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #FFFFFF;
+}
+
+.agreement-card:hover .agreement-checkbox-box {
+  border-color: var(--color-primary-light);
+}
+
+.agreement-card.agreed .agreement-checkbox-box {
+  background: var(--gradient-primary);
+  border-color: #1B4EF5;
+  box-shadow: 0 0 10px rgba(27, 78, 245, 0.45);
+}
+
+.agreement-checkbox-box .checkmark-icon {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  transform: scale(0);
+  transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.agreement-card.agreed .agreement-checkbox-box .checkmark-icon {
+  transform: scale(1);
+}
+
+.agreement-text {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  font-weight: 500;
+  margin: 0;
+}
+
+.agreement-text a {
+  color: var(--color-primary-light);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+
+[data-theme='light'] .agreement-text a {
+  color: #1B4EF5;
+}
+
+.agreement-text a:hover {
+  color: #3874FF;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

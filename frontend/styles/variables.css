@@ -1,0 +1,132 @@
+/* ============================================================
+   QUANTUMXD STORE — GLOBAL DESIGN SYSTEM
+   Futuristic dark theme: space black + electric violet + cyan
+   Icons: Google Material Symbols (no emojis)
+   Fonts: Space Grotesk (headings) + Inter (body)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+
+/* ============================================================
+   CSS CUSTOM PROPERTIES (Design Tokens)
+   ============================================================ */
+:root, [data-theme='dark'] {
+  /* Studio Slate & Dark Charcoal Palette with High-Contrast Blue Highlights */
+  --color-bg:            #090C15;
+  --color-surface:       #0F1422;
+  --color-surface-2:     #151B2C;
+  --color-surface-3:     #1D243B;
+  --color-surface-4:     #28314F;
+  --color-border:        rgba(255, 255, 255, 0.08);
+  --color-border-hover:  rgba(56, 116, 255, 0.40);
+  --color-border-glow:   rgba(27, 78, 245, 0.50);
+
+  /* High-Contrast Electric Blue Palette */
+  --color-primary:       #1B4EF5;         /* Vibrant Electric Blue */
+  --color-primary-light: #3874FF;         /* Bright Azure Accent */
+  --color-primary-dark:  #1B2CC1;         /* Deep Cobalt Blue */
+  --color-cyan:          #3874FF;         /* Crisp Highlight */
+  --color-cyan-glow:     rgba(56, 116, 255, 0.25);
+  --color-accent:        #10B981;
+
+  --color-text:          #FFFFFF;
+  --color-text-muted:    #94A3B8;
+  --color-text-faint:    #64748B;
+
+  --color-success:       #10B981;
+  --color-warning:       #F59E0B;
+  --color-error:         #EF4444;
+
+  /* Gradients */
+  --gradient-primary:      linear-gradient(135deg, #1B4EF5 0%, #3874FF 100%);
+  --gradient-primary-soft: linear-gradient(135deg, rgba(27, 78, 245, 0.18) 0%, rgba(56, 116, 255, 0.10) 100%);
+  --gradient-hero:         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(27, 78, 245, 0.20) 0%, transparent 70%);
+  --gradient-card-glow:    radial-gradient(circle at top left, rgba(56, 116, 255, 0.12), transparent 60%);
+
+  /* Solid Theme Surfaces */
+  --glass-bg:       #0F1422;
+  --glass-bg-hover: #151B2C;
+  --glass-border:   1px solid rgba(255, 255, 255, 0.08);
+  --glass-blur:     none;
+  --glass-shadow:   var(--shadow-md);
+
+  /* Shadows */
+  --shadow-sm:   0 2px 6px rgba(0,0,0,0.5);
+  --shadow-md:   0 8px 24px rgba(0,0,0,0.6);
+  --shadow-lg:   0 16px 48px rgba(0,0,0,0.7);
+  --shadow-glow: 0 0 25px rgba(27, 78, 245, 0.35);
+  --shadow-cyan: 0 0 20px rgba(56, 116, 255, 0.25);
+
+  /* Borders */
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-1: 4px;   --space-2: 8px;   --space-3: 12px;
+  --space-4: 16px;  --space-5: 20px;  --space-6: 24px;
+  --space-8: 32px;  --space-10: 40px; --space-12: 48px;
+  --space-16: 64px; --space-20: 80px; --space-24: 96px;
+
+  /* Typography */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body:    'Plus Jakarta Sans', sans-serif;
+
+  /* Transitions */
+  --transition-fast:   all 0.15s ease;
+  --transition-base:   all 0.25s ease;
+  --transition-slow:   all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout */
+  --container-max: 1280px;
+  --header-height: 72px;
+}
+
+[data-theme='light'] {
+  /* Vibrant Glacier & High-Contrast Electric Cobalt (2026 Trend) */
+  --color-bg:            #F4F7FC;
+  --color-surface:       #FFFFFF;
+  --color-surface-2:     #EDF2F9;
+  --color-surface-3:     #E2E8F0;
+  --color-surface-4:     #CBD5E1;
+  --color-border:        #E2E8F0;
+  --color-border-hover:  #1B4EF5;
+  --color-border-glow:   rgba(27, 78, 245, 0.30);
+
+  --color-primary:       #1B4EF5;         /* Vibrant Electric Blue */
+  --color-primary-light: #2563EB;         /* Bright Azure Accent */
+  --color-primary-dark:  #1E40AF;         /* Deep Cobalt Blue */
+  --color-cyan:          #1B4EF5;
+  --color-cyan-glow:     rgba(27, 78, 245, 0.20);
+  --color-accent:        #059669;
+
+  --color-text:          #090E1A;         /* Ultra-Deep High-Contrast Ink */
+  --color-text-muted:    #475569;
+  --color-text-faint:    #64748B;
+
+  --color-success:       #059669;
+  --color-warning:       #D97706;
+  --color-error:         #DC2626;
+
+  /* Gradients */
+  --gradient-primary:      linear-gradient(135deg, #1B4EF5 0%, #0066FF 60%, #1E40AF 100%);
+  --gradient-primary-soft: linear-gradient(135deg, rgba(27, 78, 245, 0.12) 0%, rgba(27, 44, 193, 0.06) 100%);
+  --gradient-hero:         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(27, 78, 245, 0.12) 0%, transparent 70%);
+  --gradient-card-glow:    radial-gradient(circle at top left, rgba(27, 78, 245, 0.08), transparent 60%);
+
+  /* Solid Theme (Light) */
+  --glass-bg:         #FFFFFF;
+  --glass-bg-hover:   #F8FAFC;
+  --glass-border:     1px solid #E2E8F0;
+  --glass-blur:       none;
+  --glass-shadow:     0 4px 20px rgba(15, 23, 42, 0.06);
+
+  --shadow-sm:        0 2px 6px rgba(15, 23, 42, 0.04);
+  --shadow-md:        0 8px 24px -4px rgba(15, 23, 42, 0.08);
+  --shadow-lg:        0 18px 40px -8px rgba(27, 78, 245, 0.14);
+  --shadow-glow:      0 0 25px rgba(27, 78, 245, 0.25);
+  --shadow-cyan:      0 0 20px rgba(27, 78, 245, 0.15);
+}
+
