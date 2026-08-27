@@ -3260,58 +3260,12 @@ select option, select optgroup {
   width: 100%;
 }
 
+/* Product CTA Legacy Reset */
 .product-cta-container {
   display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-.product-qty-selector {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  padding: 0 6px;
-  height: 44px;
-  min-width: 110px;
-}
-.product-qty-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  width: 32px;
-  border-radius: 50%;
-  transition: var(--transition-fast);
-}
-.product-qty-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--color-text);
-}
-.product-qty-value {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--color-text);
-  min-width: 28px;
-  text-align: center;
-}
-.product-btn-cart, .product-btn-buy {
-  flex: 1;
-  min-width: 130px;
-  height: 44px;
-  border-radius: 999px !important;
-  font-weight: 700;
-  font-size: 14px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
 }
 
 /* TABLET BREAKPOINT (max-width: 1024px) */
