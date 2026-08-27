@@ -27,10 +27,8 @@ export default function ProductCard({ product: p }) {
 
   const price = p.min_price || 0;
   const comparePrice = p.website_meta?.compare_price || p.compare_price;
-  const discount =
-    comparePrice && comparePrice > price
-      ? Math.round((1 - price / comparePrice) * 100)
-      : null;
+  const discount = comparePrice && comparePrice > price
+    ? Math.round((1 - price / comparePrice) * 100) : null;
   const saveAmount = comparePrice && comparePrice > price ? comparePrice - price : null;
 
   const isPreorder = Boolean(
@@ -43,7 +41,6 @@ export default function ProductCard({ product: p }) {
   const displayTitle = p.website_meta?.title || p.title || p.name;
   const displayCategory = p.website_meta?.category || p.category_name || p.category || 'Digital Key';
   const displayBadge = p.website_meta?.badge || p.badge;
-
   const displayDesc =
     p.website_meta?.short_description ||
     p.website_meta?.description ||
@@ -51,29 +48,32 @@ export default function ProductCard({ product: p }) {
     p.description ||
     'Instant automated digital activation & verified license.';
 
-  // Deterministic metrics for social proof
-  const charCodeSum = (p.id || 'prod').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  const ratingVariations = ['4.9', '4.8', '4.9', '4.7', '5.0', '4.8'];
-  const ratingValue = ratingVariations[charCodeSum % ratingVariations.length];
-  const reviewsCount = 48 + (charCodeSum % 160);
-  const soldCount = 140 + (charCodeSum % 380);
+  // Deterministic social proof metrics
+  const seed = (p.id || 'prod').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const ratings = ['4.9', '4.8', '4.9', '4.7', '5.0', '4.8'];
+  const ratingValue = ratings[seed % ratings.length];
+  const reviewsCount = 48 + (seed % 160);
+  const soldCount = 140 + (seed % 380);
 
   const imageUrl = p.images?.[0] || p.website_meta?.images?.[0];
   const hasImage = Boolean(imageUrl && !imgError);
 
+  const btnLabel = isOutOfStock ? 'Out of Stock' : isPreorder ? '🚀 Pre-Order' : '🛒 Add to Cart';
+
   return (
-    <Link href={`/products/${p.slug || p.id}`} className="marketplace-card-link">
-      <div className="marketplace-card">
-        {/* 1. Pristine Media Box (Uncluttered, No top-right glass badge) */}
-        <div className="marketplace-card__media">
+    <Link href={`/products/${p.slug || p.id}`} className="pcard-link">
+      <div className={`pcard ${isOutOfStock ? 'pcard--oos' : ''}`}>
+
+        {/* ── MEDIA ZONE ─────────────────────────── */}
+        <div className="pcard__media">
           {hasImage ? (
-            <div className="marketplace-card__img-wrap">
+            <div className="pcard__img-wrap">
               <img
                 src={imageUrl}
                 alt={displayTitle}
                 referrerPolicy="no-referrer"
                 onError={() => setImgError(true)}
-                className="marketplace-card__img"
+                className="pcard__img"
               />
             </div>
           ) : (
@@ -84,97 +84,80 @@ export default function ProductCard({ product: p }) {
             />
           )}
 
-          {/* Clean Floating Badge Top-Left Only */}
-          {discount ? (
-            <div className="marketplace-card__badges-left">
-              <span className="market-badge market-badge--discount">
-                <span className="icon icon--filled" style={{ fontSize: 10 }}>local_fire_department</span>
-                <span className="market-badge__desktop-text">-{discount}% OFF</span>
-                <span className="market-badge__mobile-text">-{discount}%</span>
-              </span>
+          {/* Discount / Custom Badge — top left only */}
+          {(discount || displayBadge) && (
+            <div className="pcard__badge-stack">
+              {discount ? (
+                <span className="pcard__badge pcard__badge--sale">
+                  🔥 -{discount}%
+                </span>
+              ) : (
+                <span className="pcard__badge pcard__badge--label">
+                  {displayBadge}
+                </span>
+              )}
             </div>
-          ) : displayBadge ? (
-            <div className="marketplace-card__badges-left">
-              <span className="market-badge market-badge--featured">
-                <span className="icon icon--filled" style={{ fontSize: 10 }}>verified</span>
-                <span>{displayBadge}</span>
-              </span>
-            </div>
-          ) : null}
+          )}
+
+          {/* Pre-Order top-right indicator */}
+          {isPreorder && (
+            <span className="pcard__preorder-tag">PRE-ORDER</span>
+          )}
         </div>
 
-        {/* 2. Structured Commercial Details Body */}
-        <div className="marketplace-card__body">
-          {/* Category & License Header */}
-          <div className="marketplace-card__category-row">
-            <span className="marketplace-card__cat-label">{displayCategory}</span>
-            <span className="marketplace-card__region-label">
-              <span className="marketplace-card__live-indicator" />
-              GLOBAL KEY
-            </span>
+        {/* ── CONTENT ZONE ─────────────────────────── */}
+        <div className="pcard__body">
+
+          {/* Category & Region */}
+          <div className="pcard__meta-row">
+            <span className="pcard__category">{displayCategory}</span>
+            <span className="pcard__region">🌐 Global</span>
           </div>
 
           {/* Title */}
-          <h3 className="marketplace-card__title" title={displayTitle}>
+          <h3 className="pcard__title" title={displayTitle}>
             {displayTitle}
           </h3>
 
-          {/* Professional Social Proof & Rating Bar */}
-          <div className="marketplace-card__review-pod">
-            <div className="review-pod__stars-group">
-              {[...Array(5)].map((_, i) => (
-                <span key={i} className="icon icon--filled review-pod__star-icon">star</span>
-              ))}
-              <span className="review-pod__score">{ratingValue}</span>
-              <span className="review-pod__count">({reviewsCount})</span>
+          {/* Description */}
+          <p className="pcard__desc">{displayDesc}</p>
+
+          {/* Rating & Sold — clean inline row */}
+          <div className="pcard__trust-row">
+            <div className="pcard__stars-block">
+              <span className="pcard__stars">★★★★★</span>
+              <span className="pcard__rating-score">{ratingValue}</span>
+              <span className="pcard__rating-count">({reviewsCount})</span>
             </div>
-            <div className="review-pod__sold-pill">
-              <span className="review-pod__dot" />
-              <span>{soldCount}+ sold</span>
-            </div>
+            <span className="pcard__sold-tag">{soldCount}+ sold</span>
           </div>
 
-          {/* Clean Description Preview */}
-          <p className="marketplace-card__desc" title={displayDesc}>
-            {displayDesc}
-          </p>
+          {/* Spacer */}
+          <div className="pcard__spacer" />
 
-          {/* Commercial Pricing & Buy Button Section */}
-          <div className="marketplace-card__action-box">
-            <div className="marketplace-card__price-section">
-              <div className="marketplace-card__price-row">
-                <span className="marketplace-card__current-price">
-                  {format(price)}
-                </span>
-                {comparePrice && comparePrice > price && (
-                  <span className="marketplace-card__old-price">
-                    {format(comparePrice)}
-                  </span>
-                )}
-              </div>
+          {/* Price + Action */}
+          <div className="pcard__footer">
+            <div className="pcard__pricing">
+              <span className="pcard__price">{format(price)}</span>
+              {comparePrice && comparePrice > price && (
+                <span className="pcard__compare">{format(comparePrice)}</span>
+              )}
               {saveAmount && saveAmount > 0 && (
-                <span className="marketplace-card__save-badge">
-                  Save {format(saveAmount)}
-                </span>
+                <span className="pcard__save">Save {format(saveAmount)}</span>
               )}
             </div>
 
             <button
               type="button"
-              className="marketplace-card__buy-btn"
+              className="pcard__btn"
               onClick={handleAddToCart}
-              aria-label={`Add ${displayTitle} to cart`}
               disabled={isOutOfStock}
-              title={isOutOfStock ? 'Out of stock' : isPreorder ? 'Pre-Order Now' : 'Add to Cart'}
+              aria-label={`Add ${displayTitle} to cart`}
             >
-              <span className="icon icon--sm buy-btn__icon">
-                {isOutOfStock ? 'block' : isPreorder ? 'rocket_launch' : 'shopping_cart'}
-              </span>
-              <span className="buy-btn__text">
-                {isOutOfStock ? 'Sold Out' : isPreorder ? 'Pre-Order' : 'Add to Cart'}
-              </span>
+              {btnLabel}
             </button>
           </div>
+
         </div>
       </div>
     </Link>
