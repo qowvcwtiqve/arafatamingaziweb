@@ -56,15 +56,16 @@ export default function TermsPage() {
           <div>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 700, color: 'var(--color-text)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span className="icon icon--sm icon--accent">bolt</span>
-              2. Digital Products &amp; Instant Delivery
+              2. Digital Products, Order Placement &amp; Cancellations
             </h2>
             <p style={{ color: 'var(--color-text-muted)', marginBottom: 10 }}>
               All items offered on QuantumXD are intangible electronic items (such as game activations, software keys, subscription credentials, and downloadable assets).
             </p>
             <ul style={{ paddingLeft: 22, margin: 0, color: 'var(--color-text-muted)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <li><strong>Automated Delivery:</strong> Valid orders are dispatched instantly upon verified payment confirmation.</li>
-              <li><strong>Buyer Responsibility:</strong> You are responsible for providing an accurate and accessible email address to receive delivery credentials.</li>
-              <li><strong>Irrevocable Fulfillment:</strong> Once digital keys or credentials are shown or delivered via your dashboard/email, delivery is legally complete.</li>
+              <li><strong>Automated Fulfillment:</strong> Valid orders are dispatched instantly upon verified payment confirmation.</li>
+              <li><strong>Order Cancellation:</strong> Once an order is placed, it cannot be self-cancelled by the buyer from the dashboard. For any cancellation request, the buyer must contact our support team.</li>
+              <li><strong>Non-Working Guarantee:</strong> If a delivered digital product, key, or account does not work and cannot be replaced, the order will be cancelled and <strong>100% fully refunded</strong>.</li>
+              <li><strong>Irrevocable Fulfillment:</strong> Once verified functional digital keys or credentials are shown or delivered, the sale is final.</li>
             </ul>
           </div>
 
