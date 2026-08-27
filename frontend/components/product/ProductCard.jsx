@@ -44,6 +44,13 @@ export default function ProductCard({ product: p }) {
   const displayCategory = p.website_meta?.category || p.category_name || p.category || 'Digital Key';
   const displayBadge = p.website_meta?.badge || p.badge;
 
+  const displayDesc =
+    p.website_meta?.short_description ||
+    p.website_meta?.description ||
+    p.short_description ||
+    p.description ||
+    'Instant activation & automated digital delivery.';
+
   // Realistic deterministic metrics
   const charCodeSum = (p.id || 'prod').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const ratingVariations = ['4.9', '4.8', '4.9', '4.7', '5.0', '4.8'];
@@ -131,21 +138,10 @@ export default function ProductCard({ product: p }) {
             {displayTitle}
           </h3>
 
-          {/* Trust Highlights Mini-Row */}
-          <div className="marketplace-card__features-row">
-            <span className="feature-mini-pill">
-              <span className="icon icon--filled feature-mini-icon">verified_user</span>
-              Warranty
-            </span>
-            <span className="feature-mini-pill feature-mini-pill--hide-mobile">
-              <span className="icon icon--filled feature-mini-icon">bolt</span>
-              Auto-Dispatch
-            </span>
-            <span className="feature-mini-pill feature-mini-pill--accent">
-              <span className="icon icon--filled feature-mini-icon" style={{ color: '#3874FF' }}>shield</span>
-              Genuine
-            </span>
-          </div>
+          {/* Clean Description Preview */}
+          <p className="marketplace-card__desc" title={displayDesc}>
+            {displayDesc}
+          </p>
 
           {/* Price & Action Section */}
           <div className="marketplace-card__action-box">
