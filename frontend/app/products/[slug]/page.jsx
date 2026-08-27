@@ -266,12 +266,12 @@ export default function ProductDetailPage() {
   const isOutOfStock = !inStock && !isPreorder;
 
   const deliveryMethodText = isPreorder
-    ? 'Pre-Order (Queue Dispatch)'
+    ? 'Pre-Order Queue'
     : (selectedVariant?.delivery_method || product.delivery_process) === 'manual'
-    ? 'Manual Delivery (Admin)'
-    : 'Automated Instant Delivery ⚡';
+    ? 'Manual Dispatch'
+    : 'Auto Dispatch';
 
-  const deliveryTimeText = selectedVariant?.delivery_time || product.delivery_time || (isPreorder ? 'Release Date / On Stock' : (selectedVariant?.delivery_method || product.delivery_process) === 'manual' ? '15 - 60 Minutes' : 'Instant (10-30s)');
+  const deliveryTimeText = selectedVariant?.delivery_time || product.delivery_time || (isPreorder ? 'Priority Queue' : (selectedVariant?.delivery_method || product.delivery_process) === 'manual' ? '15 - 60 Mins' : 'Instant (<30s)');
 
   const handleAddToCart = () => {
     if (isOutOfStock) {
