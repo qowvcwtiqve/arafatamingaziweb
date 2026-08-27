@@ -5892,22 +5892,37 @@ select option, select optgroup {
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08) !important;
 }
 
+[data-theme='light'] .pro-badge {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
 [data-theme='light'] .pro-badge--sale {
   background: #FEE2E2 !important;
   color: #DC2626 !important;
   border: 1px solid #FECACA !important;
+  box-shadow: none !important;
+}
+
+[data-theme='light'] .pro-badge--featured {
+  background: #FEF3C7 !important;
+  color: #D97706 !important;
+  border: 1px solid #FDE68A !important;
+  box-shadow: none !important;
 }
 
 [data-theme='light'] .pro-badge--preorder {
   background: #EFF6FF !important;
   color: #1B4EF5 !important;
   border: 1px solid #BFDBFE !important;
+  box-shadow: none !important;
 }
 
 [data-theme='light'] .pro-badge--category {
   background: #F1F5F9 !important;
   color: #1B4EF5 !important;
   border: 1px solid #E2E8F0 !important;
+  box-shadow: none !important;
 }
 
 [data-theme='light'] .pro-current-price {
@@ -5938,9 +5953,16 @@ select option, select optgroup {
   color: #1B4EF5 !important;
 }
 
-[data-theme='light'] .pro-spec-item {
+[data-theme='light'] .pro-specs-grid {
   background: #F8FAFC !important;
   border: 1px solid #E2E8F0 !important;
+  box-shadow: none !important;
+}
+
+[data-theme='light'] .pro-spec-item {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 [data-theme='light'] .pro-spec-label {
@@ -5952,8 +5974,10 @@ select option, select optgroup {
 }
 
 [data-theme='light'] .pro-rating-bar {
-  background: #F8FAFC !important;
-  border: 1px solid #E2E8F0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
 [data-theme='light'] .pro-rating-score {
@@ -6408,7 +6432,7 @@ select option, select optgroup {
   }
 
   .pcard__media {
-    aspect-ratio: 1.05 / 1 !important;
+    aspect-ratio: 4 / 5 !important;
   }
 
   .pcard__img-wrap {
@@ -6497,7 +6521,7 @@ select option, select optgroup {
   }
 
   .pcard__media {
-    aspect-ratio: 1.05 / 1 !important;
+    aspect-ratio: 4 / 5 !important;
   }
 
   .pcard__img-wrap {
