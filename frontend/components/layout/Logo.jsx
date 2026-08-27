@@ -1,22 +1,22 @@
 import Link from 'next/link';
 
-export default function Logo({ size = 'default', showTag = true, href = '/', className = '' }) {
+export default function Logo({ size = 'default', href = '/', className = '' }) {
   const isLarge = size === 'large';
   const isMedium = size === 'medium';
+  const isSmall = size === 'small';
   
-  const fontSize = isLarge ? 28 : isMedium ? 24 : 22;
-  const tagSize = isLarge ? 10 : 9;
+  const fontSize = isLarge ? 26 : isMedium ? 23 : isSmall ? 19 : 22;
 
   const content = (
     <div
       className={`logo-brand ${className}`}
       style={{
         display: 'inline-flex',
-        flexDirection: 'column',
+        alignItems: 'center',
         textDecoration: 'none',
         cursor: 'pointer',
         userSelect: 'none',
-        lineHeight: 1.05,
+        lineHeight: 1,
       }}
     >
       {/* Pure Bold Typography Wordmark */}
@@ -29,7 +29,7 @@ export default function Logo({ size = 'default', showTag = true, href = '/', cla
           color: 'var(--color-text)',
           display: 'flex',
           alignItems: 'center',
-          gap: 2,
+          gap: 1.5,
         }}
       >
         <span>Quantum</span>
@@ -45,21 +45,6 @@ export default function Logo({ size = 'default', showTag = true, href = '/', cla
           XD
         </span>
       </div>
-
-      {showTag && (
-        <span
-          style={{
-            fontSize: tagSize,
-            fontWeight: 800,
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            color: 'var(--color-text-faint)',
-            marginTop: 2,
-          }}
-        >
-          Store
-        </span>
-      )}
     </div>
   );
 
