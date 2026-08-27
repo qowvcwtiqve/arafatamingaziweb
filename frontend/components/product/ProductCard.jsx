@@ -31,7 +31,6 @@ export default function ProductCard({ product: p }) {
     comparePrice && comparePrice > price
       ? Math.round((1 - price / comparePrice) * 100)
       : null;
-  const saveAmount = comparePrice && comparePrice > price ? comparePrice - price : null;
 
   const isPreorder = Boolean(
     p.variants && p.variants.length > 0
@@ -41,38 +40,29 @@ export default function ProductCard({ product: p }) {
   const isOutOfStock = !p.in_stock && !isPreorder && p.total_stock === 0;
 
   const displayTitle = p.website_meta?.title || p.title || p.name;
-  const displayBadge = p.website_meta?.badge || p.badge;
+  const displayCategory = p.website_meta?.category || p.category_name || p.category || 'Digital Asset';
 
-  const displayDesc =
-    p.website_meta?.short_description ||
-    p.website_meta?.description ||
-    p.short_description ||
-    p.description ||
-    '';
-
-  // Deterministic realistic ratings & orders based on product id
   const charCodeSum = (p.id || 'prod').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const ratingVariations = ['4.9', '4.8', '4.9', '4.7', '5.0', '4.8'];
   const ratingValue = ratingVariations[charCodeSum % ratingVariations.length];
   const reviewsCount = 38 + (charCodeSum % 142);
-  const soldCount = 120 + (charCodeSum % 380);
 
   const imageUrl = p.images?.[0] || p.website_meta?.images?.[0];
   const hasImage = Boolean(imageUrl && !imgError);
 
   return (
-    <Link href={`/products/${p.slug || p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}>
-      <div className="product-card">
-        {/* 1. Visual Graphic Banner / Real Image (1:1 Ratio) */}
-        <div className="product-card__image-container">
+    <Link href={`/products/${p.slug || p.id}`} className="pro-card-link">
+      <div className="pro-card">
+        {/* 1. Visual Graphic Container */}
+        <div className="pro-card__media">
           {hasImage ? (
-            <div className="product-card__img-wrap">
+            <div className="pro-card__img-box">
               <img
                 src={imageUrl}
                 alt={displayTitle}
                 referrerPolicy="no-referrer"
                 onError={() => setImgError(true)}
-                className="product-card__img"
+                className="pro-card__img"
               />
             </div>
           ) : (
@@ -83,94 +73,67 @@ export default function ProductCard({ product: p }) {
             />
           )}
 
-          {/* Top-Left Floating Badges (Sale / Pre-Order / Custom) */}
-          <div className="product-card__floating-badges">
-            {discount && (
-              <span className="badge-pill badge-pill--sale">
-                <span className="icon icon--sm" style={{ fontSize: 10 }}>local_fire_department</span>
-                <span>-{discount}%</span>
+          {/* Top Badges */}
+          <div className="pro-card__top-badges">
+            {discount ? (
+              <span className="pro-pill pro-pill--sale">
+                -{discount}%
               </span>
-            )}
-            {isPreorder && (
-              <span className="badge-pill badge-pill--preorder">
-                <span className="icon icon--sm" style={{ fontSize: 10 }}>rocket_launch</span>
-                <span>Pre-Order</span>
+            ) : isPreorder ? (
+              <span className="pro-pill pro-pill--preorder">
+                Pre-Order
               </span>
-            )}
-            {displayBadge && !isPreorder && !discount && (
-              <span className="badge-pill badge-pill--custom">
-                <span className="icon icon--sm" style={{ fontSize: 10 }}>stars</span>
-                <span>{displayBadge}</span>
-              </span>
-            )}
+            ) : null}
           </div>
 
-          {/* Top-Right Ultra-Stylish Rating Glass Pill */}
-          <div className="product-card__rating-badge-pos">
-            <div className="rating-pill-glass">
-              <span className="rating-pill-glass__star icon icon--sm icon--filled">star</span>
-              <span className="rating-pill-glass__score">{ratingValue}</span>
-            </div>
+          <div className="pro-card__rating-badge">
+            <span className="icon icon--filled rating-star">star</span>
+            <span>{ratingValue}</span>
           </div>
         </div>
 
-        {/* 2. Stylish Card Body */}
-        <div className="product-card__content-box">
-          {/* Social Proof & Delivery Badge */}
-          <div className="product-card__review-trust-bar">
-            <div className="product-card__instant-tag">
-              <span className="icon icon--sm icon--filled" style={{ fontSize: 11 }}>bolt</span>
-              <span>{isPreorder ? 'Pre-Order' : 'Instant Key'}</span>
-            </div>
-            <span className="product-card__bullet-sep" />
-            <span className="product-card__sold-text">{soldCount}+ sold</span>
+        {/* 2. Content Info */}
+        <div className="pro-card__body">
+          {/* Category & Proof Row */}
+          <div className="pro-card__meta-row">
+            <span className="pro-card__category">{displayCategory}</span>
+            <span className="pro-card__delivery-badge">
+              <span className="icon icon--filled delivery-bolt">bolt</span>
+              {isPreorder ? 'Pre-Order' : 'Instant Key'}
+            </span>
           </div>
 
           {/* Title */}
-          <h3 className="product-card__clean-title" title={displayTitle}>
+          <h3 className="pro-card__title" title={displayTitle}>
             {displayTitle}
           </h3>
 
-          {/* Description Preview (Desktop view) */}
-          {displayDesc && (
-            <p className="product-card__desc-preview" title={displayDesc}>
-              {displayDesc}
-            </p>
-          )}
-
           {/* Price & Action Row */}
-          <div className="product-card__action-row">
-            <div className="product-card__price-wrapper">
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, flexWrap: 'wrap' }}>
-                <span className="product-card__current-price">
-                  {format(price)}
-                </span>
-                {comparePrice && comparePrice > price && (
-                  <span className="product-card__old-price">
-                    {format(comparePrice)}
-                  </span>
-                )}
-              </div>
-              {saveAmount && saveAmount > 0 && (
-                <span className="product-card__save-tag">
-                  Save {format(saveAmount)}
+          <div className="pro-card__footer">
+            <div className="pro-card__price-col">
+              <span className="pro-card__price">
+                {format(price)}
+              </span>
+              {comparePrice && comparePrice > price && (
+                <span className="pro-card__old-price">
+                  {format(comparePrice)}
                 </span>
               )}
             </div>
 
             <button
               type="button"
-              className="product-card__add-btn"
+              className="pro-card__btn"
               onClick={handleAddToCart}
               aria-label={`Add ${displayTitle} to cart`}
               disabled={isOutOfStock}
               title={isOutOfStock ? 'Out of stock' : isPreorder ? 'Pre-Order' : 'Add to Cart'}
             >
-              <span className="icon icon--sm product-card__btn-icon">
-                {isOutOfStock ? 'block' : isPreorder ? 'rocket_launch' : 'shopping_cart'}
+              <span className="icon icon--sm pro-card__btn-icon">
+                {isOutOfStock ? 'block' : isPreorder ? 'rocket_launch' : 'shopping_bag'}
               </span>
-              <span className="product-card__add-btn-text">
-                {isOutOfStock ? 'Sold Out' : isPreorder ? 'Pre-Order' : 'Add to Cart'}
+              <span className="pro-card__btn-label">
+                {isOutOfStock ? 'Sold Out' : isPreorder ? 'Order' : 'Add'}
               </span>
             </button>
           </div>
