@@ -55,7 +55,8 @@ export default function ProductCard({ product: p }) {
   const charCodeSum = (p.id || 'prod').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const ratingVariations = ['4.9', '4.8', '4.9', '4.7', '5.0', '4.8'];
   const ratingValue = ratingVariations[charCodeSum % ratingVariations.length];
-  const reviewsCount = 42 + (charCodeSum % 150);
+  const reviewsCount = 48 + (charCodeSum % 160);
+  const soldCount = 140 + (charCodeSum % 380);
 
   const imageUrl = p.images?.[0] || p.website_meta?.images?.[0];
   const hasImage = Boolean(imageUrl && !imgError);
@@ -137,6 +138,19 @@ export default function ProductCard({ product: p }) {
           <h3 className="marketplace-card__title" title={displayTitle}>
             {displayTitle}
           </h3>
+
+          {/* Social Proof Review Widget */}
+          <div className="marketplace-card__reviews-widget">
+            <div className="reviews-stars-row">
+              {[...Array(5)].map((_, i) => (
+                <span key={i} className="icon icon--filled review-star-icon">star</span>
+              ))}
+            </div>
+            <span className="reviews-score-num">{ratingValue}</span>
+            <span className="reviews-count-tag">({reviewsCount})</span>
+            <span className="reviews-divider">•</span>
+            <span className="reviews-sold-badge">{soldCount}+ sold</span>
+          </div>
 
           {/* Clean Description Preview */}
           <p className="marketplace-card__desc" title={displayDesc}>
