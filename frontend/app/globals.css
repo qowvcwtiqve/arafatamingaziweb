@@ -6029,33 +6029,41 @@ select option, select optgroup {
     border-radius: 12px !important;
   }
 
+  .pcard__media {
+    aspect-ratio: 1.05 / 1 !important;
+  }
+
   .pcard__img-wrap {
     padding: 0 !important;
   }
 
   .pcard__body {
     padding: 8px 10px 10px !important;
+    gap: 4px !important;
+  }
+
+  .pcard__meta-row {
+    margin-bottom: 2px !important;
   }
 
   .pcard__title {
     font-size: 12.5px !important;
-    height: 35px !important;
-    min-height: 35px !important;
-    max-height: 35px !important;
+    height: auto !important;
+    min-height: unset !important;
+    max-height: 32px !important;
+    line-height: 1.25 !important;
     margin-bottom: 4px !important;
+    -webkit-line-clamp: 2 !important;
   }
 
   .pcard__desc {
-    font-size: 10.5px !important;
-    height: 30px !important;
-    min-height: 30px !important;
-    max-height: 30px !important;
-    margin-bottom: 7px !important;
+    display: none !important;
   }
 
   .pcard__trust-row {
-    padding: 4px 7px !important;
-    margin-bottom: 8px !important;
+    padding: 3px 6px !important;
+    margin-bottom: 6px !important;
+    border-radius: 6px !important;
   }
 
   .pcard__stars {
@@ -6075,6 +6083,11 @@ select option, select optgroup {
     padding: 1.5px 5px !important;
   }
 
+  .pcard__pricing {
+    margin-bottom: 6px !important;
+    gap: 4px !important;
+  }
+
   .pcard__price {
     font-size: 15px !important;
   }
@@ -6089,7 +6102,7 @@ select option, select optgroup {
   }
 
   .pcard__btn {
-    height: 33px !important;
+    height: 32px !important;
     font-size: 11px !important;
     border-radius: 7px !important;
   }
@@ -6105,33 +6118,41 @@ select option, select optgroup {
     border-radius: 10px !important;
   }
 
+  .pcard__media {
+    aspect-ratio: 1.05 / 1 !important;
+  }
+
   .pcard__img-wrap {
     padding: 0 !important;
   }
 
   .pcard__body {
     padding: 6px 8px 8px !important;
+    gap: 3px !important;
+  }
+
+  .pcard__meta-row {
+    margin-bottom: 2px !important;
   }
 
   .pcard__title {
     font-size: 12px !important;
-    height: 32px !important;
-    min-height: 32px !important;
-    max-height: 32px !important;
+    height: auto !important;
+    min-height: unset !important;
+    max-height: 30px !important;
+    line-height: 1.25 !important;
+    margin-bottom: 3px !important;
+    -webkit-line-clamp: 2 !important;
   }
 
   .pcard__desc {
-    font-size: 10px !important;
-    height: 26px !important;
-    min-height: 26px !important;
-    max-height: 26px !important;
-    margin-bottom: 5px !important;
+    display: none !important;
   }
 
   .pcard__trust-row {
-    padding: 3px 6px !important;
-    gap: 5px !important;
-    margin-bottom: 7px !important;
+    padding: 2.5px 5px !important;
+    gap: 4px !important;
+    margin-bottom: 5px !important;
   }
 
   .pcard__stars {
@@ -6147,12 +6168,17 @@ select option, select optgroup {
     padding: 1px 4px !important;
   }
 
+  .pcard__pricing {
+    margin-bottom: 5px !important;
+    gap: 4px !important;
+  }
+
   .pcard__price {
     font-size: 14px !important;
   }
 
   .pcard__btn {
-    height: 31px !important;
+    height: 30px !important;
     font-size: 10.5px !important;
     border-radius: 6px !important;
   }
