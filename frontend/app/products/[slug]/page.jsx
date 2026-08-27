@@ -340,46 +340,50 @@ export default function ProductDetailPage() {
           {/* LEFT COLUMN: Visual Showcase & Guarantees */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             
-            {/* Visual Graphic Banner / Product Image (4:5 Ratio) */}
+            {/* Visual Graphic Banner / Product Image (4:5 Full Canvas Ratio) */}
             <div style={{
               borderRadius: 'var(--radius-xl, 20px)',
               overflow: 'hidden',
-              background: 'var(--color-surface)',
+              background: 'var(--color-surface-2)',
               border: '1px solid var(--color-border)',
               position: 'relative',
               width: '100%',
               aspectRatio: '4 / 5',
-              boxShadow: '0 20px 40px -15px rgba(0,0,0,0.6), 0 0 30px rgba(124, 58, 237, 0.15)',
+              boxShadow: '0 20px 40px -15px rgba(0,0,0,0.6), 0 0 30px rgba(27, 78, 245, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              {product.images && product.images.length > 0 && product.images[0] && !imgError ? (
+              {((product.images && product.images.length > 0 && product.images[0]) || (product.website_meta?.images && product.website_meta.images.length > 0 && product.website_meta.images[0])) && !imgError ? (
                 <div style={{
                   width: '100%',
                   height: '100%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: 44,
-                  background: 'radial-gradient(circle at 50% 50%, var(--color-surface-2) 0%, var(--color-surface) 100%)',
+                  padding: 0,
+                  overflow: 'hidden',
                   position: 'relative'
                 }}>
                   <img
-                    src={product.images[0]}
-                    alt={product.title || product.name}
+                    src={product.images?.[0] || product.website_meta?.images?.[0]}
+                    alt={product.website_meta?.title || product.title || product.name}
+                    referrerPolicy="no-referrer"
                     onError={() => setImgError(true)}
                     style={{
+                      width: '100%',
+                      height: '100%',
                       maxWidth: '100%',
                       maxHeight: '100%',
-                      objectFit: 'contain',
-                      filter: 'drop-shadow(0 14px 32px rgba(0,0,0,0.55))'
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                      display: 'block'
                     }}
                   />
                 </div>
               ) : (
                 <ProductIconBanner
-                  title={product.title || product.name}
+                  title={product.website_meta?.title || product.title || product.name}
                   category={product.category_id || product.category}
                   size="detail"
                 />
