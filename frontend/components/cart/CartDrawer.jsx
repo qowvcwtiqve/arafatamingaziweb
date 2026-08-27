@@ -10,12 +10,8 @@ export default function CartDrawer({ open, onClose }) {
   const router = useRouter();
   const [agreed, setAgreed] = useState(false);
   const { format } = useCurrency();
-  const { items, removeItem, updateQuantity, total } = useCartStore(s => ({
-    items: s.items,
-    removeItem: s.removeItem,
-    updateQuantity: s.updateQuantity,
-    total: s.items.reduce((sum, i) => sum + (parseFloat(i.price) * (i.quantity || 1)), 0),
-  }));
+  const { items = [], removeItem, updateQuantity } = useCartStore();
+  const total = (items || []).reduce((sum, i) => sum + (parseFloat(i.price || 0) * (i.quantity || 1)), 0);
 
   if (!open) return null;
 

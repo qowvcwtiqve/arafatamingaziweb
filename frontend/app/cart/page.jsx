@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '../../store/cartStore';
 import { useCurrency } from '../../store/currencyStore';
@@ -8,21 +8,30 @@ import ProductIconBanner from '../../components/product/ProductIconBanner';
 
 export default function CartPage() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const { format } = useCurrency();
-  const { items, removeItem, updateQuantity } = useCartStore(s => ({
-    items: s.items,
-    removeItem: s.removeItem,
-    updateQuantity: s.updateQuantity,
-  }));
+  const { items = [], removeItem, updateQuantity } = useCartStore();
 
-  const subtotal = items.reduce((sum, i) => sum + (parseFloat(i.price) * (i.quantity || 1)), 0);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const subtotal = (items || []).reduce((sum, i) => sum + (parseFloat(i.price || 0) * (i.quantity || 1)), 0);
 
   const handleProceedCheckout = (e) => {
     e.preventDefault();
     if (!agreed) return;
     router.push('/checkout');
   };
+
+  if (!mounted) {
+    return (
+      <div style={{ paddingTop: 'calc(var(--header-height) + 60px)', minHeight: '80vh', textAlign: 'center' }}>
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ paddingTop: 'calc(var(--header-height) + 30px)', paddingBottom: 90 }}>
