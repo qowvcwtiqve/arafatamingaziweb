@@ -313,47 +313,34 @@ export default function ProductDetailPage() {
       <div className="container">
         
         {/* Top Breadcrumb & Status Bar */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          flexWrap: 'wrap', gap: 12, marginBottom: 28, fontSize: 13
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-text-faint)' }}>
-            <Link href="/" style={{ color: 'var(--color-text-faint)', textDecoration: 'none' }}>Home</Link>
-            <span className="icon icon--sm">chevron_right</span>
-            <Link href="/products" style={{ color: 'var(--color-text-faint)', textDecoration: 'none' }}>Store</Link>
+        <div className="product-breadcrumb-wrap">
+          <nav className="product-breadcrumbs" aria-label="Breadcrumb">
+            <Link href="/" className="product-breadcrumb-link">Home</Link>
+            <span className="product-breadcrumb-sep">/</span>
+            <Link href="/products" className="product-breadcrumb-link">Store</Link>
             {product.category_id && (
               <>
-                <span className="icon icon--sm">chevron_right</span>
-                <Link href={`/products?category=${product.category_id}`} style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>
+                <span className="product-breadcrumb-sep">/</span>
+                <Link href={`/products?category=${product.category_id}`} className="product-breadcrumb-link">
                   {product.category || 'Category'}
                 </Link>
               </>
             )}
-            <span className="icon icon--sm">chevron_right</span>
-            <span style={{ color: 'var(--color-text)', fontWeight: 600 }}>{product.title}</span>
-          </div>
+            <span className="product-breadcrumb-sep">/</span>
+            <span className="product-breadcrumb-current" title={product.website_meta?.title || product.title || product.name}>
+              {product.website_meta?.title || product.title || product.name}
+            </span>
+          </nav>
         </div>
 
         {/* Main Product Showcase Grid */}
-        <div className="product-detail-grid" style={{ marginBottom: 60 }}>
+        <div className="product-detail-grid" style={{ marginBottom: 50 }}>
           
           {/* LEFT COLUMN: Visual Showcase & Guarantees */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className="product-detail-media-column">
             
             {/* Visual Graphic Banner / Product Image (4:5 Full Canvas Ratio) */}
-            <div style={{
-              borderRadius: 'var(--radius-xl, 20px)',
-              overflow: 'hidden',
-              background: 'var(--color-surface-2)',
-              border: '1px solid var(--color-border)',
-              position: 'relative',
-              width: '100%',
-              aspectRatio: '4 / 5',
-              boxShadow: '0 20px 40px -15px rgba(0,0,0,0.6), 0 0 30px rgba(27, 78, 245, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+            <div className="product-detail-media-frame">
               {((product.images && product.images.length > 0 && product.images[0]) || (product.website_meta?.images && product.website_meta.images.length > 0 && product.website_meta.images[0])) && !imgError ? (
                 <div style={{
                   width: '100%',
