@@ -563,19 +563,19 @@ export default function ProductDetailPage() {
                           padding: '12px 18px',
                           borderRadius: 'var(--radius-md)',
                           border: `1.5px solid ${isSelected ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                          background: isSelected ? 'rgba(110, 58, 255, 0.12)' : 'var(--color-surface)',
+                          background: isSelected ? 'rgba(27, 78, 245, 0.12)' : 'var(--color-surface)',
                           cursor: 'pointer',
                           textAlign: 'left',
                           transition: 'all 0.2s ease',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          boxShadow: isSelected ? '0 0 20px rgba(110, 58, 255, 0.2)' : 'none'
+                          boxShadow: isSelected ? '0 0 20px rgba(27, 78, 245, 0.25)' : 'none'
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                           <span className="icon icon--md" style={{
-                            color: isSelected ? 'var(--color-primary-light)' : 'var(--color-text-faint)',
+                            color: isSelected ? '#3874FF' : 'var(--color-text-faint)',
                             fontVariationSettings: isSelected ? "'FILL' 1" : "'FILL' 0"
                           }}>
                             {isSelected ? 'radio_button_checked' : 'radio_button_unchecked'}
@@ -592,7 +592,7 @@ export default function ProductDetailPage() {
                               display: 'flex', alignItems: 'center', gap: 8
                             }}>
                               {v.is_preorder ? (
-                                <span style={{ color: 'var(--color-primary-light)' }}>Pre-Order</span>
+                                <span style={{ color: '#3874FF' }}>Pre-Order</span>
                               ) : v.is_infinite ? (
                                 <span style={{ color: 'var(--color-cyan)' }}>Instant Auto Stock</span>
                               ) : v.stock > 0 ? (
@@ -608,7 +608,7 @@ export default function ProductDetailPage() {
 
                         <div style={{
                           fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 800,
-                          color: isSelected ? 'var(--color-accent)' : 'var(--color-text)'
+                          color: isSelected ? '#3874FF' : 'var(--color-text)'
                         }}>
                           {format(v.price)}
                         </div>
@@ -643,7 +643,7 @@ export default function ProductDetailPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--color-text-muted)' }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(110, 58, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  background: 'rgba(27, 78, 245, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
                   <span className="icon icon--sm icon--primary icon--filled">bolt</span>
                 </div>
@@ -657,16 +657,16 @@ export default function ProductDetailPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--color-text-muted)' }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: 'var(--radius-sm)',
-                  background: isPreorder ? 'rgba(110, 58, 255, 0.1)' : inStock ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  background: isPreorder ? 'rgba(27, 78, 245, 0.12)' : inStock ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  <span className="icon icon--sm" style={{ color: isPreorder ? 'var(--color-primary-light)' : inStock ? 'var(--color-success)' : 'var(--color-error)' }}>
+                  <span className="icon icon--sm" style={{ color: isPreorder ? '#3874FF' : inStock ? 'var(--color-success)' : 'var(--color-error)' }}>
                     {isPreorder ? 'update' : inStock ? 'inventory_2' : 'do_not_disturb'}
                   </span>
                 </div>
                 <div>
                   <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>Stock Status</div>
-                  <div style={{ fontWeight: 700, color: isPreorder ? 'var(--color-primary-light)' : inStock ? 'var(--color-success)' : 'var(--color-error)' }}>
+                  <div style={{ fontWeight: 700, color: isPreorder ? '#3874FF' : inStock ? 'var(--color-success)' : 'var(--color-error)' }}>
                     {isPreorder
                       ? 'Pre-Order Active'
                       : selectedVariant?.is_infinite
@@ -716,13 +716,13 @@ export default function ProductDetailPage() {
                   style={{
                     flex: 1,
                     background: 'var(--gradient-primary)',
-                    boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
+                    boxShadow: '0 4px 20px rgba(27, 78, 245, 0.4)',
                     height: 52,
                     fontSize: 16,
                     fontWeight: 700
                   }}
                 >
-                  <span className="icon icon--md">rocket_launch</span>
+                  <span className="icon icon--filled">rocket_launch</span>
                   <span>Pre-Order Now ({format(price * quantity)})</span>
                 </button>
               ) : isOutOfStock ? (
@@ -739,6 +739,9 @@ export default function ProductDetailPage() {
                   <button
                     className="btn btn--primary product-btn-buy"
                     onClick={handleBuyNow}
+                    style={{
+                      boxShadow: '0 4px 20px rgba(27, 78, 245, 0.4)'
+                    }}
                   >
                     <span className="icon icon--md icon--filled">bolt</span>
                     <span>Buy Now</span>

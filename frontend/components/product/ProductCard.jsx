@@ -64,7 +64,7 @@ export default function ProductCard({ product: p }) {
   return (
     <Link href={`/products/${p.slug || p.id}`} className="marketplace-card-link">
       <div className="marketplace-card">
-        {/* 1. Media Showcase Box */}
+        {/* 1. Clean Media Showcase Box (Uncluttered artwork/icon) */}
         <div className="marketplace-card__media">
           {hasImage ? (
             <div className="marketplace-card__img-wrap">
@@ -92,11 +92,6 @@ export default function ProductCard({ product: p }) {
                 <span className="market-badge__desktop-text">-{discount}% OFF</span>
                 <span className="market-badge__mobile-text">-{discount}%</span>
               </span>
-            ) : isPreorder ? (
-              <span className="market-badge market-badge--preorder">
-                <span className="icon icon--filled" style={{ fontSize: 10 }}>rocket_launch</span>
-                <span>Pre-Order</span>
-              </span>
             ) : displayBadge ? (
               <span className="market-badge market-badge--featured">
                 <span className="icon icon--filled" style={{ fontSize: 10 }}>verified</span>
@@ -108,24 +103,12 @@ export default function ProductCard({ product: p }) {
           <div className="marketplace-card__rating-glass">
             <span className="icon icon--filled rating-glass__star">star</span>
             <span className="rating-glass__score">{ratingValue}</span>
-            <span className="rating-glass__count">({reviewsCount})</span>
-          </div>
-
-          {/* Delivery Overlay Pill */}
-          <div className="marketplace-card__delivery-overlay">
-            <span className={`delivery-dot ${isPreorder ? 'delivery-dot--blue' : 'delivery-dot--green'}`} />
-            <span className="delivery-overlay__desktop-text">
-              {isPreorder ? 'Pre-Order Dispatch' : 'Instant Key Delivery'}
-            </span>
-            <span className="delivery-overlay__mobile-text">
-              {isPreorder ? 'Pre-Order' : 'Instant Key'}
-            </span>
           </div>
         </div>
 
         {/* 2. Body Details */}
         <div className="marketplace-card__body">
-          {/* Category & Region */}
+          {/* Category & Region Header */}
           <div className="marketplace-card__category-row">
             <span className="marketplace-card__cat-label">{displayCategory}</span>
             <span className="marketplace-card__region-label">
@@ -139,17 +122,19 @@ export default function ProductCard({ product: p }) {
             {displayTitle}
           </h3>
 
-          {/* Social Proof Review Widget */}
-          <div className="marketplace-card__reviews-widget">
-            <div className="reviews-stars-row">
+          {/* Dedicated Review Section Pod */}
+          <div className="marketplace-card__review-pod">
+            <div className="review-pod__stars-group">
               {[...Array(5)].map((_, i) => (
-                <span key={i} className="icon icon--filled review-star-icon">star</span>
+                <span key={i} className="icon icon--filled review-pod__star-icon">star</span>
               ))}
+              <span className="review-pod__score">{ratingValue}</span>
+              <span className="review-pod__count">({reviewsCount})</span>
             </div>
-            <span className="reviews-score-num">{ratingValue}</span>
-            <span className="reviews-count-tag">({reviewsCount})</span>
-            <span className="reviews-divider">•</span>
-            <span className="reviews-sold-badge">{soldCount}+ sold</span>
+            <div className="review-pod__sold-pill">
+              <span className="review-pod__dot" />
+              <span>{soldCount}+ sold</span>
+            </div>
           </div>
 
           {/* Clean Description Preview */}

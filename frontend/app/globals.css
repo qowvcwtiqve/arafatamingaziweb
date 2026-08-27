@@ -2649,54 +2649,64 @@ select option, select optgroup {
   color: #3874FF;
 }
 
-.marketplace-card__reviews-widget {
+.marketplace-card__review-pod {
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin: 0 0 6px 0;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 0 0 8px 0;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
   line-height: 1;
 }
 
-.reviews-stars-row {
+.review-pod__stars-group {
   display: inline-flex;
   align-items: center;
-  gap: 1px;
+  gap: 2px;
 }
 
-.review-star-icon {
+.review-pod__star-icon {
   color: #F59E0B;
-  font-size: 11.5px !important;
+  font-size: 11px !important;
 }
 
-.reviews-score-num {
+.review-pod__score {
   font-size: 11.5px;
   font-weight: 800;
   color: var(--color-text);
-  line-height: 1;
+  margin-left: 3px;
 }
 
-.reviews-count-tag {
-  font-size: 11px;
-  color: var(--color-text-faint);
-  line-height: 1;
-}
-
-.reviews-divider {
-  color: var(--color-text-faint);
-  opacity: 0.5;
+.review-pod__count {
   font-size: 10px;
+  color: var(--color-text-faint);
+  font-weight: 600;
 }
 
-.reviews-sold-badge {
+.review-pod__sold-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 10px;
   font-weight: 700;
   color: #3874FF;
-  background: rgba(27, 78, 245, 0.10);
+  background: rgba(27, 78, 245, 0.12);
   border: 1px solid rgba(27, 78, 245, 0.25);
   padding: 2px 6px;
   border-radius: 9999px;
-  line-height: 1;
   white-space: nowrap;
+}
+
+.review-pod__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 5px #10B981;
+  display: inline-block;
 }
 
 .marketplace-card__desc {
@@ -4954,26 +4964,27 @@ select option, select optgroup {
     margin-bottom: 4px !important;
   }
 
-  .marketplace-card__reviews-widget {
-    gap: 3px !important;
-    margin-bottom: 3px !important;
+  .marketplace-card__review-pod {
+    padding: 3px 6px !important;
+    margin-bottom: 5px !important;
+    gap: 4px !important;
   }
 
-  .review-star-icon {
-    font-size: 10px !important;
-  }
-
-  .reviews-score-num {
-    font-size: 10.5px !important;
-  }
-
-  .reviews-count-tag {
+  .review-pod__star-icon {
     font-size: 9.5px !important;
   }
 
-  .reviews-sold-badge {
+  .review-pod__score {
+    font-size: 10.5px !important;
+  }
+
+  .review-pod__count {
+    display: none !important;
+  }
+
+  .review-pod__sold-pill {
     font-size: 8.5px !important;
-    padding: 1px 4px !important;
+    padding: 1.5px 4px !important;
   }
 
   .marketplace-card__desc {
