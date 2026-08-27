@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from './Logo';
+import siteConfig from '../../config/siteConfig';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -11,25 +12,8 @@ export default function Footer() {
     return null;
   }
 
-  const links = {
-    Store: [
-      { href: '/products', label: 'All Products' },
-      { href: '/products?featured=true', label: 'Featured Top Picks' },
-      { href: '/products?sort=newest', label: 'Latest Arrivals' },
-      { href: '/products?sort=popular', label: 'Most Popular' },
-    ],
-    Support: [
-      { href: '/contact', label: 'Contact Us' },
-      { href: 'https://t.me/quantumxdservices', label: 'Telegram Channel', external: true },
-      { href: 'mailto:support@quantumxd.store', label: 'Email Helpdesk' },
-      { href: '/faq', label: 'Frequently Asked Questions' },
-    ],
-    Legal: [
-      { href: '/privacy', label: 'Privacy Policy' },
-      { href: '/terms', label: 'Terms of Service' },
-      { href: '/refund', label: 'Refund & Warranty Policy' },
-    ],
-  };
+  const links = siteConfig.footerLinks;
+
 
   return (
     <footer className="footer" style={{

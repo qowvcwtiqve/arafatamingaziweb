@@ -1,6 +1,8 @@
 'use client';
+import siteConfig from '../../config/siteConfig';
 
 export default function TelegramCommunityBanner() {
+
   return (
     <section className="section section--sm" style={{ borderTop: '1px solid var(--color-border)' }}>
       <div className="container">
@@ -8,7 +10,7 @@ export default function TelegramCommunityBanner() {
           <style jsx>{`
             .telegram-community-card {
               position: relative;
-              background: linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(36, 41, 54, 0.5) 100%), var(--color-surface);
+              background: linear-gradient(135deg, rgba(27, 78, 245, 0.20) 0%, rgba(27, 44, 193, 0.10) 100%), var(--color-surface);
               border: 1px solid var(--color-border);
               border-radius: var(--radius-xl);
               padding: 44px 36px;
@@ -94,7 +96,7 @@ export default function TelegramCommunityBanner() {
           </div>
 
           <a
-            href="https://t.me/quantumxdservices"
+            href={siteConfig.socials.telegramChannel}
             target="_blank"
             rel="noopener noreferrer"
             className="cta-btn"

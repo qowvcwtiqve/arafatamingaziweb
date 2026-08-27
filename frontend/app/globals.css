@@ -11,7 +11,7 @@
    CSS CUSTOM PROPERTIES (Design Tokens)
    ============================================================ */
 :root, [data-theme='dark'] {
-  /* 2026 Sleek Dark Grayish Charcoal Palette (Clean Dark Gray, No Blueish Tints) */
+  /* 2026 Sleek Dark Grayish Charcoal Palette with High-Contrast Blue Highlights */
   --color-bg:            #0D0F12;
   --color-surface:       #14171E;
   --color-surface-2:     #1B1F28;
@@ -19,12 +19,14 @@
   --color-surface-4:     #2E3444;
   --color-border:        #232834;
   --color-border-hover:  #373E4F;
-  --color-border-glow:   rgba(124, 58, 237, 0.45);
+  --color-border-glow:   rgba(27, 78, 245, 0.50);
 
-  --color-primary:       #7C3AED;
-  --color-primary-light: #A78BFA;
-  --color-cyan:          #38BDF8;
-  --color-cyan-glow:     rgba(56, 189, 248, 0.20);
+  /* High-Contrast Electric Blue Palette */
+  --color-primary:       #1B4EF5;         /* Vibrant Electric Blue */
+  --color-primary-light: #3874FF;         /* Bright Azure Accent */
+  --color-primary-dark:  #1B2CC1;         /* Deep Cobalt Blue */
+  --color-cyan:          #3874FF;         /* Crisp Highlight */
+  --color-cyan-glow:     rgba(56, 116, 255, 0.25);
   --color-accent:        #10B981;
 
   --color-text:          #FFFFFF;
@@ -36,10 +38,10 @@
   --color-error:         #EF4444;
 
   /* Gradients */
-  --gradient-primary:      linear-gradient(135deg, #7C3AED 0%, #6366F1 100%);
-  --gradient-primary-soft: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(99, 102, 241, 0.10) 100%);
-  --gradient-hero:         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 58, 237, 0.16) 0%, transparent 70%);
-  --gradient-card-glow:    radial-gradient(circle at top left, rgba(124, 58, 237, 0.08), transparent 60%);
+  --gradient-primary:      linear-gradient(135deg, #1B4EF5 0%, #3874FF 100%);
+  --gradient-primary-soft: linear-gradient(135deg, rgba(27, 78, 245, 0.18) 0%, rgba(56, 116, 255, 0.10) 100%);
+  --gradient-hero:         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(27, 78, 245, 0.20) 0%, transparent 70%);
+  --gradient-card-glow:    radial-gradient(circle at top left, rgba(56, 116, 255, 0.12), transparent 60%);
 
   /* Solid Theme Surfaces (No Transparent Glass) */
   --glass-bg:       #14171E;
@@ -52,8 +54,8 @@
   --shadow-sm:   0 2px 6px rgba(0,0,0,0.5);
   --shadow-md:   0 8px 24px rgba(0,0,0,0.6);
   --shadow-lg:   0 16px 48px rgba(0,0,0,0.7);
-  --shadow-glow: 0 0 25px rgba(124, 58, 237, 0.25);
-  --shadow-cyan: 0 0 20px rgba(56, 189, 248, 0.20);
+  --shadow-glow: 0 0 25px rgba(27, 78, 245, 0.35);
+  --shadow-cyan: 0 0 20px rgba(56, 116, 255, 0.25);
 
   /* Borders */
   --radius-sm:  8px;
@@ -83,7 +85,7 @@
 }
 
 [data-theme='light'] {
-  /* Ultra-Crisp Modern Pearl & Vibrant Royal Violet / Electric Blue */
+  /* Ultra-Crisp Modern Pearl & Vibrant High-Contrast Cobalt / Blue */
   --color-bg:            #F4F6F9;
   --color-surface:       #FFFFFF;
   --color-surface-2:     #EAEFF5;
@@ -91,12 +93,13 @@
   --color-surface-4:     #CCD6E3;
   --color-border:        rgba(15, 23, 42, 0.12);
   --color-border-hover:  rgba(15, 23, 42, 0.24);
-  --color-border-glow:   rgba(109, 40, 217, 0.35);
+  --color-border-glow:   rgba(27, 44, 193, 0.40);
 
-  --color-primary:       #6D28D9;
-  --color-primary-light: #7C3AED;
-  --color-cyan:          #0284C7;
-  --color-cyan-glow:     rgba(2, 132, 199, 0.18);
+  --color-primary:       #1B2CC1;         /* Deep Cobalt Blue for High Readability */
+  --color-primary-light: #1B4EF5;         /* Vibrant Electric Blue */
+  --color-primary-dark:  #14208A;
+  --color-cyan:          #1B4EF5;
+  --color-cyan-glow:     rgba(27, 78, 245, 0.20);
   --color-accent:        #059669;
 
   --color-text:          #0F172A;
@@ -108,10 +111,10 @@
   --color-error:         #DC2626;
 
   /* Gradients */
-  --gradient-primary:      linear-gradient(135deg, #6D28D9 0%, #0284C7 100%);
-  --gradient-primary-soft: linear-gradient(135deg, rgba(109, 40, 217, 0.08) 0%, rgba(2, 132, 199, 0.06) 100%);
-  --gradient-hero:         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(109, 40, 217, 0.10) 0%, transparent 70%);
-  --gradient-card-glow:    radial-gradient(circle at top left, rgba(109, 40, 217, 0.06), transparent 60%);
+  --gradient-primary:      linear-gradient(135deg, #1B2CC1 0%, #1B4EF5 100%);
+  --gradient-primary-soft: linear-gradient(135deg, rgba(27, 44, 193, 0.10) 0%, rgba(27, 78, 245, 0.06) 100%);
+  --gradient-hero:         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(27, 44, 193, 0.12) 0%, transparent 70%);
+  --gradient-card-glow:    radial-gradient(circle at top left, rgba(27, 78, 245, 0.08), transparent 60%);
 
   /* Solid Theme (Light) */
   --glass-bg:         #FFFFFF;
@@ -123,9 +126,10 @@
   --shadow-sm:        0 1px 3px rgba(0, 0, 0, 0.06);
   --shadow-md:        0 4px 14px rgba(0, 0, 0, 0.08);
   --shadow-lg:        0 12px 30px rgba(0, 0, 0, 0.10);
-  --shadow-glow:      0 0 25px rgba(109, 40, 217, 0.16);
-  --shadow-cyan:      0 0 20px rgba(2, 132, 199, 0.12);
+  --shadow-glow:      0 0 25px rgba(27, 44, 193, 0.20);
+  --shadow-cyan:      0 0 20px rgba(27, 78, 245, 0.15);
 }
+
 
 
 
@@ -345,10 +349,10 @@ h5 { font-size: 1.15rem; }
   background: var(--gradient-primary);
   color: #FFFFFF;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 4px 14px rgba(27, 78, 245, 0.40);
 }
 .btn--primary:hover {
-  box-shadow: 0 6px 22px rgba(124, 58, 237, 0.55);
+  box-shadow: 0 6px 22px rgba(27, 78, 245, 0.65);
   transform: translateY(-1px);
 }
 

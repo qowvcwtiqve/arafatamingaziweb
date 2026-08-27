@@ -6,8 +6,8 @@ export default function HowItWorksSection() {
       step: '01',
       icon: 'touch_app',
       color: 'var(--color-primary-light)',
-      bg: 'rgba(124, 58, 237, 0.15)',
-      border: 'rgba(124, 58, 237, 0.35)',
+      bg: 'rgba(27, 78, 245, 0.15)',
+      border: 'rgba(27, 78, 245, 0.35)',
       title: 'Select Digital Asset',
       desc: 'Browse our extensive catalog of genuine software, subscriptions, accounts, and tools at discounted rates.'
     },
@@ -15,8 +15,8 @@ export default function HowItWorksSection() {
       step: '02',
       icon: 'qr_code_scanner',
       color: 'var(--color-cyan)',
-      bg: 'rgba(0, 212, 255, 0.15)',
-      border: 'rgba(0, 212, 255, 0.35)',
+      bg: 'rgba(56, 116, 255, 0.15)',
+      border: 'rgba(56, 116, 255, 0.35)',
       title: 'Instant 1-Click Pay',
       desc: 'Scan automated UPI QR (GPay, PhonePe, Paytm), Binance Pay 0% fee, or 100+ Cryptocurrencies with zero waiting.'
     },

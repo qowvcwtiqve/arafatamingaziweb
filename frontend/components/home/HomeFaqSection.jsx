@@ -1,28 +1,9 @@
 'use client';
 import { useState } from 'react';
+import siteConfig from '../../config/siteConfig';
 
-const FAQS = [
-  {
-    q: 'How fast is digital product delivery?',
-    a: 'Delivery is 100% automated and instant. As soon as your UPI, Binance Pay, or Crypto transaction is verified, your product credentials and activation keys appear right on your screen and in your dashboard.'
-  },
-  {
-    q: 'Which payment methods are accepted?',
-    a: 'We accept automated UPI QR code (Google Pay, PhonePe, Paytm, BHIM), Binance Pay (0% transaction fee), and over 100+ Cryptocurrencies (USDT, BTC, ETH, SOL, LTC) via automated gateway.'
-  },
-  {
-    q: 'What if I face any issue with my account or key?',
-    a: 'We offer full replacement and warranty support. If any license or credentials encounter an issue within the warranty duration, our 24/7 Telegram support team will resolve or replace it immediately.'
-  },
-  {
-    q: 'Can I top up my store wallet balance?',
-    a: 'Yes! You can top up your QuantumXD Store wallet in your dashboard with 1 click using UPI or Crypto, and enjoy 1-click instant checkouts anytime.'
-  },
-  {
-    q: 'How do I contact customer support?',
-    a: 'You can reach out to us 24/7 on our official Telegram channel (@quantumxdservices) or email us directly at support@quantumxd.store.'
-  }
-];
+const FAQS = siteConfig.faqs;
+
 
 export default function HomeFaqSection() {
   const [openIdx, setOpenIdx] = useState(0);

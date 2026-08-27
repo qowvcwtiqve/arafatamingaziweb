@@ -53,7 +53,7 @@ export default function HeroBanner() {
       position: 'relative',
       padding: '130px 0 70px',
       overflow: 'hidden',
-      background: 'radial-gradient(ellipse 90% 60% at 50% -10%, rgba(124, 58, 237, 0.16) 0%, transparent 70%), var(--color-bg)'
+      background: 'radial-gradient(ellipse 90% 60% at 50% -10%, rgba(27, 78, 245, 0.18) 0%, transparent 70%), var(--color-bg)'
     }}>
       {/* Background Animated Glow Elements */}
       <style dangerouslySetInnerHTML={{ __html: `
@@ -71,14 +71,14 @@ export default function HeroBanner() {
         .hero-feature-card:hover {
           transform: translateY(-5px);
           border-color: var(--color-border-glow) !important;
-          box-shadow: 0 16px 32px -10px rgba(124, 58, 237, 0.25);
+          box-shadow: 0 16px 32px -10px rgba(27, 78, 245, 0.35);
         }
       `}} />
 
       <div style={{
         position: 'absolute', top: '-100px', left: '50%', transform: 'translateX(-50%)',
         width: 700, height: 400, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, rgba(56, 189, 248, 0.05) 50%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(27, 78, 245, 0.20) 0%, rgba(56, 116, 255, 0.08) 50%, transparent 70%)',
         filter: 'blur(70px)', pointerEvents: 'none',
         animation: 'pulseGlowMesh 8s ease-in-out infinite'
       }} />
@@ -129,7 +129,7 @@ export default function HeroBanner() {
           }}>
             Instant Delivery for Premium <br />
             <span style={{
-              background: 'linear-gradient(135deg, #A78BFA 0%, #818CF8 50%, #38BDF8 100%)',
+              background: 'linear-gradient(135deg, #3874FF 0%, #1B4EF5 50%, #60A5FA 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               display: 'inline-block'

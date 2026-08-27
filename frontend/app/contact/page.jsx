@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import siteConfig from '../../config/siteConfig';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -41,7 +42,7 @@ export default function ContactPage() {
               </div>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Telegram Support</h3>
               <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 }}>Instant replies & active live community channel.</p>
-              <a href="https://t.me/quantumxdservices" target="_blank" rel="noopener noreferrer" className="btn btn--outline btn--sm btn--full">
+              <a href={siteConfig.socials.telegramChannel} target="_blank" rel="noopener noreferrer" className="btn btn--outline btn--sm btn--full">
                 Open Telegram
               </a>
             </div>
@@ -51,12 +52,13 @@ export default function ContactPage() {
                 <span className="icon icon--lg">email</span>
               </div>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Email Support</h3>
-              <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 }}>support@quantumxd.store</p>
-              <a href="mailto:support@quantumxd.store" className="btn btn--outline btn--sm btn--full">
+              <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 }}>{siteConfig.socials.supportEmail}</p>
+              <a href={`mailto:${siteConfig.socials.supportEmail}`} className="btn btn--outline btn--sm btn--full">
                 Send Direct Email
               </a>
             </div>
           </div>
+
 
           {/* Contact form */}
           <div className="card card--elevated" style={{ padding: 32 }}>
