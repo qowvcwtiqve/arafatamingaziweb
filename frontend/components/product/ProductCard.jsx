@@ -61,45 +61,18 @@ export default function ProductCard({ product: p }) {
   const hasImage = Boolean(imageUrl && !imgError);
 
   return (
-    <Link href={`/products/${p.slug || p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+    <Link href={`/products/${p.slug || p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}>
       <div className="product-card">
-        {/* 1. Visual Graphic Banner / Real Image (1:1 Square Ratio) */}
-        <div
-          className="product-card__image-container"
-          style={{
-            width: '100%',
-            aspectRatio: '1 / 1',
-            position: 'relative',
-            overflow: 'hidden',
-            background: 'var(--color-surface-2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
+        {/* 1. Visual Graphic Banner / Real Image (1:1 Ratio) */}
+        <div className="product-card__image-container">
           {hasImage ? (
-            <div style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 24,
-              background: 'radial-gradient(circle at 50% 50%, var(--color-surface-3) 0%, var(--color-surface-2) 100%)',
-              position: 'relative'
-            }}>
+            <div className="product-card__img-wrap">
               <img
                 src={imageUrl}
                 alt={displayTitle}
                 referrerPolicy="no-referrer"
                 onError={() => setImgError(true)}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.5))',
-                  transition: 'transform 0.3s ease'
-                }}
+                className="product-card__img"
               />
             </div>
           ) : (
@@ -114,19 +87,19 @@ export default function ProductCard({ product: p }) {
           <div className="product-card__floating-badges">
             {discount && (
               <span className="badge-pill badge-pill--sale">
-                <span className="icon icon--sm" style={{ fontSize: 11 }}>local_fire_department</span>
+                <span className="icon icon--sm" style={{ fontSize: 10 }}>local_fire_department</span>
                 <span>-{discount}%</span>
               </span>
             )}
             {isPreorder && (
               <span className="badge-pill badge-pill--preorder">
-                <span className="icon icon--sm" style={{ fontSize: 11 }}>rocket_launch</span>
+                <span className="icon icon--sm" style={{ fontSize: 10 }}>rocket_launch</span>
                 <span>Pre-Order</span>
               </span>
             )}
             {displayBadge && !isPreorder && !discount && (
               <span className="badge-pill badge-pill--custom">
-                <span className="icon icon--sm" style={{ fontSize: 11 }}>stars</span>
+                <span className="icon icon--sm" style={{ fontSize: 10 }}>stars</span>
                 <span>{displayBadge}</span>
               </span>
             )}
@@ -143,12 +116,11 @@ export default function ProductCard({ product: p }) {
 
         {/* 2. Stylish Card Body */}
         <div className="product-card__content-box">
-          {/* Realistic Social Proof & Review Bar */}
+          {/* Social Proof & Delivery Badge */}
           <div className="product-card__review-trust-bar">
-            <div className="product-card__stars-inline">
-              <span className="icon icon--sm icon--filled" style={{ color: '#F59E0B', fontSize: 13 }}>star</span>
-              <span className="product-card__score-text">{ratingValue}</span>
-              <span className="product-card__count-text">({reviewsCount})</span>
+            <div className="product-card__instant-tag">
+              <span className="icon icon--sm icon--filled" style={{ fontSize: 11 }}>bolt</span>
+              <span>{isPreorder ? 'Pre-Order' : 'Instant Key'}</span>
             </div>
             <span className="product-card__bullet-sep" />
             <span className="product-card__sold-text">{soldCount}+ sold</span>
@@ -159,15 +131,17 @@ export default function ProductCard({ product: p }) {
             {displayTitle}
           </h3>
 
-          {/* Description Preview */}
-          <p className="product-card__desc-preview" title={displayDesc}>
-            {displayDesc}
-          </p>
+          {/* Description Preview (Desktop view) */}
+          {displayDesc && (
+            <p className="product-card__desc-preview" title={displayDesc}>
+              {displayDesc}
+            </p>
+          )}
 
-          {/* Price & Action Row (Price on top, Full-Width Button below) */}
+          {/* Price & Action Row */}
           <div className="product-card__action-row">
             <div className="product-card__price-wrapper">
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, flexWrap: 'wrap' }}>
                 <span className="product-card__current-price">
                   {format(price)}
                 </span>
@@ -192,8 +166,8 @@ export default function ProductCard({ product: p }) {
               disabled={isOutOfStock}
               title={isOutOfStock ? 'Out of stock' : isPreorder ? 'Pre-Order' : 'Add to Cart'}
             >
-              <span className="icon icon--sm" style={{ fontSize: 15 }}>
-                {isOutOfStock ? 'block' : isPreorder ? 'rocket_launch' : 'add_shopping_cart'}
+              <span className="icon icon--sm product-card__btn-icon">
+                {isOutOfStock ? 'block' : isPreorder ? 'rocket_launch' : 'shopping_cart'}
               </span>
               <span className="product-card__add-btn-text">
                 {isOutOfStock ? 'Sold Out' : isPreorder ? 'Pre-Order' : 'Add to Cart'}
