@@ -49,9 +49,9 @@ export default function ProductCard({ product: p }) {
     p.website_meta?.description ||
     p.short_description ||
     p.description ||
-    'Instant activation & automated digital delivery.';
+    'Instant automated digital activation & verified license.';
 
-  // Realistic deterministic metrics
+  // Deterministic metrics for social proof
   const charCodeSum = (p.id || 'prod').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const ratingVariations = ['4.9', '4.8', '4.9', '4.7', '5.0', '4.8'];
   const ratingValue = ratingVariations[charCodeSum % ratingVariations.length];
@@ -64,7 +64,7 @@ export default function ProductCard({ product: p }) {
   return (
     <Link href={`/products/${p.slug || p.id}`} className="marketplace-card-link">
       <div className="marketplace-card">
-        {/* 1. Clean Media Showcase Box (Uncluttered artwork/icon) */}
+        {/* 1. Pristine Media Box (Uncluttered, No top-right glass badge) */}
         <div className="marketplace-card__media">
           {hasImage ? (
             <div className="marketplace-card__img-wrap">
@@ -84,36 +84,33 @@ export default function ProductCard({ product: p }) {
             />
           )}
 
-          {/* Top Floating Badges */}
-          <div className="marketplace-card__badges-left">
-            {discount ? (
+          {/* Clean Floating Badge Top-Left Only */}
+          {discount ? (
+            <div className="marketplace-card__badges-left">
               <span className="market-badge market-badge--discount">
                 <span className="icon icon--filled" style={{ fontSize: 10 }}>local_fire_department</span>
                 <span className="market-badge__desktop-text">-{discount}% OFF</span>
                 <span className="market-badge__mobile-text">-{discount}%</span>
               </span>
-            ) : displayBadge ? (
+            </div>
+          ) : displayBadge ? (
+            <div className="marketplace-card__badges-left">
               <span className="market-badge market-badge--featured">
                 <span className="icon icon--filled" style={{ fontSize: 10 }}>verified</span>
                 <span>{displayBadge}</span>
               </span>
-            ) : null}
-          </div>
-
-          <div className="marketplace-card__rating-glass">
-            <span className="icon icon--filled rating-glass__star">star</span>
-            <span className="rating-glass__score">{ratingValue}</span>
-          </div>
+            </div>
+          ) : null}
         </div>
 
-        {/* 2. Body Details */}
+        {/* 2. Structured Commercial Details Body */}
         <div className="marketplace-card__body">
-          {/* Category & Region Header */}
+          {/* Category & License Header */}
           <div className="marketplace-card__category-row">
             <span className="marketplace-card__cat-label">{displayCategory}</span>
             <span className="marketplace-card__region-label">
-              <span className="icon" style={{ fontSize: 10 }}>public</span>
-              GLOBAL
+              <span className="marketplace-card__live-indicator" />
+              GLOBAL KEY
             </span>
           </div>
 
@@ -122,7 +119,7 @@ export default function ProductCard({ product: p }) {
             {displayTitle}
           </h3>
 
-          {/* Dedicated Review Section Pod */}
+          {/* Professional Social Proof & Rating Bar */}
           <div className="marketplace-card__review-pod">
             <div className="review-pod__stars-group">
               {[...Array(5)].map((_, i) => (
@@ -142,7 +139,7 @@ export default function ProductCard({ product: p }) {
             {displayDesc}
           </p>
 
-          {/* Price & Action Section */}
+          {/* Commercial Pricing & Buy Button Section */}
           <div className="marketplace-card__action-box">
             <div className="marketplace-card__price-section">
               <div className="marketplace-card__price-row">
