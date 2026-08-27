@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
+import AgreementCheckbox from '../../components/ui/AgreementCheckbox';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -80,28 +81,12 @@ export default function RegisterPage() {
             </div>
 
             {/* Terms and Privacy Agreement */}
-            <label style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 8,
-              marginTop: 4,
-              cursor: 'pointer',
-              fontSize: 12,
-              color: 'var(--color-text-muted)',
-              lineHeight: 1.45,
-              userSelect: 'none'
-            }}>
-              <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                style={{ marginTop: 2, accentColor: '#1B4EF5', cursor: 'pointer', width: 16, height: 16, flexShrink: 0 }}
-                required
-              />
-              <span>
-                I agree to the <Link href="/terms" target="_blank" style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Terms of Service</Link> and <Link href="/privacy" target="_blank" style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Privacy Policy</Link>.
-              </span>
-            </label>
+            <AgreementCheckbox
+              checked={agreed}
+              onChange={setAgreed}
+              mode="auth"
+              style={{ marginTop: 4 }}
+            />
 
             <button
               type="submit"

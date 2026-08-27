@@ -5,6 +5,7 @@ import { useCartStore } from '../../store/cartStore';
 import { useCurrency } from '../../store/currencyStore';
 import Link from 'next/link';
 import ProductIconBanner from '../product/ProductIconBanner';
+import AgreementCheckbox from '../ui/AgreementCheckbox';
 
 export default function CartDrawer({ open, onClose }) {
   const router = useRouter();
@@ -203,32 +204,13 @@ export default function CartDrawer({ open, onClose }) {
             </div>
 
             {/* Mandatory Digital Refund Agreement Checkbox */}
-            <label style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 8,
-              marginBottom: 12,
-              cursor: 'pointer',
-              fontSize: 11.5,
-              color: 'var(--color-text-muted)',
-              lineHeight: 1.4,
-              userSelect: 'none',
-              background: agreed ? 'rgba(27, 78, 245, 0.05)' : 'var(--color-surface-2)',
-              padding: '8px 10px',
-              borderRadius: '8px',
-              border: agreed ? '1px solid rgba(27, 78, 245, 0.3)' : '1px solid var(--color-border)',
-              transition: 'all 0.2s ease'
-            }}>
-              <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                style={{ marginTop: 2, accentColor: '#1B4EF5', cursor: 'pointer', width: 15, height: 15, flexShrink: 0 }}
-              />
-              <span>
-                I agree to the <Link href="/terms" onClick={onClose} style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Terms</Link> &amp; <Link href="/refund" onClick={onClose} style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Refund Policy</Link> (Digital goods are non-refundable once delivered).
-              </span>
-            </label>
+            <AgreementCheckbox
+              checked={agreed}
+              onChange={setAgreed}
+              mode="checkout"
+              onLinkClick={onClose}
+              style={{ marginBottom: 12 }}
+            />
 
             <button
               type="button"

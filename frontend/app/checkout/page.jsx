@@ -8,6 +8,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useCurrency } from '../../store/currencyStore';
 import api from '../../lib/api';
 import toast from 'react-hot-toast';
+import AgreementCheckbox from '../../components/ui/AgreementCheckbox';
 
 const DEFAULT_METHODS = [
   {
@@ -508,32 +509,12 @@ function CheckoutContent() {
                 </div>
 
                 {/* Mandatory Digital Refund Agreement Checkbox */}
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 8,
-                  marginTop: 20,
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  color: 'var(--color-text-muted)',
-                  lineHeight: 1.45,
-                  userSelect: 'none',
-                  background: agreed ? 'rgba(27, 78, 245, 0.05)' : 'var(--color-surface-2)',
-                  padding: '10px 12px',
-                  borderRadius: '10px',
-                  border: agreed ? '1px solid rgba(27, 78, 245, 0.3)' : '1px solid var(--color-border)',
-                  transition: 'all 0.2s ease'
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={agreed}
-                    onChange={(e) => setAgreed(e.target.checked)}
-                    style={{ marginTop: 2, accentColor: '#1B4EF5', cursor: 'pointer', width: 16, height: 16, flexShrink: 0 }}
-                  />
-                  <span>
-                    I agree to the <Link href="/terms" target="_blank" style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Terms of Service</Link> &amp; <Link href="/refund" target="_blank" style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Refund Policy</Link> (I acknowledge that digital keys &amp; accounts are non-refundable once delivered).
-                  </span>
-                </label>
+                <AgreementCheckbox
+                  checked={agreed}
+                  onChange={setAgreed}
+                  mode="checkout"
+                  style={{ marginTop: 20 }}
+                />
 
                 <button
                   className="btn btn--primary btn--full"

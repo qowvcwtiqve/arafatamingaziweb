@@ -5,6 +5,7 @@ import { useCartStore } from '../../store/cartStore';
 import { useCurrency } from '../../store/currencyStore';
 import Link from 'next/link';
 import ProductIconBanner from '../../components/product/ProductIconBanner';
+import AgreementCheckbox from '../../components/ui/AgreementCheckbox';
 
 export default function CartPage() {
   const router = useRouter();
@@ -220,32 +221,12 @@ export default function CartPage() {
                 </div>
 
                 {/* Mandatory Digital Refund Agreement Checkbox */}
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 8,
-                  marginBottom: 16,
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  color: 'var(--color-text-muted)',
-                  lineHeight: 1.4,
-                  userSelect: 'none',
-                  background: agreed ? 'rgba(27, 78, 245, 0.05)' : 'var(--color-surface-2)',
-                  padding: '10px 12px',
-                  borderRadius: '10px',
-                  border: agreed ? '1px solid rgba(27, 78, 245, 0.3)' : '1px solid var(--color-border)',
-                  transition: 'all 0.2s ease'
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={agreed}
-                    onChange={(e) => setAgreed(e.target.checked)}
-                    style={{ marginTop: 2, accentColor: '#1B4EF5', cursor: 'pointer', width: 16, height: 16, flexShrink: 0 }}
-                  />
-                  <span>
-                    I acknowledge that I am purchasing intangible digital goods &amp; agree to the <Link href="/terms" style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Terms of Service</Link> &amp; <Link href="/refund" style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Refund Policy</Link> (Non-refundable once delivered).
-                  </span>
-                </label>
+                <AgreementCheckbox
+                  checked={agreed}
+                  onChange={setAgreed}
+                  mode="checkout"
+                  style={{ marginBottom: 16 }}
+                />
 
                 <button
                   type="button"
