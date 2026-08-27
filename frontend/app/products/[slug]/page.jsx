@@ -377,35 +377,39 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 3 Guarantee Highlights Pods */}
-            <div className="product-guarantees-grid">
-              <div className="product-guarantee-card">
-                <div className="product-guarantee-icon-box">
-                  <span className="icon icon--md icon--cyan icon--filled">bolt</span>
+            {/* Guarantee Trust Box (Full Width, No Truncation) */}
+            <div className="product-trust-box">
+              <div className="product-trust-item">
+                <div className="product-trust-icon-box product-trust-icon-box--cyan">
+                  <span className="icon icon--sm icon--filled">bolt</span>
                 </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="product-guarantee-title">Instant Auto Delivery</div>
-                  <div className="product-guarantee-sub">Direct Credential Dispatch</div>
-                </div>
-              </div>
-
-              <div className="product-guarantee-card">
-                <div className="product-guarantee-icon-box">
-                  <span className="icon icon--md icon--primary">verified_user</span>
-                </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="product-guarantee-title">100% Genuine Quality</div>
-                  <div className="product-guarantee-sub">Tested &amp; Quality Checked</div>
+                <div className="product-trust-info">
+                  <span className="product-trust-title">Instant Auto Delivery</span>
+                  <span className="product-trust-desc">Automated credential dispatch immediately after payment</span>
                 </div>
               </div>
 
-              <div className="product-guarantee-card">
-                <div className="product-guarantee-icon-box">
-                  <span className="icon icon--md icon--accent">support_agent</span>
+              <div className="product-trust-divider" />
+
+              <div className="product-trust-item">
+                <div className="product-trust-icon-box product-trust-icon-box--blue">
+                  <span className="icon icon--sm">verified_user</span>
                 </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="product-guarantee-title">24/7 Priority Support</div>
-                  <div className="product-guarantee-sub">Telegram &amp; Helpdesk</div>
+                <div className="product-trust-info">
+                  <span className="product-trust-title">100% Genuine Quality</span>
+                  <span className="product-trust-desc">Official verified licenses &amp; tested activations</span>
+                </div>
+              </div>
+
+              <div className="product-trust-divider" />
+
+              <div className="product-trust-item">
+                <div className="product-trust-icon-box product-trust-icon-box--purple">
+                  <span className="icon icon--sm">support_agent</span>
+                </div>
+                <div className="product-trust-info">
+                  <span className="product-trust-title">24/7 Priority Support</span>
+                  <span className="product-trust-desc">Dedicated Telegram &amp; live ticket assistance</span>
                 </div>
               </div>
             </div>

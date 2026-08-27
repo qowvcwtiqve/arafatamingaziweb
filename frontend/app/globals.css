@@ -4986,7 +4986,7 @@ select option, select optgroup {
   gap: 6px;
   font-size: 13px;
   color: var(--color-text-faint);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .product-breadcrumb-link {
@@ -5004,25 +5004,22 @@ select option, select optgroup {
   display: inline-flex;
   align-items: center;
   color: var(--color-text-faint);
-  opacity: 0.6;
+  opacity: 0.5;
   font-size: 12px;
+  user-select: none;
 }
 
 .product-breadcrumb-current {
   color: var(--color-text);
   font-weight: 600;
-  max-width: 260px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: inline-block;
-  vertical-align: middle;
+  white-space: normal;
+  display: inline;
 }
 
 .product-detail-grid {
   display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 36px;
+  grid-template-columns: 440px 1fr;
+  gap: 40px;
   align-items: start;
 }
 
@@ -5030,8 +5027,8 @@ select option, select optgroup {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 380px;
   width: 100%;
+  max-width: 440px;
 }
 
 .product-detail-media-frame {
@@ -5048,69 +5045,94 @@ select option, select optgroup {
   justify-content: center;
 }
 
-.product-guarantees-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* ── Trust Box (Clean Full-Width Guarantee List) ── */
+.product-trust-box {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 12px);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
-  width: 100%;
 }
 
-.product-guarantee-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 10px 8px;
+.product-trust-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: var(--transition-base);
+  gap: 12px;
 }
 
-.product-guarantee-card:hover {
-  border-color: var(--color-border-glow);
-  transform: translateY(-2px);
-}
-
-.product-guarantee-icon-box {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  background: var(--gradient-primary-soft);
+.product-trust-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.product-guarantee-title {
-  font-size: 11.5px;
+.product-trust-icon-box--cyan {
+  background: rgba(6, 182, 212, 0.12);
+  color: #06B6D4;
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+.product-trust-icon-box--blue {
+  background: rgba(56, 116, 255, 0.12);
+  color: #3874FF;
+  border: 1px solid rgba(56, 116, 255, 0.25);
+}
+
+.product-trust-icon-box--purple {
+  background: rgba(168, 85, 247, 0.12);
+  color: #A855F7;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.product-trust-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.product-trust-title {
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--color-text);
   line-height: 1.2;
 }
 
-.product-guarantee-sub {
-  font-size: 9.5px;
+.product-trust-desc {
+  font-size: 11px;
   color: var(--color-text-faint);
-  margin-top: 1px;
+  line-height: 1.3;
+}
+
+.product-trust-divider {
+  height: 1px;
+  background: var(--color-border);
+  width: 100%;
 }
 
 .product-detail-skeleton-grid {
   display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 36px;
+  grid-template-columns: 440px 1fr;
+  gap: 40px;
   align-items: start;
 }
 
 /* Tablet & Mobile Breakpoints for Product Details */
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .product-detail-grid {
     grid-template-columns: 1fr !important;
     gap: 28px !important;
   }
 
   .product-detail-media-column {
-    max-width: 340px !important;
+    max-width: 400px !important;
     margin: 0 auto !important;
   }
 
@@ -5122,17 +5144,16 @@ select option, select optgroup {
 
 @media (max-width: 580px) {
   .product-detail-media-column {
-    max-width: 280px !important;
+    max-width: 100% !important;
     margin: 0 auto !important;
   }
 
-  .product-guarantees-grid {
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
+  .product-detail-media-frame {
+    max-width: 100% !important;
   }
 
-  .product-breadcrumb-current {
-    max-width: 170px !important;
+  .product-breadcrumbs {
+    font-size: 12px !important;
   }
 }
 
