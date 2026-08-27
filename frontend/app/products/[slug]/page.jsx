@@ -615,7 +615,7 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              {/* CTAs Row - Smart Side-by-Side */}
+              {/* CTAs Row */}
               <div className="pro-cta-row">
                 {!isOutOfStock && (
                   <div className="pro-qty-stepper">
@@ -639,7 +639,17 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
-                {isOutOfStock ? (
+                {isPreorder ? (
+                  <button
+                    type="button"
+                    className="pro-btn-buy"
+                    onClick={handleBuyNow}
+                    style={{ flex: 1 }}
+                  >
+                    <span className="icon icon--sm icon--filled">rocket_launch</span>
+                    <span>Pre-Order Now ({format(price * quantity)})</span>
+                  </button>
+                ) : isOutOfStock ? (
                   <button type="button" className="btn btn--outline" disabled style={{ flex: 1, height: 48, opacity: 0.5 }}>
                     <span className="icon icon--sm">do_not_disturb</span>
                     <span>Currently Out of Stock</span>
@@ -659,8 +669,8 @@ export default function ProductDetailPage() {
                       className="pro-btn-buy"
                       onClick={handleBuyNow}
                     >
-                      <span className="icon icon--sm icon--filled">{isPreorder ? 'rocket_launch' : 'bolt'}</span>
-                      <span>{isPreorder ? `Pre-Order Now (${format(price * quantity)})` : 'Buy Now'}</span>
+                      <span className="icon icon--sm icon--filled">bolt</span>
+                      <span>Buy Now</span>
                     </button>
                   </>
                 )}
