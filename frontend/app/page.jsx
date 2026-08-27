@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import api from '../lib/api';
 import ProductCard from '../components/product/ProductCard';
+import QuickCategoryBar from '../components/home/QuickCategoryBar';
 import HeroBanner from '../components/home/HeroBanner';
 import LiveTicker from '../components/home/LiveTicker';
 import LiveSalesNotification from '../components/home/LiveSalesNotification';
@@ -60,7 +61,10 @@ export default function HomePage() {
       {/* 1. HERO BANNER */}
       <HeroBanner />
 
-      {/* 2. LIVE ANNOUNCEMENT MARQUEE TICKER */}
+      {/* 2. QUICK CATEGORY BAR (MOBILE & PC APP NAVIGATION) */}
+      <QuickCategoryBar />
+
+      {/* 3. LIVE ANNOUNCEMENT MARQUEE TICKER */}
       <LiveTicker />
 
       {/* 3. BROWSE CATEGORIES CARDS */}
