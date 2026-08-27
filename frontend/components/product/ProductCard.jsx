@@ -147,11 +147,6 @@ export default function ProductCard({ product: p }) {
               )}
             </div>
           )}
-
-          {/* Pre-Order tag — top right */}
-          {isPreorder && (
-            <span className="pcard__preorder-tag">PRE-ORDER</span>
-          )}
         </div>
 
         {/* ── CONTENT ZONE ─────────────────────────── */}
