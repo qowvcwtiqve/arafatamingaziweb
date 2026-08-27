@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import api from '../../lib/api';
 import ProductCard from '../../components/product/ProductCard';
+import ProductFiltersSidebar from '../../components/product/ProductFiltersSidebar';
 import CustomDropdown from '../../components/ui/CustomDropdown';
 import { useCurrency } from '../../store/currencyStore';
 
@@ -19,14 +20,6 @@ function ProductsContent() {
   const router = useRouter();
   const { format } = useCurrency();
 
-  const BUDGET_PRESETS = [
-    { label: 'All Prices', min: '', max: '' },
-    { label: `Under ${format(299)}`, min: '', max: '299' },
-    { label: `${format(300)} – ${format(699)}`, min: '300', max: '699' },
-    { label: `${format(700)} – ${format(1499)}`, min: '700', max: '1499' },
-    { label: `${format(1500)} & Above`, min: '1500', max: '' },
-  ];
-
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([{ id: '', name: 'All Categories', icon: 'grid_view' }]);
   const [loading, setLoading] = useState(true);
@@ -40,14 +33,10 @@ function ProductsContent() {
     category: searchParams.get('category') || '',
     sort: 'newest',
     featured: searchParams.get('featured') || '',
-    stock_status: 'all', // 'all' | 'in_stock' | 'preorder' | 'infinite'
+    stock_status: 'all',
     min_price: searchParams.get('min_price') || '',
     max_price: searchParams.get('max_price') || '',
   });
-
-  // Local price input state for user typing before submitting
-  const [customMinPrice, setCustomMinPrice] = useState(filters.min_price);
-  const [customMaxPrice, setCustomMaxPrice] = useState(filters.max_price);
 
   useEffect(() => {
     const cat = searchParams.get('category');
@@ -63,10 +52,7 @@ function ProductsContent() {
       min_price: minP || '',
       max_price: maxP || '',
     }));
-    if (minP !== null) setCustomMinPrice(minP);
-    if (maxP !== null) setCustomMaxPrice(maxP);
 
-    // Fetch categories dynamically
     api
       .get('/products/categories')
       .then(({ data }) => {
@@ -99,16 +85,6 @@ function ProductsContent() {
 
   const activeCategory = categories.find((c) => c.id === filters.category);
 
-  const handleApplyCustomPrice = (e) => {
-    e?.preventDefault();
-    setFilters((f) => ({
-      ...f,
-      min_price: customMinPrice.trim(),
-      max_price: customMaxPrice.trim(),
-    }));
-    setPage(1);
-  };
-
   const handleResetFilters = () => {
     setFilters({
       search: '',
@@ -119,8 +95,6 @@ function ProductsContent() {
       min_price: '',
       max_price: '',
     });
-    setCustomMinPrice('');
-    setCustomMaxPrice('');
     setPage(1);
   };
 
@@ -130,249 +104,7 @@ function ProductsContent() {
     filters.featured ||
     filters.min_price ||
     filters.max_price ||
-    filters.stock_status !== 'all'
-  );
-
-  // Sidebar Filter Content (Shared between desktop sidebar & mobile drawer)
-  const FilterSidebarContent = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 14, borderBottom: '1px solid var(--color-border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span className="icon icon--sm" style={{ color: 'var(--color-cyan)' }}>tune</span>
-          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text)' }}>Filters & Categories</span>
-        </div>
-        {hasActiveFilters && (
-          <button
-            onClick={handleResetFilters}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#ef4444',
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: 0,
-            }}
-          >
-            <span className="icon icon--sm" style={{ fontSize: 14 }}>restart_alt</span>
-            Reset
-          </button>
-        )}
-      </div>
-
-      {/* Categories List */}
-      <div>
-        <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-faint)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span className="icon icon--sm" style={{ color: 'var(--color-primary-light)' }}>category</span>
-          Categories ({categories.length})
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 320, overflowY: 'auto', paddingRight: 4 }}>
-          {categories.map((c) => {
-            const isActive = filters.category === c.id;
-            return (
-              <button
-                key={c.id || 'all'}
-                onClick={() => {
-                  setFilters((f) => ({ ...f, category: c.id }));
-                  setPage(1);
-                  setMobileFilterOpen(false);
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                  padding: '9px 12px',
-                  borderRadius: 'var(--radius-md)',
-                  background: isActive ? 'linear-gradient(135deg, rgba(110, 58, 255, 0.25) 0%, rgba(56, 189, 248, 0.15) 100%)' : 'transparent',
-                  border: isActive ? '1px solid rgba(110, 58, 255, 0.4)' : '1px solid transparent',
-                  color: isActive ? 'var(--color-cyan)' : 'var(--color-text-muted)',
-                  fontSize: 13,
-                  fontWeight: isActive ? 700 : 500,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = 'var(--color-surface-2)';
-                    e.currentTarget.style.color = 'var(--color-text)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = 'var(--color-text-muted)';
-                  }
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  <span className="icon icon--sm" style={{ color: isActive ? 'var(--color-cyan)' : 'var(--color-text-faint)', fontSize: 16 }}>
-                    {c.icon || 'folder'}
-                  </span>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
-                </div>
-                {isActive && (
-                  <span className="icon icon--sm" style={{ color: 'var(--color-cyan)', fontSize: 16 }}>check</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Price Budget Filter */}
-      <div>
-        <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-faint)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span className="icon icon--sm" style={{ color: 'var(--color-accent)' }}>payments</span>
-          Price Budget
-        </div>
-
-        {/* Quick Budget Pills */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-          {BUDGET_PRESETS.map((b) => {
-            const isSelected = filters.min_price === b.min && filters.max_price === b.max;
-            return (
-              <button
-                key={b.label}
-                type="button"
-                onClick={() => {
-                  setFilters((f) => ({ ...f, min_price: b.min, max_price: b.max }));
-                  setCustomMinPrice(b.min);
-                  setCustomMaxPrice(b.max);
-                  setPage(1);
-                  setMobileFilterOpen(false);
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '7px 12px',
-                  borderRadius: 6,
-                  background: isSelected ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-surface-2)',
-                  border: isSelected ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--color-border)',
-                  color: isSelected ? '#10b981' : 'var(--color-text-muted)',
-                  fontSize: 12,
-                  fontWeight: isSelected ? 700 : 500,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <span>{b.label}</span>
-                {isSelected && <span className="icon icon--sm" style={{ fontSize: 14 }}>check</span>}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Custom Price Range Form */}
-        <form onSubmit={handleApplyCustomPrice} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <input
-            type="number"
-            placeholder="Min Price"
-            value={customMinPrice}
-            onChange={(e) => setCustomMinPrice(e.target.value)}
-            className="form-input"
-            style={{ height: 32, fontSize: 12, padding: '0 8px', flex: 1 }}
-          />
-          <span style={{ color: 'var(--color-text-faint)', fontSize: 12 }}>–</span>
-          <input
-            type="number"
-            placeholder="Max Price"
-            value={customMaxPrice}
-            onChange={(e) => setCustomMaxPrice(e.target.value)}
-            className="form-input"
-            style={{ height: 32, fontSize: 12, padding: '0 8px', flex: 1 }}
-          />
-          <button type="submit" className="btn btn--secondary btn--sm" style={{ height: 32, padding: '0 10px', fontSize: 12 }}>
-            Go
-          </button>
-        </form>
-      </div>
-
-      {/* Stock Availability */}
-      <div>
-        <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-faint)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span className="icon icon--sm" style={{ color: '#00D4FF' }}>inventory_2</span>
-          Availability
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {[
-            { id: 'all', label: 'All Items', icon: 'apps' },
-            { id: 'in_stock', label: 'In Stock (Instant)', icon: 'check_circle', color: '#10b981' },
-            { id: 'preorder', label: 'Pre-Orders Active', icon: 'rocket_launch', color: '#a855f7' },
-            { id: 'infinite', label: 'Infinite Stock', icon: 'all_inclusive', color: '#00D4FF' },
-          ].map((item) => {
-            const isSelected = filters.stock_status === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  setFilters((f) => ({ ...f, stock_status: item.id }));
-                  setPage(1);
-                  setMobileFilterOpen(false);
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '7px 12px',
-                  borderRadius: 6,
-                  background: isSelected ? 'rgba(0, 212, 255, 0.12)' : 'var(--color-surface-2)',
-                  border: isSelected ? '1px solid var(--color-cyan)' : '1px solid var(--color-border)',
-                  color: isSelected ? 'var(--color-cyan)' : 'var(--color-text-muted)',
-                  fontSize: 12,
-                  fontWeight: isSelected ? 700 : 500,
-                  cursor: 'pointer',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span className="icon icon--sm" style={{ color: item.color || 'inherit', fontSize: 14 }}>{item.icon}</span>
-                  <span>{item.label}</span>
-                </div>
-                {isSelected && <span className="icon icon--sm" style={{ fontSize: 14 }}>check</span>}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Featured Picks Toggle */}
-      <div>
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            cursor: 'pointer',
-            padding: '10px 12px',
-            background: filters.featured ? 'rgba(245, 158, 11, 0.12)' : 'var(--color-surface-2)',
-            borderRadius: 'var(--radius-md)',
-            border: filters.featured ? '1px solid #f59e0b' : '1px solid var(--color-border)',
-            transition: 'all 0.15s ease',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={!!filters.featured}
-            onChange={(e) => {
-              setFilters((f) => ({ ...f, featured: e.target.checked ? 'true' : '' }));
-              setPage(1);
-            }}
-            style={{ width: 16, height: 16, accentColor: '#f59e0b' }}
-          />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: filters.featured ? '#f59e0b' : 'var(--color-text)' }}>
-            <span className="icon icon--sm" style={{ color: '#f59e0b', fontSize: 16 }}>star</span>
-            Featured Picks Only
-          </div>
-        </label>
-      </div>
-    </div>
+    (filters.stock_status && filters.stock_status !== 'all')
   );
 
   return (
@@ -391,7 +123,7 @@ function ProductsContent() {
             }}
           />
 
-          <div style={{ position: 'relative', zIndex: 1, maxWidth: 680 }}>
+          <div style={{ position: 'relative', zIndex: 1, maxWidth: 720 }}>
             <div
               style={{
                 display: 'inline-flex',
@@ -399,11 +131,11 @@ function ProductsContent() {
                 gap: 6,
                 padding: '4px 12px',
                 borderRadius: 'var(--radius-full)',
-                background: 'rgba(0, 212, 255, 0.12)',
-                border: '1px solid rgba(0, 212, 255, 0.3)',
+                background: 'rgba(27, 78, 245, 0.14)',
+                border: '1px solid rgba(27, 78, 245, 0.35)',
                 fontSize: 12,
                 fontWeight: 700,
-                color: 'var(--color-cyan)',
+                color: '#3874FF',
                 marginBottom: 8,
               }}
             >
@@ -436,12 +168,21 @@ function ProductsContent() {
           </div>
         </div>
 
-        {/* 2-COLUMN MAIN STORE LAYOUT (LEFT SIDEBAR + PRODUCTS GRID) */}
+        {/* 2-COLUMN MAIN STORE LAYOUT */}
         <div className="store-main-layout">
           
           {/* DESKTOP LEFT SIDEBAR */}
           <aside className="store-sidebar-desktop">
-            <FilterSidebarContent />
+            <ProductFiltersSidebar
+              categories={categories}
+              filters={filters}
+              setFilters={(fn) => {
+                setFilters(fn);
+                setPage(1);
+              }}
+              onReset={handleResetFilters}
+              totalProducts={total}
+            />
           </aside>
 
           {/* RIGHT PRODUCTS MAIN CONTENT */}
@@ -473,7 +214,7 @@ function ProductsContent() {
                     fontSize: 13.5,
                     width: '100%',
                   }}
-                  placeholder="Search in store (e.g. Canva, ChatGPT, Netflix)..."
+                  placeholder="Search products in catalog..."
                   value={filters.search}
                   onChange={(e) => {
                     setFilters((f) => ({ ...f, search: e.target.value }));
@@ -491,7 +232,7 @@ function ProductsContent() {
                 )}
               </div>
 
-              {/* Toolbar Actions Row (Filters + Sort + Desktop Count) */}
+              {/* Toolbar Actions Row (Mobile Filter Toggle + Count + Sort) */}
               <div className="store-toolbar-actions-row" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {/* Mobile Filter Toggle Button */}
                 <button
@@ -501,9 +242,9 @@ function ProductsContent() {
                   style={{ gap: 6, display: 'none' }}
                 >
                   <span className="icon icon--sm">tune</span>
-                  <span>Filters</span>
+                  <span>Filters &amp; Browse</span>
                   {hasActiveFilters && (
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--color-cyan)' }} />
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#1B4EF5' }} />
                   )}
                 </button>
 
@@ -560,13 +301,13 @@ function ProductsContent() {
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 6,
-                      padding: '3px 8px',
-                      background: 'rgba(110, 58, 255, 0.15)',
-                      border: '1px solid rgba(110, 58, 255, 0.3)',
-                      borderRadius: 4,
+                      padding: '4px 10px',
+                      background: 'rgba(27, 78, 245, 0.16)',
+                      border: '1px solid rgba(27, 78, 245, 0.35)',
+                      borderRadius: 'var(--radius-sm)',
                       fontSize: 12,
                       fontWeight: 700,
-                      color: 'var(--color-primary-light)',
+                      color: '#3874FF',
                     }}
                   >
                     Category: {activeCategory?.name || filters.category}
@@ -586,46 +327,42 @@ function ProductsContent() {
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 6,
-                      padding: '3px 8px',
+                      padding: '4px 10px',
                       background: 'rgba(16, 185, 129, 0.15)',
-                      border: '1px solid rgba(16, 185, 129, 0.3)',
-                      borderRadius: 4,
+                      border: '1px solid rgba(16, 185, 129, 0.35)',
+                      borderRadius: 'var(--radius-sm)',
                       fontSize: 12,
                       fontWeight: 700,
-                      color: '#10b981',
+                      color: '#10B981',
                     }}
                   >
                     Budget: {filters.min_price ? format(filters.min_price) : format(0)} – {filters.max_price ? format(filters.max_price) : 'Any'}
                     <span
                       className="icon icon--sm"
                       style={{ cursor: 'pointer', fontSize: 14 }}
-                      onClick={() => {
-                        setFilters((f) => ({ ...f, min_price: '', max_price: '' }));
-                        setCustomMinPrice('');
-                        setCustomMaxPrice('');
-                      }}
+                      onClick={() => setFilters((f) => ({ ...f, min_price: '', max_price: '' }))}
                     >
                       close
                     </span>
                   </span>
                 )}
 
-                {filters.stock_status !== 'all' && (
+                {filters.stock_status && filters.stock_status !== 'all' && (
                   <span
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 6,
-                      padding: '3px 8px',
-                      background: 'rgba(0, 212, 255, 0.15)',
-                      border: '1px solid rgba(0, 212, 255, 0.3)',
-                      borderRadius: 4,
+                      padding: '4px 10px',
+                      background: 'rgba(56, 116, 255, 0.15)',
+                      border: '1px solid rgba(56, 116, 255, 0.35)',
+                      borderRadius: 'var(--radius-sm)',
                       fontSize: 12,
                       fontWeight: 700,
-                      color: 'var(--color-cyan)',
+                      color: '#3874FF',
                     }}
                   >
-                    Status: {filters.stock_status}
+                    Stock: {filters.stock_status}
                     <span
                       className="icon icon--sm"
                       style={{ cursor: 'pointer', fontSize: 14 }}
@@ -642,13 +379,13 @@ function ProductsContent() {
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 6,
-                      padding: '3px 8px',
+                      padding: '4px 10px',
                       background: 'rgba(245, 158, 11, 0.15)',
-                      border: '1px solid rgba(245, 158, 11, 0.3)',
-                      borderRadius: 4,
+                      border: '1px solid rgba(245, 158, 11, 0.35)',
+                      borderRadius: 'var(--radius-sm)',
                       fontSize: 12,
                       fontWeight: 700,
-                      color: '#f59e0b',
+                      color: '#F59E0B',
                     }}
                   >
                     Featured Only
@@ -668,13 +405,13 @@ function ProductsContent() {
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 6,
-                      padding: '3px 8px',
-                      background: 'rgba(0, 212, 255, 0.15)',
-                      border: '1px solid rgba(0, 212, 255, 0.3)',
-                      borderRadius: 4,
+                      padding: '4px 10px',
+                      background: 'rgba(27, 78, 245, 0.16)',
+                      border: '1px solid rgba(27, 78, 245, 0.35)',
+                      borderRadius: 'var(--radius-sm)',
                       fontSize: 12,
                       fontWeight: 700,
-                      color: 'var(--color-cyan)',
+                      color: '#3874FF',
                     }}
                   >
                     "{filters.search}"
@@ -693,7 +430,7 @@ function ProductsContent() {
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: '#ef4444',
+                    color: '#EF4444',
                     fontSize: 12,
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -727,7 +464,7 @@ function ProductsContent() {
                   background: 'var(--color-surface)',
                   border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-xl)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                  boxShadow: 'var(--shadow-md)',
                 }}
               >
                 <div
@@ -735,12 +472,12 @@ function ProductsContent() {
                     width: 64,
                     height: 64,
                     borderRadius: '50%',
-                    background: 'rgba(110, 58, 255, 0.1)',
+                    background: 'rgba(27, 78, 245, 0.12)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 16px auto',
-                    color: 'var(--color-primary-light)',
+                    color: '#1B4EF5',
                   }}
                 >
                   <span className="icon icon--xl">search_off</span>
@@ -749,7 +486,7 @@ function ProductsContent() {
                   No matching products found
                 </h3>
                 <p style={{ color: 'var(--color-text-muted)', fontSize: 13, margin: '0 0 20px 0', maxWidth: 400, marginInline: 'auto' }}>
-                  We couldn't find any items matching your selected category or price budget. Try widening your price range or resetting filters.
+                  We couldn't find any items matching your selected category or price budget. Try widening your price range or clearing active filters.
                 </p>
                 <button className="btn btn--primary btn--md" onClick={handleResetFilters} style={{ gap: 6 }}>
                   <span className="icon icon--sm">restart_alt</span>
@@ -826,7 +563,8 @@ function ProductsContent() {
             position: 'fixed',
             inset: 0,
             background: 'rgba(0,0,0,0.7)',
-            backdropFilter: 'blur(5px)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
             zIndex: 9999,
             display: 'flex',
             justifyContent: 'flex-start',
@@ -835,23 +573,45 @@ function ProductsContent() {
         >
           <div
             style={{
-              width: '85%',
-              maxWidth: 340,
+              width: '88%',
+              maxWidth: 360,
               height: '100%',
               background: 'var(--color-surface)',
               borderRight: '1px solid var(--color-border)',
-              padding: 24,
+              padding: '24px 20px',
               overflowY: 'auto',
-              animation: 'slideInLeft 0.25s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-              <button onClick={() => setMobileFilterOpen(false)} className="btn btn--ghost btn--sm">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 800 }}>Store Filters</span>
+              <button onClick={() => setMobileFilterOpen(false)} className="btn btn--ghost btn--sm btn--icon">
                 <span className="icon icon--sm">close</span>
               </button>
             </div>
-            <FilterSidebarContent />
+            
+            <ProductFiltersSidebar
+              categories={categories}
+              filters={filters}
+              setFilters={(fn) => {
+                setFilters(fn);
+                setPage(1);
+              }}
+              onReset={handleResetFilters}
+              totalProducts={total}
+              onCloseMobile={() => setMobileFilterOpen(false)}
+            />
+
+            <button
+              onClick={() => setMobileFilterOpen(false)}
+              className="btn btn--primary btn--full"
+              style={{ marginTop: 'auto', padding: '12px 0', borderRadius: 'var(--radius-md)' }}
+            >
+              Show {total} Products
+            </button>
           </div>
         </div>
       )}
