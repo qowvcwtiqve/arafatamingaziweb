@@ -49,7 +49,6 @@ export default function ProductCard({ product: p }) {
   const ratingVariations = ['4.9', '4.8', '4.9', '4.7', '5.0', '4.8'];
   const ratingValue = ratingVariations[charCodeSum % ratingVariations.length];
   const reviewsCount = 42 + (charCodeSum % 150);
-  const soldCount = 150 + (charCodeSum % 420);
 
   const imageUrl = p.images?.[0] || p.website_meta?.images?.[0];
   const hasImage = Boolean(imageUrl && !imgError);
@@ -57,7 +56,7 @@ export default function ProductCard({ product: p }) {
   return (
     <Link href={`/products/${p.slug || p.id}`} className="marketplace-card-link">
       <div className="marketplace-card">
-        {/* 1. Interactive Media Showcase */}
+        {/* 1. Media Showcase Box */}
         <div className="marketplace-card__media">
           {hasImage ? (
             <div className="marketplace-card__img-wrap">
@@ -77,21 +76,22 @@ export default function ProductCard({ product: p }) {
             />
           )}
 
-          {/* Floating Badges */}
+          {/* Top Floating Badges */}
           <div className="marketplace-card__badges-left">
             {discount ? (
               <span className="market-badge market-badge--discount">
-                <span className="icon icon--filled" style={{ fontSize: 11 }}>local_fire_department</span>
-                <span>-{discount}% OFF</span>
+                <span className="icon icon--filled" style={{ fontSize: 10 }}>local_fire_department</span>
+                <span className="market-badge__desktop-text">-{discount}% OFF</span>
+                <span className="market-badge__mobile-text">-{discount}%</span>
               </span>
             ) : isPreorder ? (
               <span className="market-badge market-badge--preorder">
-                <span className="icon icon--filled" style={{ fontSize: 11 }}>rocket_launch</span>
-                <span>PRE-ORDER</span>
+                <span className="icon icon--filled" style={{ fontSize: 10 }}>rocket_launch</span>
+                <span>Pre-Order</span>
               </span>
             ) : displayBadge ? (
               <span className="market-badge market-badge--featured">
-                <span className="icon icon--filled" style={{ fontSize: 11 }}>verified</span>
+                <span className="icon icon--filled" style={{ fontSize: 10 }}>verified</span>
                 <span>{displayBadge}</span>
               </span>
             ) : null}
@@ -103,20 +103,25 @@ export default function ProductCard({ product: p }) {
             <span className="rating-glass__count">({reviewsCount})</span>
           </div>
 
-          {/* Bottom Overlay Pill on Media */}
+          {/* Delivery Overlay Pill */}
           <div className="marketplace-card__delivery-overlay">
             <span className={`delivery-dot ${isPreorder ? 'delivery-dot--blue' : 'delivery-dot--green'}`} />
-            <span>{isPreorder ? 'Pre-Order Dispatch' : 'Instant Key Delivery'}</span>
+            <span className="delivery-overlay__desktop-text">
+              {isPreorder ? 'Pre-Order Dispatch' : 'Instant Key Delivery'}
+            </span>
+            <span className="delivery-overlay__mobile-text">
+              {isPreorder ? 'Pre-Order' : 'Instant Key'}
+            </span>
           </div>
         </div>
 
-        {/* 2. Rich Content Details */}
+        {/* 2. Body Details */}
         <div className="marketplace-card__body">
           {/* Category & Region */}
           <div className="marketplace-card__category-row">
             <span className="marketplace-card__cat-label">{displayCategory}</span>
             <span className="marketplace-card__region-label">
-              <span className="icon" style={{ fontSize: 11 }}>public</span>
+              <span className="icon" style={{ fontSize: 10 }}>public</span>
               GLOBAL
             </span>
           </div>
@@ -126,22 +131,23 @@ export default function ProductCard({ product: p }) {
             {displayTitle}
           </h3>
 
-          {/* Feature Highlights Pills */}
+          {/* Trust Highlights Mini-Row */}
           <div className="marketplace-card__features-row">
             <span className="feature-mini-pill">
               <span className="icon icon--filled feature-mini-icon">verified_user</span>
               Warranty
             </span>
-            <span className="feature-mini-pill">
+            <span className="feature-mini-pill feature-mini-pill--hide-mobile">
               <span className="icon icon--filled feature-mini-icon">bolt</span>
               Auto-Dispatch
             </span>
-            <span className="feature-mini-pill feature-mini-pill--sold">
-              {soldCount}+ Sold
+            <span className="feature-mini-pill feature-mini-pill--accent">
+              <span className="icon icon--filled feature-mini-icon" style={{ color: '#3874FF' }}>shield</span>
+              Genuine
             </span>
           </div>
 
-          {/* Price & Buy Action Box */}
+          {/* Price & Action Section */}
           <div className="marketplace-card__action-box">
             <div className="marketplace-card__price-section">
               <div className="marketplace-card__price-row">

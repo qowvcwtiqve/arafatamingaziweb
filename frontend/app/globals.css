@@ -2470,6 +2470,16 @@ select option, select optgroup {
   gap: 4px;
 }
 
+.market-badge__mobile-text,
+.delivery-overlay__mobile-text {
+  display: none;
+}
+
+.market-badge__desktop-text,
+.delivery-overlay__desktop-text {
+  display: inline;
+}
+
 .market-badge, .pro-pill, .badge-pill {
   padding: 3px 8px;
   border-radius: 9999px;
@@ -4864,31 +4874,76 @@ select option, select optgroup {
     padding: 10px !important;
   }
 
+  .market-badge__desktop-text,
+  .delivery-overlay__desktop-text,
+  .rating-glass__count,
+  .feature-mini-pill--hide-mobile {
+    display: none !important;
+  }
+
+  .market-badge__mobile-text,
+  .delivery-overlay__mobile-text {
+    display: inline !important;
+  }
+
+  .marketplace-card__badges-left {
+    top: 6px !important;
+    left: 6px !important;
+  }
+
+  .marketplace-card__rating-glass {
+    top: 6px !important;
+    right: 6px !important;
+    padding: 2px 6px !important;
+    font-size: 10px !important;
+  }
+
+  .market-badge {
+    padding: 2.5px 6px !important;
+    font-size: 9.5px !important;
+  }
+
+  .marketplace-card__delivery-overlay {
+    bottom: 6px !important;
+    left: 6px !important;
+    right: 6px !important;
+    padding: 2.5px 6px !important;
+    font-size: 9px !important;
+  }
+
   .marketplace-card__body, .pro-card__body, .product-card__content-box {
-    padding: 10px 10px 12px !important;
+    padding: 8px 10px 10px !important;
   }
 
   .marketplace-card__title, .pro-card__title, .product-card__clean-title {
-    font-size: 13px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    max-height: 34px !important;
+    font-size: 12.5px !important;
+    height: 33px !important;
+    min-height: 33px !important;
+    max-height: 33px !important;
     line-height: 1.3 !important;
-    margin-bottom: 6px !important;
+    margin-bottom: 4px !important;
   }
 
   .marketplace-card__features-row {
     margin-bottom: 6px !important;
     gap: 3px !important;
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
   }
 
   .feature-mini-pill {
-    font-size: 9px !important;
+    font-size: 8.5px !important;
     padding: 1.5px 4px !important;
+    white-space: nowrap !important;
+  }
+
+  .marketplace-card__action-box {
+    gap: 6px !important;
+    padding-top: 6px !important;
   }
 
   .marketplace-card__current-price, .pro-card__price, .product-card__current-price {
-    font-size: 15.5px !important;
+    font-size: 15px !important;
   }
 
   .marketplace-card__old-price, .pro-card__old-price, .product-card__old-price {
@@ -4896,7 +4951,7 @@ select option, select optgroup {
   }
 
   .marketplace-card__save-badge {
-    font-size: 9px !important;
+    font-size: 8.5px !important;
     padding: 1.5px 4px !important;
   }
 
@@ -4920,13 +4975,42 @@ select option, select optgroup {
     gap: 8px !important;
   }
 
-  .product-card {
+  .marketplace-card, .pro-card, .product-card {
     border-radius: 10px !important;
   }
 
-  .footer-main-grid {
-    grid-template-columns: 1fr !important;
-    gap: 20px !important;
+  .marketplace-card__img-wrap, .pro-card__img-box, .product-card__img-wrap {
+    padding: 8px !important;
+  }
+
+  .marketplace-card__body, .pro-card__body, .product-card__content-box {
+    padding: 6px 8px 8px !important;
+  }
+
+  .marketplace-card__title, .pro-card__title, .product-card__clean-title {
+    font-size: 12px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    line-height: 1.3 !important;
+  }
+
+  .marketplace-card__current-price, .pro-card__price, .product-card__current-price {
+    font-size: 14px !important;
+  }
+
+  .marketplace-card__old-price, .pro-card__old-price, .product-card__old-price {
+    font-size: 10px !important;
+  }
+
+  .marketplace-card__buy-btn, .pro-card__btn, .product-card__add-btn {
+    height: 32px !important;
+    font-size: 11px !important;
+    padding: 0 6px !important;
+  }
+
+  .buy-btn__text, .pro-card__btn-label, .product-card__add-btn-text {
+    font-size: 11px !important;
   }
 
   .footer-brand-section {
