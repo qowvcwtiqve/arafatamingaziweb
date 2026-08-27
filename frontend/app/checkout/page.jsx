@@ -73,10 +73,11 @@ function CheckoutContent() {
   const cfStatus = searchParams ? searchParams.get('cf_status') : null;
   const queryOrderId = searchParams ? searchParams.get('order_id') : null;
 
-  const subtotal = items.reduce((s, i) => s + (parseFloat(i.price) * (i.quantity || 1)), 0);
+  const subtotal = (items || []).reduce((s, i) => s + (parseFloat(i.price || 0) * (i.quantity || 1)), 0);
   const total = Math.max(0, subtotal - couponDiscount);
 
   const [mounted, setMounted] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
