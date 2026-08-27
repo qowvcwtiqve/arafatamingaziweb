@@ -1,10 +1,14 @@
 'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCartStore } from '../../store/cartStore';
 import { useCurrency } from '../../store/currencyStore';
 import Link from 'next/link';
 import ProductIconBanner from '../../components/product/ProductIconBanner';
 
 export default function CartPage() {
+  const router = useRouter();
+  const [agreed, setAgreed] = useState(false);
   const { format } = useCurrency();
   const { items, removeItem, updateQuantity } = useCartStore(s => ({
     items: s.items,
@@ -13,6 +17,12 @@ export default function CartPage() {
   }));
 
   const subtotal = items.reduce((sum, i) => sum + (parseFloat(i.price) * (i.quantity || 1)), 0);
+
+  const handleProceedCheckout = (e) => {
+    e.preventDefault();
+    if (!agreed) return;
+    router.push('/checkout');
+  };
 
   return (
     <div style={{ paddingTop: 'calc(var(--header-height) + 30px)', paddingBottom: 90 }}>
@@ -200,14 +210,50 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <Link
-                  href="/checkout"
-                  className="btn btn--primary btn--full btn--lg"
-                  style={{ gap: 8, boxShadow: 'var(--shadow-glow)', marginBottom: 16 }}
+                {/* Mandatory Digital Refund Agreement Checkbox */}
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 8,
+                  marginBottom: 16,
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  color: 'var(--color-text-muted)',
+                  lineHeight: 1.4,
+                  userSelect: 'none',
+                  background: agreed ? 'rgba(27, 78, 245, 0.05)' : 'var(--color-surface-2)',
+                  padding: '10px 12px',
+                  borderRadius: '10px',
+                  border: agreed ? '1px solid rgba(27, 78, 245, 0.3)' : '1px solid var(--color-border)',
+                  transition: 'all 0.2s ease'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    style={{ marginTop: 2, accentColor: '#1B4EF5', cursor: 'pointer', width: 16, height: 16, flexShrink: 0 }}
+                  />
+                  <span>
+                    I acknowledge that I am purchasing intangible digital goods &amp; agree to the <Link href="/terms" style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Terms of Service</Link> &amp; <Link href="/refund" style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Refund Policy</Link> (Non-refundable once delivered).
+                  </span>
+                </label>
+
+                <button
+                  type="button"
+                  disabled={!agreed}
+                  onClick={handleProceedCheckout}
+                  className={`btn btn--primary btn--full btn--lg ${!agreed ? 'btn--disabled' : ''}`}
+                  style={{
+                    gap: 8,
+                    marginBottom: 16,
+                    opacity: agreed ? 1 : 0.45,
+                    cursor: agreed ? 'pointer' : 'not-allowed',
+                    boxShadow: agreed ? 'var(--shadow-glow)' : 'none'
+                  }}
                 >
                   <span className="icon icon--md icon--filled">bolt</span>
                   <span>Proceed to Checkout</span>
-                </Link>
+                </button>
 
                 <div style={{
                   padding: 14, background: 'var(--color-surface-2)', borderRadius: 'var(--radius-md)',

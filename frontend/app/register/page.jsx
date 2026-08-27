@@ -9,16 +9,18 @@ export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuthStore();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!agreed) return toast.error('Please agree to the Terms of Service & Privacy Policy');
     if (form.password !== form.confirm) return toast.error('Passwords do not match');
     if (form.password.length < 6) return toast.error('Password must be at least 6 characters');
     setLoading(true);
     try {
       await register(form.name, form.email, form.password);
-      toast.success('Account created! Welcome to QuantumXD Store');
+      toast.success('Account created! Welcome to QuantumXD');
       router.push('/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Registration failed');
@@ -77,7 +79,40 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button type="submit" className="btn btn--primary btn--full" style={{ marginTop: 4 }} disabled={loading}>
+            {/* Terms and Privacy Agreement */}
+            <label style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 8,
+              marginTop: 4,
+              cursor: 'pointer',
+              fontSize: 12,
+              color: 'var(--color-text-muted)',
+              lineHeight: 1.45,
+              userSelect: 'none'
+            }}>
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                style={{ marginTop: 2, accentColor: '#1B4EF5', cursor: 'pointer', width: 16, height: 16, flexShrink: 0 }}
+                required
+              />
+              <span>
+                I agree to the <Link href="/terms" target="_blank" style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Terms of Service</Link> and <Link href="/privacy" target="_blank" style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Privacy Policy</Link>.
+              </span>
+            </label>
+
+            <button
+              type="submit"
+              className="btn btn--primary btn--full"
+              style={{
+                marginTop: 8,
+                opacity: agreed ? 1 : 0.5,
+                cursor: agreed ? 'pointer' : 'not-allowed'
+              }}
+              disabled={loading || !agreed}
+            >
               {loading ? 'Creating account...' : (
                 <><span className="icon icon--sm">person_add</span> Create Account</>
               )}

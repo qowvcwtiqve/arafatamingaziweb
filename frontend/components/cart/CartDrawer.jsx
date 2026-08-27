@@ -1,10 +1,14 @@
 'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCartStore } from '../../store/cartStore';
 import { useCurrency } from '../../store/currencyStore';
 import Link from 'next/link';
 import ProductIconBanner from '../product/ProductIconBanner';
 
 export default function CartDrawer({ open, onClose }) {
+  const router = useRouter();
+  const [agreed, setAgreed] = useState(false);
   const { format } = useCurrency();
   const { items, removeItem, updateQuantity, total } = useCartStore(s => ({
     items: s.items,
@@ -14,6 +18,13 @@ export default function CartDrawer({ open, onClose }) {
   }));
 
   if (!open) return null;
+
+  const handleProceedCheckout = (e) => {
+    e.preventDefault();
+    if (!agreed) return;
+    onClose();
+    router.push('/checkout');
+  };
 
   return (
     <>
@@ -181,33 +192,70 @@ export default function CartDrawer({ open, onClose }) {
         {/* Footer */}
         {items.length > 0 && (
           <div className="cart-drawer__footer" style={{
-            padding: '20px 24px',
+            padding: '18px 22px',
             borderTop: '1px solid var(--color-border)',
             background: 'var(--color-surface)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div>
                 <span style={{ fontSize: 13, color: 'var(--color-text-faint)' }}>Total Amount</span>
                 <div style={{ fontSize: 11, color: 'var(--color-cyan)', fontWeight: 600 }}>Automated Dispatch</div>
               </div>
-              <span style={{ fontFamily: 'var(--font-heading)', fontSize: 24, fontWeight: 800, color: 'var(--color-accent)' }}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 800, color: 'var(--color-accent)' }}>
                 {format(total)}
               </span>
             </div>
 
-            <Link
-              href="/checkout"
-              className="btn btn--primary btn--full btn--lg"
-              onClick={onClose}
-              style={{ gap: 8, boxShadow: 'var(--shadow-glow)' }}
+            {/* Mandatory Digital Refund Agreement Checkbox */}
+            <label style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 8,
+              marginBottom: 12,
+              cursor: 'pointer',
+              fontSize: 11.5,
+              color: 'var(--color-text-muted)',
+              lineHeight: 1.4,
+              userSelect: 'none',
+              background: agreed ? 'rgba(27, 78, 245, 0.05)' : 'var(--color-surface-2)',
+              padding: '8px 10px',
+              borderRadius: '8px',
+              border: agreed ? '1px solid rgba(27, 78, 245, 0.3)' : '1px solid var(--color-border)',
+              transition: 'all 0.2s ease'
+            }}>
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                style={{ marginTop: 2, accentColor: '#1B4EF5', cursor: 'pointer', width: 15, height: 15, flexShrink: 0 }}
+              />
+              <span>
+                I agree to the <Link href="/terms" onClick={onClose} style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Terms</Link> &amp; <Link href="/refund" onClick={onClose} style={{ color: '#1B4EF5', textDecoration: 'underline', fontWeight: 600 }}>Refund Policy</Link> (Digital goods are non-refundable once delivered).
+              </span>
+            </label>
+
+            <button
+              type="button"
+              disabled={!agreed}
+              onClick={handleProceedCheckout}
+              className={`btn btn--primary btn--full ${!agreed ? 'btn--disabled' : ''}`}
+              style={{
+                gap: 8,
+                height: 46,
+                fontSize: 14.5,
+                fontWeight: 700,
+                opacity: agreed ? 1 : 0.45,
+                cursor: agreed ? 'pointer' : 'not-allowed',
+                boxShadow: agreed ? 'var(--shadow-glow)' : 'none'
+              }}
             >
               <span className="icon icon--md icon--filled">bolt</span>
               <span>Proceed to Checkout</span>
-            </Link>
+            </button>
 
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: 12, marginTop: 12, fontSize: 11, color: 'var(--color-text-faint)'
+              gap: 12, marginTop: 10, fontSize: 11, color: 'var(--color-text-faint)'
             }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span className="icon icon--sm icon--cyan">bolt</span> Instant Delivery

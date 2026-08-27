@@ -5,23 +5,35 @@ import Link from 'next/link';
 const FAQS = [
   {
     q: 'How does digital product delivery work?',
-    a: 'Immediately after your payment is confirmed (via UPI, NowPayments Crypto, or Binance Pay), your product will be displayed directly on screen, saved to your account dashboard under "My Downloads", and sent to your email with a secure download token.',
+    a: 'Immediately after your payment is confirmed (via UPI, NowPayments Crypto, or Binance Pay), your license keys, credentials, or download links will be displayed directly on your screen, saved to your account dashboard under "My Orders", and sent to your email with a secure access token.',
+  },
+  {
+    q: 'Why are digital products non-refundable once delivered?',
+    a: 'Unlike physical goods, digital license keys, accounts, and private credentials are exposed and usable immediately upon delivery. Because a digital key cannot be physically returned or un-seen, all delivered sales are final and non-refundable.',
+  },
+  {
+    q: 'What if a key or credential does not work upon delivery?',
+    a: 'If a license key is invalid or defective, our support team will test and provide a working replacement within 24 hours. If a replacement is unavailable, we will issue a 100% refund directly to your QuantumXD Store Wallet.',
+  },
+  {
+    q: 'How does the Store Wallet work for refunds and balances?',
+    a: 'Any approved refund, deposit, or promotional credit is added to your Store Wallet. Wallet balance never expires and can be used with 1-click instant checkout across any item in our store. Wallet funds cannot be withdrawn to external bank accounts.',
+  },
+  {
+    q: 'What happens if a user initiates a chargeback or bank dispute?',
+    a: 'We maintain a strict zero-tolerance policy against fraudulent chargebacks and friendly fraud. Any unauthorized payment dispute results in immediate permanent account termination, revocation of all purchased digital licenses, and blacklisting across merchant fraud networks.',
   },
   {
     q: 'What payment methods do you accept?',
-    a: 'We accept Indian UPI (GPay, PhonePe, Paytm, BHIM) with automatic instant verification, all major Cryptocurrencies via NowPayments (BTC, ETH, USDT, LTC, SOL, etc.), and Binance Pay with manual transaction ID validation.',
+    a: 'We accept Indian UPI (GPay, PhonePe, Paytm, BHIM) with automatic instant QR verification, all major Cryptocurrencies via NowPayments (BTC, ETH, USDT, LTC, SOL, etc.), Binance Pay, and QuantumXD Store Wallet Balance.',
   },
   {
     q: 'How does UPI payment verification work?',
-    a: 'Our checkout generates a unique fingerprinted amount with exact paise (e.g. ₹499.37). You simply scan the QR code and pay that exact amount. Our backend automatically detects the receipt from the payment gateway within 1-2 minutes and unlocks your order.',
+    a: 'Our checkout generates a dynamic UPI QR code. You simply scan with any UPI app and pay the exact amount. Our backend automatically detects the receipt from the payment gateway within 1-2 minutes and unlocks your order.',
   },
   {
-    q: 'Can I download my purchased files multiple times?',
-    a: 'Yes! Download links are active for 30 days and allow up to 5 downloads per item. If you ever need your link refreshed, you can access it anytime from your dashboard or contact our support team.',
-  },
-  {
-    q: 'What if I pay the wrong UPI amount?',
-    a: 'If you paid a rounded or different amount, the automated system might not link it automatically. Simply reach out to our Telegram support with your Transaction Reference ID / screenshot and our team will credit your wallet manually within minutes.',
+    q: 'Can I cancel a pre-order?',
+    a: 'Yes! Pre-orders in the processing queue can be cancelled at any time before key dispatch begins. When cancelled, 100% of the purchase amount is instantly refunded to your Store Wallet.',
   },
 ];
 
