@@ -2623,6 +2623,13 @@ select option, select optgroup {
   gap: 5px;
 }
 
+.pcard__stars-svg {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  line-height: 1;
+}
+
 .pcard__stars {
   color: #f59e0b;
   font-size: 11px;
