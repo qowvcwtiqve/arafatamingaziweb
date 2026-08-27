@@ -615,64 +615,88 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              {/* CTAs Row */}
-              <div className="pro-cta-row">
-                {!isOutOfStock && (
-                  <div className="pro-qty-stepper">
-                    <button
-                      type="button"
-                      className="pro-qty-btn"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      aria-label="Decrease quantity"
-                    >
-                      <span className="icon icon--sm">remove</span>
-                    </button>
-                    <span className="pro-qty-num">{quantity}</span>
-                    <button
-                      type="button"
-                      className="pro-qty-btn"
-                      onClick={() => setQuantity(quantity + 1)}
-                      aria-label="Increase quantity"
-                    >
-                      <span className="icon icon--sm">add</span>
-                    </button>
-                  </div>
-                )}
-
+              {/* CTAs Container */}
+              <div className="pro-cta-container">
                 {isPreorder ? (
-                  <button
-                    type="button"
-                    className="pro-btn-buy"
-                    onClick={handleBuyNow}
-                    style={{ flex: 1 }}
-                  >
-                    <span className="icon icon--sm icon--filled">rocket_launch</span>
-                    <span>Pre-Order Now ({format(price * quantity)})</span>
-                  </button>
-                ) : isOutOfStock ? (
-                  <button type="button" className="btn btn--outline" disabled style={{ flex: 1, height: 48, opacity: 0.5 }}>
-                    <span className="icon icon--sm">do_not_disturb</span>
-                    <span>Currently Out of Stock</span>
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      className="pro-btn-cart"
-                      onClick={handleAddToCart}
-                    >
-                      <span className="icon icon--sm">shopping_cart</span>
-                      <span>Add to Cart</span>
-                    </button>
+                  /* Pre-Order: Exactly 2 items side-by-side (Stepper + Pre-Order Button) */
+                  <div className="pro-cta-row-2">
+                    <div className="pro-qty-stepper">
+                      <button
+                        type="button"
+                        className="pro-qty-btn"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        aria-label="Decrease quantity"
+                      >
+                        <span className="icon icon--sm">remove</span>
+                      </button>
+                      <span className="pro-qty-num">{quantity}</span>
+                      <button
+                        type="button"
+                        className="pro-qty-btn"
+                        onClick={() => setQuantity(quantity + 1)}
+                        aria-label="Increase quantity"
+                      >
+                        <span className="icon icon--sm">add</span>
+                      </button>
+                    </div>
+
                     <button
                       type="button"
                       className="pro-btn-buy"
                       onClick={handleBuyNow}
                     >
+                      <span className="icon icon--sm icon--filled">rocket_launch</span>
+                      <span>Pre-Order Now ({format(price * quantity)})</span>
+                    </button>
+                  </div>
+                ) : isOutOfStock ? (
+                  <button type="button" className="btn btn--outline" disabled style={{ width: '100%', height: 48, opacity: 0.5 }}>
+                    <span className="icon icon--sm">do_not_disturb</span>
+                    <span>Currently Out of Stock</span>
+                  </button>
+                ) : (
+                  /* In-Stock: Row 1 (Stepper + Add to Cart), Row 2 (Buy Now) */
+                  <div className="pro-cta-stack">
+                    <div className="pro-cta-row-2">
+                      <div className="pro-qty-stepper">
+                        <button
+                          type="button"
+                          className="pro-qty-btn"
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          aria-label="Decrease quantity"
+                        >
+                          <span className="icon icon--sm">remove</span>
+                        </button>
+                        <span className="pro-qty-num">{quantity}</span>
+                        <button
+                          type="button"
+                          className="pro-qty-btn"
+                          onClick={() => setQuantity(quantity + 1)}
+                          aria-label="Increase quantity"
+                        >
+                          <span className="icon icon--sm">add</span>
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="pro-btn-cart"
+                        onClick={handleAddToCart}
+                      >
+                        <span className="icon icon--sm">shopping_cart</span>
+                        <span>Add to Cart</span>
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="pro-btn-buy pro-btn-buy--full"
+                      onClick={handleBuyNow}
+                    >
                       <span className="icon icon--sm icon--filled">bolt</span>
                       <span>Buy Now</span>
                     </button>
-                  </>
+                  </div>
                 )}
               </div>
 
