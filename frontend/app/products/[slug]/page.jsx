@@ -462,10 +462,10 @@ export default function ProductDetailPage() {
 
               {/* Rating & Social Proof Bar */}
               <div className="pro-rating-bar">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div className="pro-rating-group">
                   <div className="pro-rating-stars">
                     {[1, 2, 3, 4, 5].map(s => (
-                      <span key={s} className="icon icon--filled" style={{ fontSize: 14 }}>star</span>
+                      <span key={s} className="icon icon--filled" style={{ fontSize: 13 }}>star</span>
                     ))}
                   </div>
                   <span className="pro-rating-score">{ratingValue}</span>
@@ -476,11 +476,11 @@ export default function ProductDetailPage() {
                     ({totalReviewsCount} reviews)
                   </span>
                 </div>
-                <span style={{ color: 'var(--color-text-faint)' }}>•</span>
-                <span className="pro-sales-tag">
+
+                <div className="pro-sales-tag">
                   <span className="pro-pulse-dot" />
-                  {totalSoldCount}+ Items Delivered
-                </span>
+                  <span>{totalSoldCount}+ Delivered</span>
+                </div>
               </div>
 
               {/* Hero Price Box */}
