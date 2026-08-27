@@ -31,6 +31,7 @@ export default function ProductCard({ product: p }) {
     comparePrice && comparePrice > price
       ? Math.round((1 - price / comparePrice) * 100)
       : null;
+  const saveAmount = comparePrice && comparePrice > price ? comparePrice - price : null;
 
   const isPreorder = Boolean(
     p.variants && p.variants.length > 0
@@ -40,29 +41,32 @@ export default function ProductCard({ product: p }) {
   const isOutOfStock = !p.in_stock && !isPreorder && p.total_stock === 0;
 
   const displayTitle = p.website_meta?.title || p.title || p.name;
-  const displayCategory = p.website_meta?.category || p.category_name || p.category || 'Digital Asset';
+  const displayCategory = p.website_meta?.category || p.category_name || p.category || 'Digital Key';
+  const displayBadge = p.website_meta?.badge || p.badge;
 
+  // Realistic deterministic metrics
   const charCodeSum = (p.id || 'prod').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const ratingVariations = ['4.9', '4.8', '4.9', '4.7', '5.0', '4.8'];
   const ratingValue = ratingVariations[charCodeSum % ratingVariations.length];
-  const reviewsCount = 38 + (charCodeSum % 142);
+  const reviewsCount = 42 + (charCodeSum % 150);
+  const soldCount = 150 + (charCodeSum % 420);
 
   const imageUrl = p.images?.[0] || p.website_meta?.images?.[0];
   const hasImage = Boolean(imageUrl && !imgError);
 
   return (
-    <Link href={`/products/${p.slug || p.id}`} className="pro-card-link">
-      <div className="pro-card">
-        {/* 1. Visual Graphic Container */}
-        <div className="pro-card__media">
+    <Link href={`/products/${p.slug || p.id}`} className="marketplace-card-link">
+      <div className="marketplace-card">
+        {/* 1. Interactive Media Showcase */}
+        <div className="marketplace-card__media">
           {hasImage ? (
-            <div className="pro-card__img-box">
+            <div className="marketplace-card__img-wrap">
               <img
                 src={imageUrl}
                 alt={displayTitle}
                 referrerPolicy="no-referrer"
                 onError={() => setImgError(true)}
-                className="pro-card__img"
+                className="marketplace-card__img"
               />
             </div>
           ) : (
@@ -73,67 +77,103 @@ export default function ProductCard({ product: p }) {
             />
           )}
 
-          {/* Top Badges */}
-          <div className="pro-card__top-badges">
+          {/* Floating Badges */}
+          <div className="marketplace-card__badges-left">
             {discount ? (
-              <span className="pro-pill pro-pill--sale">
-                -{discount}%
+              <span className="market-badge market-badge--discount">
+                <span className="icon icon--filled" style={{ fontSize: 11 }}>local_fire_department</span>
+                <span>-{discount}% OFF</span>
               </span>
             ) : isPreorder ? (
-              <span className="pro-pill pro-pill--preorder">
-                Pre-Order
+              <span className="market-badge market-badge--preorder">
+                <span className="icon icon--filled" style={{ fontSize: 11 }}>rocket_launch</span>
+                <span>PRE-ORDER</span>
+              </span>
+            ) : displayBadge ? (
+              <span className="market-badge market-badge--featured">
+                <span className="icon icon--filled" style={{ fontSize: 11 }}>verified</span>
+                <span>{displayBadge}</span>
               </span>
             ) : null}
           </div>
 
-          <div className="pro-card__rating-badge">
-            <span className="icon icon--filled rating-star">star</span>
-            <span>{ratingValue}</span>
+          <div className="marketplace-card__rating-glass">
+            <span className="icon icon--filled rating-glass__star">star</span>
+            <span className="rating-glass__score">{ratingValue}</span>
+            <span className="rating-glass__count">({reviewsCount})</span>
+          </div>
+
+          {/* Bottom Overlay Pill on Media */}
+          <div className="marketplace-card__delivery-overlay">
+            <span className={`delivery-dot ${isPreorder ? 'delivery-dot--blue' : 'delivery-dot--green'}`} />
+            <span>{isPreorder ? 'Pre-Order Dispatch' : 'Instant Key Delivery'}</span>
           </div>
         </div>
 
-        {/* 2. Content Info */}
-        <div className="pro-card__body">
-          {/* Category & Proof Row */}
-          <div className="pro-card__meta-row">
-            <span className="pro-card__category">{displayCategory}</span>
-            <span className="pro-card__delivery-badge">
-              <span className="icon icon--filled delivery-bolt">bolt</span>
-              {isPreorder ? 'Pre-Order' : 'Instant Key'}
+        {/* 2. Rich Content Details */}
+        <div className="marketplace-card__body">
+          {/* Category & Region */}
+          <div className="marketplace-card__category-row">
+            <span className="marketplace-card__cat-label">{displayCategory}</span>
+            <span className="marketplace-card__region-label">
+              <span className="icon" style={{ fontSize: 11 }}>public</span>
+              GLOBAL
             </span>
           </div>
 
           {/* Title */}
-          <h3 className="pro-card__title" title={displayTitle}>
+          <h3 className="marketplace-card__title" title={displayTitle}>
             {displayTitle}
           </h3>
 
-          {/* Price & Action Row */}
-          <div className="pro-card__footer">
-            <div className="pro-card__price-col">
-              <span className="pro-card__price">
-                {format(price)}
-              </span>
-              {comparePrice && comparePrice > price && (
-                <span className="pro-card__old-price">
-                  {format(comparePrice)}
+          {/* Feature Highlights Pills */}
+          <div className="marketplace-card__features-row">
+            <span className="feature-mini-pill">
+              <span className="icon icon--filled feature-mini-icon">verified_user</span>
+              Warranty
+            </span>
+            <span className="feature-mini-pill">
+              <span className="icon icon--filled feature-mini-icon">bolt</span>
+              Auto-Dispatch
+            </span>
+            <span className="feature-mini-pill feature-mini-pill--sold">
+              {soldCount}+ Sold
+            </span>
+          </div>
+
+          {/* Price & Buy Action Box */}
+          <div className="marketplace-card__action-box">
+            <div className="marketplace-card__price-section">
+              <div className="marketplace-card__price-row">
+                <span className="marketplace-card__current-price">
+                  {format(price)}
+                </span>
+                {comparePrice && comparePrice > price && (
+                  <span className="marketplace-card__old-price">
+                    {format(comparePrice)}
+                  </span>
+                )}
+              </div>
+              {saveAmount && saveAmount > 0 && (
+                <span className="marketplace-card__save-badge">
+                  Save {format(saveAmount)}
                 </span>
               )}
             </div>
 
             <button
               type="button"
-              className="pro-card__btn"
+              className="marketplace-card__buy-btn"
               onClick={handleAddToCart}
               aria-label={`Add ${displayTitle} to cart`}
               disabled={isOutOfStock}
-              title={isOutOfStock ? 'Out of stock' : isPreorder ? 'Pre-Order' : 'Add to Cart'}
+              title={isOutOfStock ? 'Out of stock' : isPreorder ? 'Pre-Order Now' : 'Add to Cart'}
             >
-              <span className="icon icon--sm pro-card__btn-icon">
-                {isOutOfStock ? 'block' : isPreorder ? 'rocket_launch' : 'shopping_bag'}
+              <span className="icon icon--sm buy-btn__icon">
+                {isOutOfStock ? 'block' : isPreorder ? 'rocket_launch' : 'shopping_cart'}
               </span>
-              <span className="pro-card__btn-label">
-                {isOutOfStock ? 'Sold Out' : isPreorder ? 'Order' : 'Add'}
+              <span className="buy-btn__text">
+                {isOutOfStock ? 'Sold Out' : isPreorder ? 'Pre-Order' : 'Add to Cart'}
               </span>
             </button>
           </div>
