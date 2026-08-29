@@ -1,0 +1,1115 @@
+========================================================================================
+                           QUANTUMXD STORE — COMPLETE PRODUCTS LIST                    
+                          (All Active, Inactive, Bot & Web Products)                   
+                                 Total Products: 71                          
+                               Generated: 8/29/2026, 11:56:30 AM                
+========================================================================================
+
+----------------------------------------------------------------------------------------
+[#1] [TEST] All-in-One Order Tester (4 Variants)
+----------------------------------------------------------------------------------------
+  • Product ID     : p-test-all-in-one
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : c-subscriptions
+  • Price Range    : ₹1 - ₹1
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-test-all-in-one
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 🚀 Pre-Order (Queue): ₹1 (Stock: N/A)
+      - ⚡ Instant Auto Delivery: ₹1 (Stock: N/A)
+      - 🛠️ Manual Activation (Admin): ₹1 (Stock: N/A)
+      - 🔑 Limited Stock Stack (5 Keys): ₹1 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#2] Adobe Creative Cloud
+----------------------------------------------------------------------------------------
+  • Product ID     : p-adobe-cc
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹299 - ₹2999
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-adobe-cc
+  • Total Plans    : 2
+  • Plans / Variants:
+      - 12 Months: ₹2999 (Stock: N/A)
+      - 1 Month: ₹299 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#3] Adobe Express Premium
+----------------------------------------------------------------------------------------
+  • Product ID     : p-cd345e
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹199 - ₹199
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-cd345e
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 12 Months: ₹199 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#4] Aha Gold
+----------------------------------------------------------------------------------------
+  • Product ID     : p-ahagold
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹79 - ₹399
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-ahagold
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month: ₹79 (Stock: N/A)
+      - 3 Months: ₹199 (Stock: N/A)
+      - 6 Months: ₹299 (Stock: N/A)
+      - 12 Months: ₹399 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#5] Amazon Prime (Legally Paid)
+----------------------------------------------------------------------------------------
+  • Product ID     : p-primevideorb
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Legally paid services
+  • Price Range    : ₹570 - ₹2376
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-primevideorb
+  • Total Plans    : 2
+  • Plans / Variants:
+      - 1 Month: ₹570 (Stock: N/A)
+      - 12 Months: ₹2376 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#6] AMAZON PRIME FULL BENEFITS
+----------------------------------------------------------------------------------------
+  • Product ID     : p-0ada20
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹949 - ₹949
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-0ada20
+  • Total Plans    : 1
+  • Plans / Variants:
+      - AMAZON 12M PROMOCODES: ₹949 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#7] Apple Music
+----------------------------------------------------------------------------------------
+  • Product ID     : p-apple-music
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹249 - ₹249
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-apple-music
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 6 Months: ₹249 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#8] Apple Tv
+----------------------------------------------------------------------------------------
+  • Product ID     : p-848998
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹299 - ₹299
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-848998
+  • Total Plans    : 1
+  • Plans / Variants:
+      - AppleTv 6Months: ₹299 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#9] Canva Edu Panel
+----------------------------------------------------------------------------------------
+  • Product ID     : p-canva-edu
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹849 - ₹849
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-canva-edu
+  • Total Plans    : 1
+  • Plans / Variants:
+      - Lifetime Plan: ₹849 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#10] Canva Education
+----------------------------------------------------------------------------------------
+  • Product ID     : p-canvaedu
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹29 - ₹249
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-canvaedu
+  • Total Plans    : 5
+  • Plans / Variants:
+      - 1 Month: ₹29 (Stock: N/A)
+      - 3 Months: ₹69 (Stock: N/A)
+      - 6 Months: ₹129 (Stock: N/A)
+      - 12 Months: ₹179 (Stock: N/A)
+      - 24 Months: ₹249 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#11] Capcut Pro
+----------------------------------------------------------------------------------------
+  • Product ID     : p-capcut
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹199 - ₹399
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-capcut
+  • Total Plans    : 2
+  • Plans / Variants:
+      - 1 Month: ₹399 (Stock: N/A)
+      - 7 Days: ₹199 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#12] Chatgpt Go
+----------------------------------------------------------------------------------------
+  • Product ID     : p-83b85f
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : General
+  • Price Range    : ₹95 - ₹95
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-83b85f
+  • Total Plans    : 1
+  • Plans / Variants:
+      - Chatgpt Go 3months Redeem Links: ₹95 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#13] Chatgpt Plus
+----------------------------------------------------------------------------------------
+  • Product ID     : p-54681d
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Ai tools
+  • Price Range    : ₹349 - ₹1414
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-54681d
+  • Total Plans    : 2
+  • Plans / Variants:
+      - 1month (no warranty): ₹349 (Stock: N/A)
+      - 1 Month: ₹1414 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#14] Chatgpt Shared
+----------------------------------------------------------------------------------------
+  • Product ID     : p-f6f6b4
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Ai tools
+  • Price Range    : ₹299 - ₹2499
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-f6f6b4
+  • Total Plans    : 5
+  • Plans / Variants:
+      - 1 MONTHS: ₹299 (Stock: N/A)
+      - 3 MONTHS: ₹749 (Stock: N/A)
+      - 6 MONTHS: ₹1349 (Stock: N/A)
+      - 9 MONTHS: ₹1999 (Stock: N/A)
+      - 12 MONTHS: ₹2499 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#15] Chaupal
+----------------------------------------------------------------------------------------
+  • Product ID     : p-chaupal
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹49 - ₹249
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-chaupal
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month: ₹49 (Stock: N/A)
+      - 3 Months: ₹99 (Stock: N/A)
+      - 6 Months: ₹179 (Stock: N/A)
+      - 12 Months: ₹249 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#16] Coursera
+----------------------------------------------------------------------------------------
+  • Product ID     : p-coursera
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹1399 - ₹1399
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-coursera
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 12 Months: ₹1399 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#17] Crunchyroll
+----------------------------------------------------------------------------------------
+  • Product ID     : p-09a897
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹49 - ₹359
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-09a897
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month: ₹49 (Stock: N/A)
+      - 3 Months: ₹149 (Stock: N/A)
+      - 6 Months: ₹199 (Stock: N/A)
+      - 12 Months: ₹359 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#18] Crunchyroll legally paid
+----------------------------------------------------------------------------------------
+  • Product ID     : p-crunchyrollrb
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Legally paid services
+  • Price Range    : ₹249 - ₹949
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-crunchyrollrb
+  • Total Plans    : 2
+  • Plans / Variants:
+      - 1 MONTH: ₹249 (Stock: N/A)
+      - 12 MONTHS: ₹949 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#19] DISCOVERY PLUS
+----------------------------------------------------------------------------------------
+  • Product ID     : p-73ed10
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹549 - ₹549
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-73ed10
+  • Total Plans    : 1
+  • Plans / Variants:
+      - DISCOVERY PLUS 1 YEAR ON NUMBER: ₹549 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#20] DISNEY PLUS PREMIUM 4K (UHD)
+----------------------------------------------------------------------------------------
+  • Product ID     : p-2472d8
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹379 - ₹1399
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-2472d8
+  • Total Plans    : 3
+  • Plans / Variants:
+      - 1 Month: ₹379 (Stock: N/A)
+      - 3 Months: ₹729 (Stock: N/A)
+      - 6 Months: ₹1399 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#21] Duolingo
+----------------------------------------------------------------------------------------
+  • Product ID     : p-duolingo
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹599 - ₹599
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-duolingo
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 12 Months: ₹599 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#22] ElevenLabs
+----------------------------------------------------------------------------------------
+  • Product ID     : p-163d6a
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹799 - ₹799
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-163d6a
+  • Total Plans    : 1
+  • Plans / Variants:
+      - ElevenLabs Creator 1month: ₹799 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#23] ESPN+ (GLOBAL)
+----------------------------------------------------------------------------------------
+  • Product ID     : p-34810e
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹349 - ₹349
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-34810e
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 3 Months: ₹349 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#24] ExpressVpn
+----------------------------------------------------------------------------------------
+  • Product ID     : p-31f410
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Vpn Services
+  • Price Range    : ₹249 - ₹1349
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-31f410
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 3 Months: ₹249 (Stock: N/A)
+      - 6 Months: ₹449 (Stock: N/A)
+      - 12Months: ₹799 (Stock: N/A)
+      - 24 Months: ₹1349 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#25] Figma
+----------------------------------------------------------------------------------------
+  • Product ID     : p-figma
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹549 - ₹549
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-figma
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 12 Months: ₹549 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#26] Freepik
+----------------------------------------------------------------------------------------
+  • Product ID     : p-freepik
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹199 - ₹199
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-freepik
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 1 Month: ₹199 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#27] Gamma Ai
+----------------------------------------------------------------------------------------
+  • Product ID     : p-68942c
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Ai tools
+  • Price Range    : ₹199 - ₹199
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-68942c
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 1 Month: ₹199 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#28] Gemini 18months Accounts
+----------------------------------------------------------------------------------------
+  • Product ID     : p-566318
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Ai tools
+  • Price Range    : ₹399 - ₹399
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-566318
+  • Total Plans    : 1
+  • Plans / Variants:
+      - Gemini 18months Accounts: ₹399 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#29] Gemini 18Months Links
+----------------------------------------------------------------------------------------
+  • Product ID     : p-b2091a
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Ai tools
+  • Price Range    : ₹449 - ₹449
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-b2091a
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 18 Months: ₹449 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#30] Grammarly Ai
+----------------------------------------------------------------------------------------
+  • Product ID     : p-b31f88
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Ai tools
+  • Price Range    : ₹249 - ₹249
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-b31f88
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 12 Months: ₹249 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#31] Grok Ai Shared
+----------------------------------------------------------------------------------------
+  • Product ID     : p-2b7e90
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Ai tools
+  • Price Range    : ₹199 - ₹1299
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-2b7e90
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 MONTHS: ₹199 (Stock: N/A)
+      - 3 MONTHS: ₹449 (Stock: N/A)
+      - 6 MONTHS: ₹749 (Stock: N/A)
+      - 12 MONTHS: ₹1299 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#32] Grok-Ai Private
+----------------------------------------------------------------------------------------
+  • Product ID     : p-303eb7
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Ai tools
+  • Price Range    : ₹299 - ₹1700
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-303eb7
+  • Total Plans    : 2
+  • Plans / Variants:
+      - 1 Month (no warranty): ₹299 (Stock: N/A)
+      - 3 Months: ₹1700 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#33] GTA VI RENTAL PACK (PRE ORDER)
+----------------------------------------------------------------------------------------
+  • Product ID     : p-e9b313
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : PS5 Games
+  • Price Range    : ₹1999 - ₹1999
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-e9b313
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 12months Standard Edition: ₹1999 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#34] Hbo Max
+----------------------------------------------------------------------------------------
+  • Product ID     : p-c3e0c3
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹299 - ₹679
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-c3e0c3
+  • Total Plans    : 2
+  • Plans / Variants:
+      - 1 Month: ₹299 (Stock: N/A)
+      - 3 Months: ₹679 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#35] HeyGen Ai ( Private )
+----------------------------------------------------------------------------------------
+  • Product ID     : p-4b3209
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹1499 - ₹1499
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-4b3209
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 3 Months: ₹1499 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#36] HeyGen Ai Shared
+----------------------------------------------------------------------------------------
+  • Product ID     : p-385f7d
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Ai tools
+  • Price Range    : ₹199 - ₹199
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-385f7d
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 1 Month: ₹199 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#37] Hoichoi
+----------------------------------------------------------------------------------------
+  • Product ID     : p-hoichoi
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹59 - ₹549
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-hoichoi
+  • Total Plans    : 5
+  • Plans / Variants:
+      - 1 Month: ₹59 (Stock: N/A)
+      - 3 Months: ₹179 (Stock: N/A)
+      - 6 Months: ₹249 (Stock: N/A)
+      - 12 Months: ₹359 (Stock: N/A)
+      - HOICHOI PREMIUM 1 YEAR ON NUMBER: ₹549 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#38] Hungama
+----------------------------------------------------------------------------------------
+  • Product ID     : p-hungama
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹59 - ₹299
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-hungama
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month: ₹59 (Stock: N/A)
+      - 3 Months: ₹179 (Stock: N/A)
+      - 6 Months: ₹249 (Stock: N/A)
+      - 12 Months: ₹299 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#39] Jio Hotstar
+----------------------------------------------------------------------------------------
+  • Product ID     : p-jiohotstar
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹89 - ₹1699
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-jiohotstar
+  • Total Plans    : 7
+  • Plans / Variants:
+      - 1 Month: ₹116 (Stock: N/A)
+      - 3 Months: ₹292 (Stock: N/A)
+      - 6 Months: ₹439 (Stock: N/A)
+      - 12 Months: ₹585 (Stock: N/A)
+      - HOTSTAR 4K 1 YEAR ON NUMBER: ₹1699 (Stock: N/A)
+      - HOTSTAR SUPER (ADS) ON NUMBER 1 YEAR: ₹549 (Stock: N/A)
+      - HOTSTAR SUPER (ADS) ON NUMBER 1 MONTH: ₹89 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#40] Kuku-TV & Kuku-FM
+----------------------------------------------------------------------------------------
+  • Product ID     : p-kukutvfm
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹89 - ₹649
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-kukutvfm
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month: ₹89 (Stock: N/A)
+      - 3 Months: ₹239 (Stock: N/A)
+      - 6 Months: ₹439 (Stock: N/A)
+      - 12 Months: ₹649 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#41] LinkedIn Career 3M
+----------------------------------------------------------------------------------------
+  • Product ID     : p-linkedin
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹199 - ₹199
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-linkedin
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 3 Months Career Link: ₹199 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#42] LOVABLE AI
+----------------------------------------------------------------------------------------
+  • Product ID     : p-c52c0f
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : General
+  • Price Range    : ₹449 - ₹449
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-c52c0f
+  • Total Plans    : 1
+  • Plans / Variants:
+      - LOVABLE PRO DEVELOPER LITE 12M LINKS: ₹449 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#43] Mastram
+----------------------------------------------------------------------------------------
+  • Product ID     : p-mastram
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹49 - ₹249
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-mastram
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month: ₹49 (Stock: N/A)
+      - 3 Months: ₹99 (Stock: N/A)
+      - 6 Months: ₹179 (Stock: N/A)
+      - 12 Months: ₹249 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#44] Microsoft Office 365
+----------------------------------------------------------------------------------------
+  • Product ID     : p-ms-office
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹199 - ₹199
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-ms-office
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 12 Months: ₹199 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#45] Mx Gold
+----------------------------------------------------------------------------------------
+  • Product ID     : p-mxgold
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹49 - ₹249
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-mxgold
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month: ₹49 (Stock: N/A)
+      - 3 Months: ₹99 (Stock: N/A)
+      - 6 Months: ₹179 (Stock: N/A)
+      - 12 Months: ₹249 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#46] N8N
+----------------------------------------------------------------------------------------
+  • Product ID     : p-ace426
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹3399 - ₹3399
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-ace426
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 12 Months Starter Pack: ₹3399 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#47] Netflix 1 Month 4k On Mail
+----------------------------------------------------------------------------------------
+  • Product ID     : p-f35a03
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹349 - ₹349
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-f35a03
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 1 Month On Your Mail: ₹349 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#48] Netflix legally paid
+----------------------------------------------------------------------------------------
+  • Product ID     : p-netflixrb
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Legally paid services
+  • Price Range    : ₹285 - ₹903
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-netflixrb
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month 480p: ₹285 (Stock: N/A)
+      - 1 Month 720p: ₹380 (Stock: N/A)
+      - 1 Month 1080p: ₹713 (Stock: N/A)
+      - 1 Month 4k: ₹903 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#49] Netflix Premium
+----------------------------------------------------------------------------------------
+  • Product ID     : p-netflix
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹99 - ₹2349
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-netflix
+  • Total Plans    : 10
+  • Plans / Variants:
+      - 1Month Private Profile: ₹129 (Stock: N/A)
+      - 3Months Private Profile: ₹359 (Stock: N/A)
+      - 6Months Private Profile: ₹679 (Stock: N/A)
+      - 12Months Private Profile: ₹1249 (Stock: N/A)
+      - 24Months Private Profile: ₹2349 (Stock: N/A)
+      - 1Month Shared Profile: ₹99 (Stock: N/A)
+      - 3Months Shared Profile: ₹259 (Stock: N/A)
+      - 6Months Shared Profile: ₹459 (Stock: N/A)
+      - 12Months Shared Profile: ₹849 (Stock: N/A)
+      - 24Months Shared Profile: ₹1599 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#50] NordVpn
+----------------------------------------------------------------------------------------
+  • Product ID     : p-nordvpn
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Vpn Services
+  • Price Range    : ₹179 - ₹849
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-nordvpn
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 3 Months: ₹179 (Stock: N/A)
+      - 6 Months: ₹299 (Stock: N/A)
+      - 12 Months: ₹499 (Stock: N/A)
+      - 24 Months: ₹849 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#51] NORDVPN REDEEM LINKS
+----------------------------------------------------------------------------------------
+  • Product ID     : p-e1e60e
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Vpn Services
+  • Price Range    : ₹299 - ₹299
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-e1e60e
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 3MONTHS LINKS: ₹299 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#52] Notion
+----------------------------------------------------------------------------------------
+  • Product ID     : p-notion
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹399 - ₹399
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-notion
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 12 Months: ₹399 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#53] Notion Redeem Links
+----------------------------------------------------------------------------------------
+  • Product ID     : p-05b9d0
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹349 - ₹349
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-05b9d0
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 3 Months Business Links: ₹349 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#54] Paramount Plus
+----------------------------------------------------------------------------------------
+  • Product ID     : p-e3bf88
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹280 - ₹475
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-e3bf88
+  • Total Plans    : 2
+  • Plans / Variants:
+      - 1 Month: ₹280 (Stock: N/A)
+      - 3 Months: ₹475 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#55] Perplexity Ai Shared
+----------------------------------------------------------------------------------------
+  • Product ID     : p-27c7e9
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Ai tools
+  • Price Range    : ₹149 - ₹699
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-27c7e9
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1MONTHS: ₹149 (Stock: N/A)
+      - 3MONTHS: ₹249 (Stock: N/A)
+      - 6MONTHS: ₹399 (Stock: N/A)
+      - 12MONTH: ₹699 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#56] PrimeVideo
+----------------------------------------------------------------------------------------
+  • Product ID     : p-prime
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹39 - ₹149
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-prime
+  • Total Plans    : 2
+  • Plans / Variants:
+      - 1 Month: ₹39 (Stock: N/A)
+      - 6 Months: ₹149 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#57] Proton Vpn
+----------------------------------------------------------------------------------------
+  • Product ID     : p-protonvpn
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Vpn Services
+  • Price Range    : ₹159 - ₹799
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-protonvpn
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 3 Months: ₹159 (Stock: N/A)
+      - 6 Months: ₹279 (Stock: N/A)
+      - 12 Months: ₹479 (Stock: N/A)
+      - 24 Months: ₹799 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#58] PS5 STARTER PACK
+----------------------------------------------------------------------------------------
+  • Product ID     : p-321306
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : PS5 Games
+  • Price Range    : ₹249 - ₹1199
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-321306
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month: ₹249 (Stock: N/A)
+      - 3 Months: ₹599 (Stock: N/A)
+      - 6 Months: ₹799 (Stock: N/A)
+      - 12 Months: ₹1199 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#59] Pure Vpn
+----------------------------------------------------------------------------------------
+  • Product ID     : p-purevpn
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Vpn Services
+  • Price Range    : ₹149 - ₹749
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-purevpn
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 3 Months: ₹149 (Stock: N/A)
+      - 6 Months: ₹259 (Stock: N/A)
+      - 12 Months: ₹449 (Stock: N/A)
+      - 24 Months: ₹749 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#60] Shemaroo
+----------------------------------------------------------------------------------------
+  • Product ID     : p-shemaroo
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹49 - ₹449
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-shemaroo
+  • Total Plans    : 5
+  • Plans / Variants:
+      - 1 Month: ₹49 (Stock: N/A)
+      - 3 Months: ₹99 (Stock: N/A)
+      - 6 Months: ₹179 (Stock: N/A)
+      - 12 Months: ₹249 (Stock: N/A)
+      - 24 Months: ₹449 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#61] Sony Liv
+----------------------------------------------------------------------------------------
+  • Product ID     : p-sonyliv
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹49 - ₹549
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-sonyliv
+  • Total Plans    : 5
+  • Plans / Variants:
+      - 1 Month: ₹49 (Stock: N/A)
+      - 3 Months: ₹149 (Stock: N/A)
+      - 6 Months: ₹199 (Stock: N/A)
+      - 12 Months: ₹359 (Stock: N/A)
+      - SONYLIV 4K 1 YEAR ON NUMBER: ₹549 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#62] Spotify legally paid
+----------------------------------------------------------------------------------------
+  • Product ID     : p-spotifyrb
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Legally paid services
+  • Price Range    : ₹285 - ₹1799
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-spotifyrb
+  • Total Plans    : 3
+  • Plans / Variants:
+      - 1 Month Standard: ₹285 (Stock: N/A)
+      - 1 Month Platinum: ₹570 (Stock: N/A)
+      - 12 Months Standard: ₹1799 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#63] Spotify Promocodes
+----------------------------------------------------------------------------------------
+  • Product ID     : p-f5f077
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹39 - ₹79
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-f5f077
+  • Total Plans    : 2
+  • Plans / Variants:
+      - 2 Months: ₹39 (Stock: N/A)
+      - 3 Months: ₹79 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#64] Sunnxt
+----------------------------------------------------------------------------------------
+  • Product ID     : p-sunnxt
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹49 - ₹249
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-sunnxt
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month: ₹49 (Stock: N/A)
+      - 3 Months: ₹99 (Stock: N/A)
+      - 6 Months: ₹179 (Stock: N/A)
+      - 12 Months: ₹249 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#65] Surfshark Promocodes
+----------------------------------------------------------------------------------------
+  • Product ID     : p-43a35c
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Vpn Services
+  • Price Range    : ₹47.5 - ₹47.5
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-43a35c
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 2 Months Promocodes: ₹47.5 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#66] TradingView
+----------------------------------------------------------------------------------------
+  • Product ID     : p-tradingview
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹149 - ₹149
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-tradingview
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 1 Month: ₹149 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#67] Windows Activation Keys
+----------------------------------------------------------------------------------------
+  • Product ID     : p-windows
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Education & Tools
+  • Price Range    : ₹599 - ₹599
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-windows
+  • Total Plans    : 2
+  • Plans / Variants:
+      - Windows 10: ₹599 (Stock: N/A)
+      - Windows 11: ₹599 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#68] YouTube Premium
+----------------------------------------------------------------------------------------
+  • Product ID     : p-youtube
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹25 - ₹2391
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-youtube
+  • Total Plans    : 4
+  • Plans / Variants:
+      - 1 Month Slot: ₹25 (Stock: N/A)
+      - 1 Month Family: ₹79 (Stock: N/A)
+      - 6 Months Slot: ₹475 (Stock: N/A)
+      - 6 Months Family: ₹2391 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#69] Youtube Premium ( Accounts )
+----------------------------------------------------------------------------------------
+  • Product ID     : p-8d4358
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Legally paid services
+  • Price Range    : ₹779 - ₹779
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-8d4358
+  • Total Plans    : 1
+  • Plans / Variants:
+      - 6 Months: ₹779 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#70] YOUTUBE REDEEM LINKS
+----------------------------------------------------------------------------------------
+  • Product ID     : p-c81720
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ INACTIVE (Bot Disabled) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹149 - ₹149
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-c81720
+  • Total Plans    : 1
+  • Plans / Variants:
+      - YT 3MONTHS REDEEM LINKS: ₹149 (Stock: N/A)
+
+----------------------------------------------------------------------------------------
+[#71] Zee5
+----------------------------------------------------------------------------------------
+  • Product ID     : p-zee5
+  • Source / Type  : Telegram Bot Product
+  • Status         : [ ACTIVE (Live on Website) ]
+  • Category       : Streaming Services
+  • Price Range    : ₹49 - ₹549
+  • Delivery Time  : Instant
+  • URL Link       : https://quantumxd.store/products/p-zee5
+  • Total Plans    : 5
+  • Plans / Variants:
+      - 1 Month: ₹49 (Stock: N/A)
+      - 3 Months: ₹99 (Stock: N/A)
+      - 6 Months: ₹179 (Stock: N/A)
+      - 12 Months: ₹249 (Stock: N/A)
+      - ZEE5 FHD 1 YEAR ON YOUR MAIL: ₹549 (Stock: N/A)
+
+========================================================================================
+SUMMARY STATISTICS:
+  • Total Products in Database : 71
+  • Active & Live Products     : 56
+  • Inactive / Hidden Products : 15
+========================================================================================
