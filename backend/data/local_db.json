@@ -20,12 +20,13 @@
       "email": "arafatamingazi@gmail.com",
       "password_hash": "$2a$10$2ZExlhr9ZvPkACkcCqILe.KvUfaQU4v48wgOHQ36EqaWo1Svtx8iu",
       "role": "admin",
-      "balance": 10000,
+      "balance": 1000,
       "currency": "INR",
       "all_time_topup": 10000,
       "is_verified": true,
       "is_frozen": false,
-      "created_at": "2026-08-21T15:57:24.013Z"
+      "created_at": "2026-08-21T15:57:24.013Z",
+      "updated_at": "2026-08-30T17:49:40.323Z"
     },
     {
       "id": "usr-1787485442053",
