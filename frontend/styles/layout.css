@@ -450,7 +450,7 @@
   background: linear-gradient(135deg, #1B4EF5 0%, #0066FF 100%) !important;
   color: #FFFFFF !important;
   border: none !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 4px 14px rgba(27, 78, 245, 0.35) !important;
 }
 
 [data-theme='light'] .product-detail-media-frame {
@@ -594,7 +594,7 @@
 [data-theme='light'] .pro-btn-buy {
   background: linear-gradient(135deg, #1B4EF5 0%, #0066FF 100%) !important;
   color: #FFFFFF !important;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45) !important;
+  box-shadow: 0 6px 20px rgba(27, 78, 245, 0.35) !important;
 }
 
 [data-theme='light'] .product-card:hover,
@@ -602,14 +602,14 @@
 [data-theme='light'] .home-feature-card:hover,
 [data-theme='light'] .home-testimonial-card:hover,
 [data-theme='light'] .pro-variant-card:hover {
-  border-color: rgba(255, 255, 255, 0.25) !important;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(27, 78, 245, 0.40) !important;
+  box-shadow: 0 12px 28px rgba(27, 78, 245, 0.10) !important;
 }
 
 [data-theme='light'] .pro-variant-card--active {
   border-color: #1B4EF5 !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  box-shadow: 0 0 16px rgba(0, 0, 0, 0.35) !important;
+  background: rgba(27, 78, 245, 0.05) !important;
+  box-shadow: 0 0 16px rgba(27, 78, 245, 0.15) !important;
 }
 
 [data-theme='light'] .btn--ghost {

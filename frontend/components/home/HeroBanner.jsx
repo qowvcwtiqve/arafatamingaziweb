@@ -17,8 +17,8 @@ export default function HeroBanner() {
   const featureCards = [
     {
       icon: 'bolt',
-      colorClass: '',
-      iconBg: 'rgba(255, 255, 255, 0.08)',
+      colorClass: 'icon--cyan',
+      iconBg: 'rgba(56, 116, 255, 0.12)',
       title: 'Instant Dispatch',
       description: 'Credentials delivered immediately upon payment verification.'
     },
@@ -31,8 +31,8 @@ export default function HeroBanner() {
     },
     {
       icon: 'shield',
-      colorClass: '',
-      iconBg: 'rgba(255, 255, 255, 0.08)',
+      colorClass: 'icon--primary',
+      iconBg: 'rgba(139, 92, 246, 0.12)',
       title: 'Secure Multi-Payment',
       description: 'Instant auto-checkout via UPI QR, Binance Pay & Crypto.'
     },
@@ -65,7 +65,7 @@ export default function HeroBanner() {
           {/* 1. Top Verified Badge */}
           <div className="hero-custom-badge">
             <span className="hero-custom-dot" />
-            <span className="icon icon--sm icon--filled" style={{ fontSize: 14, color: '#10B981' }}>verified</span>
+            <span className="icon icon--sm icon--cyan icon--filled" style={{ fontSize: 14 }}>verified</span>
             <span className="hero-custom-badge__text">
               Verified Digital Marketplace
             </span>
@@ -116,7 +116,7 @@ export default function HeroBanner() {
               href="/products?featured=true"
               className="btn btn--ghost hero-custom-btn-secondary"
             >
-              <span className="icon icon--sm icon--filled" style={{ color: '#F59E0B' }}>star</span>
+              <span className="icon icon--sm icon--cyan icon--filled">star</span>
               <span>Featured Picks</span>
             </Link>
           </div>
@@ -144,7 +144,7 @@ export default function HeroBanner() {
             {stats.map((s, idx) => (
               <div key={s.label} className="hero-custom-stat-item">
                 <div className="hero-custom-stat-icon">
-                  <span className="icon icon--sm" style={{ color: 'var(--color-text)' }}>{s.icon}</span>
+                  <span className="icon icon--sm icon--cyan">{s.icon}</span>
                 </div>
                 <div className="hero-custom-stat-info">
                   <div className="hero-custom-stat-value">{s.value}</div>

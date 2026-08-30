@@ -578,7 +578,7 @@
 }
 
 .hero-custom-gradient {
-  background: linear-gradient(180deg, #FFFFFF 20%, #CBD5E1 100%);
+  background: linear-gradient(135deg, #3874FF 0%, #1B4EF5 45%, #60A5FA 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -624,7 +624,7 @@
 
 .hero-custom-search-form:focus-within {
   border-color: var(--color-primary-light);
-  box-shadow: 0 12px 36px -6px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(56, 116, 255, 0.2);
 }
 
 .hero-custom-search-icon {
@@ -660,14 +660,14 @@
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(27, 78, 245, 0.25);
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .hero-custom-search-btn:hover {
   transform: scale(1.02);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(27, 78, 245, 0.35);
 }
 
 /* 5. CTA Buttons */
@@ -685,7 +685,7 @@
   font-weight: 700;
   border-radius: 12px;
   gap: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(27, 78, 245, 0.3);
 }
 
 .hero-custom-btn-secondary {
@@ -734,7 +734,7 @@
 
 .hero-custom-feature-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.24);
+  border-color: var(--color-primary-light);
   box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.45);
 }
 
@@ -810,7 +810,7 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(56, 116, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
