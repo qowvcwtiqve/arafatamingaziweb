@@ -1,11 +1,23 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import api from '../../lib/api';
 
 export default function HeroBanner() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [categories, setCategories] = useState([]);
   const router = useRouter();
+
+  useEffect(() => {
+    api.get('/products/categories')
+      .then(({ data }) => {
+        if (data.categories && Array.isArray(data.categories)) {
+          setCategories(data.categories.slice(0, 6));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +33,7 @@ export default function HeroBanner() {
       iconBg: 'rgba(56, 116, 255, 0.12)',
       accentColor: '#3874FF',
       badge: '< 60s Delivery',
-      title: 'Instant Dispatch',
+      title: 'Instant Auto-Delivery',
       description: 'Automated digital keys & credentials delivered immediately upon payment verification.'
     },
     {
@@ -29,16 +41,16 @@ export default function HeroBanner() {
       colorClass: 'icon--accent',
       iconBg: 'rgba(16, 185, 129, 0.12)',
       accentColor: '#10B981',
-      badge: '100% Tested',
-      title: 'Official Licenses',
+      badge: '100% Genuine',
+      title: 'Tested & Guaranteed',
       description: 'Every product, account & license is pre-tested, genuine, and backed by full warranty.'
     },
     {
-      icon: 'shield',
+      icon: 'account_balance_wallet',
       colorClass: 'icon--primary',
       iconBg: 'rgba(139, 92, 246, 0.12)',
       accentColor: '#8B5CF6',
-      badge: 'Zero Surcharge',
+      badge: 'Instant Verify',
       title: 'Secure Multi-Payment',
       description: 'Instant auto-checkout via UPI QR, Binance Pay, Crypto & major Credit Cards.'
     },
@@ -47,9 +59,9 @@ export default function HeroBanner() {
       colorClass: 'icon--warning',
       iconBg: 'rgba(245, 158, 11, 0.12)',
       accentColor: '#F59E0B',
-      badge: '24/7 Human',
+      badge: '24/7 Live Support',
       title: 'Priority Assistance',
-      description: 'Round-the-clock dedicated customer assistance on Telegram and Email Helpdesk.'
+      description: 'Dedicated customer assistance on Telegram and Email Helpdesk whenever you need help.'
     }
   ];
 
@@ -62,7 +74,7 @@ export default function HeroBanner() {
 
   return (
     <section className="hero-banner-custom">
-      {/* Ambient background glows */}
+      {/* Ambient background lighting */}
       <div className="hero-custom-glow hero-custom-glow--top" aria-hidden="true" />
       <div className="hero-custom-glow hero-custom-glow--bottom" aria-hidden="true" />
       <div className="hero-custom-mesh" aria-hidden="true" />
@@ -70,7 +82,7 @@ export default function HeroBanner() {
       <div className="container" style={{ position: 'relative', zIndex: 2 }}>
         <div className="hero-custom-wrapper">
 
-          {/* 1. Top Verified Badge */}
+          {/* 1. Verified Digital Marketplace Pill */}
           <div className="hero-custom-badge">
             <span className="hero-custom-dot" />
             <span className="icon icon--sm icon--cyan icon--filled" style={{ fontSize: 14 }}>verified</span>
@@ -93,7 +105,7 @@ export default function HeroBanner() {
             dispatched automatically within seconds of payment verification.
           </p>
 
-          {/* 4. Unified Seamless Pill Search Box */}
+          {/* 4. Unified Search Box */}
           <form onSubmit={handleSearchSubmit} className="hero-custom-search-form">
             <span className="icon hero-custom-search-icon">search</span>
             <input
@@ -120,7 +132,28 @@ export default function HeroBanner() {
             </button>
           </form>
 
-          {/* 5. CTA Action Buttons */}
+          {/* 5. Real Dynamic Categories Pills (Only if categories exist in DB) */}
+          {categories.length > 0 && (
+            <div className="hero-trending-tags-container">
+              <span className="hero-trending-label">
+                <span className="icon icon--sm icon--cyan">category</span>
+                <span>Categories:</span>
+              </span>
+              <div className="hero-trending-pills">
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/products?category=${cat.id}`}
+                    className="hero-trending-pill"
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 6. CTA Action Buttons with Google Icons */}
           <div className="hero-custom-actions">
             <Link
               href="/products"
@@ -137,9 +170,18 @@ export default function HeroBanner() {
               <span className="icon icon--sm icon--cyan icon--filled">star</span>
               <span>Featured Picks</span>
             </Link>
+            <a
+              href="https://t.me/arafatamingazi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn--ghost hero-custom-btn-telegram"
+            >
+              <span className="icon icon--sm icon--cyan">headset_mic</span>
+              <span>Support Helpdesk</span>
+            </a>
           </div>
 
-          {/* 6. 4 Value Highlight Cards (4-col on PC, 2x2 on Mobile) */}
+          {/* 7. 4 Value Highlight Cards */}
           <div className="hero-custom-features-grid">
             {featureCards.map((feat) => (
               <div
@@ -166,7 +208,7 @@ export default function HeroBanner() {
             ))}
           </div>
 
-          {/* 7. Stats Bar Strip */}
+          {/* 8. Stats Bar Strip */}
           <div className="hero-custom-stats-bar">
             {stats.map((s, idx) => (
               <div key={s.label} className="hero-custom-stat-item">
@@ -190,3 +232,5 @@ export default function HeroBanner() {
     </section>
   );
 }
+
+
