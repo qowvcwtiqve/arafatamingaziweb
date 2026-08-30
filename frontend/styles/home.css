@@ -601,62 +601,96 @@
   margin: 0 0 28px 0;
 }
 
-/* 4. Search Box */
+/* 4. Unified Seamless Pill Search Box */
 .hero-custom-search-form {
   width: 100%;
   max-width: 580px;
+  height: 52px;
   display: flex;
   align-items: center;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
-  padding: 6px 8px 6px 16px;
-  box-shadow: 0 10px 32px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.04);
-  margin-bottom: 26px;
-  transition: all 0.25s ease;
+  border-radius: 9999px;
+  padding: 4px 6px 4px 18px;
+  box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.45);
+  margin: 0 auto 26px auto;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  position: relative;
 }
 
 [data-theme='light'] .hero-custom-search-form {
   background: #FFFFFF;
-  border-color: #E2E8F0;
-  box-shadow: 0 8px 24px -4px rgba(27, 78, 245, 0.08);
+  border-color: #CBD5E1;
+  box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.08);
 }
 
 .hero-custom-search-form:focus-within {
   border-color: var(--color-primary-light);
-  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(56, 116, 255, 0.2);
+  box-shadow: 0 12px 34px -4px rgba(0, 0, 0, 0.55), 0 0 0 2px rgba(56, 116, 255, 0.25);
 }
 
 .hero-custom-search-icon {
-  color: var(--color-text-faint);
-  margin-right: 8px;
-  font-size: 20px;
+  color: var(--color-text-muted);
+  margin-right: 10px;
+  font-size: 21px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .hero-custom-search-input {
-  flex: 1;
-  min-width: 0;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--color-text);
-  font-size: 14.5px;
-  padding: 8px 0;
+  flex: 1 !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: var(--color-text) !important;
+  font-size: 14.5px !important;
+  padding: 0 !important;
+  font-family: var(--font-body) !important;
 }
 
 .hero-custom-search-input::placeholder {
+  color: var(--color-text-faint) !important;
+  font-size: 14px !important;
+}
+
+.hero-custom-search-clear {
+  background: transparent;
+  border: none;
   color: var(--color-text-faint);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.15s ease, background 0.15s ease;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.hero-custom-search-clear:hover {
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .hero-custom-search-btn {
+  height: 42px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   background: var(--gradient-primary);
   color: #FFFFFF;
   border: none;
-  padding: 9px 18px;
-  border-radius: 10px;
+  padding: 0 22px;
+  border-radius: 9999px;
+  font-family: var(--font-heading);
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
@@ -666,8 +700,12 @@
 }
 
 .hero-custom-search-btn:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(27, 78, 245, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), 0 2px 10px rgba(27, 78, 245, 0.35);
+}
+
+.hero-custom-search-btn:active {
+  transform: translateY(0);
 }
 
 /* 5. CTA Buttons */
@@ -904,20 +942,36 @@
   }
 
   .hero-custom-search-form {
+    height: 46px !important;
+    padding: 3px 5px 3px 14px !important;
     margin-bottom: 18px !important;
-    padding: 4px 6px 4px 12px !important;
-    border-radius: 12px !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.45) !important;
+  }
+
+  .hero-custom-search-icon {
+    font-size: 19px !important;
+    margin-right: 8px !important;
   }
 
   .hero-custom-search-input {
     font-size: 13px !important;
-    padding: 6px 0 !important;
+  }
+
+  .hero-custom-search-input::placeholder {
+    font-size: 12px !important;
   }
 
   .hero-custom-search-btn {
-    padding: 8px 12px !important;
+    height: 38px !important;
+    padding: 0 14px !important;
     font-size: 12px !important;
-    border-radius: 8px !important;
+    border-radius: 9999px !important;
+    gap: 4px !important;
+  }
+
+  .hero-custom-search-btn-icon {
+    font-size: 15px !important;
   }
 
   .hero-custom-actions {

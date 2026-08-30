@@ -96,9 +96,19 @@ export default function HeroBanner() {
               className="hero-custom-search-input"
               aria-label="Search digital products"
             />
-            <button type="submit" className="hero-custom-search-btn">
-              <span className="icon icon--sm">search</span>
-              <span>Search</span>
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="hero-custom-search-clear"
+                aria-label="Clear search"
+              >
+                <span className="icon icon--sm">close</span>
+              </button>
+            )}
+            <button type="submit" className="hero-custom-search-btn" aria-label="Search">
+              <span className="icon hero-custom-search-btn-icon">search</span>
+              <span className="hero-custom-search-btn-text">Search</span>
             </button>
           </form>
 
