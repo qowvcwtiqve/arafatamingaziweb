@@ -18,9 +18,9 @@
 }
 
 .header.scrolled {
-  background: rgba(8, 11, 20, 0.96);
+  background: rgba(22, 24, 29, 0.96);
   box-shadow: 0 4px 30px rgba(0,0,0,0.5);
-  border-bottom-color: var(--color-border-glow);
+  border-bottom-color: var(--color-border);
 }
 
 [data-theme='light'] .header.scrolled {

@@ -11,51 +11,51 @@
    CSS CUSTOM PROPERTIES (Design Tokens)
    ============================================================ */
 :root, [data-theme='dark'] {
-  /* Studio Slate & Dark Charcoal Palette with High-Contrast Blue Highlights */
-  --color-bg:            #090C15;
-  --color-surface:       #0F1422;
-  --color-surface-2:     #151B2C;
-  --color-surface-3:     #1D243B;
-  --color-surface-4:     #28314F;
+  /* Premium Dark Gray / Graphite Palette (Neutral, Sleek & Modern) */
+  --color-bg:            #0E1013;         /* Deep Matte Dark Gray */
+  --color-surface:       #16181D;         /* Clean Dark Gray Card Surface */
+  --color-surface-2:     #1D2026;         /* Elevated Surface (Inputs, Pills, Dropdowns) */
+  --color-surface-3:     #262931;         /* Hovered Surface / Sub-cards */
+  --color-surface-4:     #323640;         /* Active Borders & Badges */
   --color-border:        rgba(255, 255, 255, 0.08);
-  --color-border-hover:  rgba(56, 116, 255, 0.40);
-  --color-border-glow:   rgba(27, 78, 245, 0.50);
+  --color-border-hover:  rgba(255, 255, 255, 0.20);
+  --color-border-glow:   rgba(27, 78, 245, 0.35);
 
-  /* High-Contrast Electric Blue Palette */
+  /* High-Contrast Electric Blue Action Highlights */
   --color-primary:       #1B4EF5;         /* Vibrant Electric Blue */
   --color-primary-light: #3874FF;         /* Bright Azure Accent */
   --color-primary-dark:  #1B2CC1;         /* Deep Cobalt Blue */
   --color-cyan:          #3874FF;         /* Crisp Highlight */
-  --color-cyan-glow:     rgba(56, 116, 255, 0.25);
+  --color-cyan-glow:     rgba(56, 116, 255, 0.20);
   --color-accent:        #10B981;
 
   --color-text:          #FFFFFF;
-  --color-text-muted:    #94A3B8;
-  --color-text-faint:    #64748B;
+  --color-text-muted:    #9CA3AF;         /* Clean Neutral Gray */
+  --color-text-faint:    #6B7280;         /* Mid Gray */
 
   --color-success:       #10B981;
   --color-warning:       #F59E0B;
   --color-error:         #EF4444;
 
-  /* Gradients */
+  /* Gradients (Refined for Dark Gray Background) */
   --gradient-primary:      linear-gradient(135deg, #1B4EF5 0%, #3874FF 100%);
-  --gradient-primary-soft: linear-gradient(135deg, rgba(27, 78, 245, 0.18) 0%, rgba(56, 116, 255, 0.10) 100%);
-  --gradient-hero:         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(27, 78, 245, 0.20) 0%, transparent 70%);
-  --gradient-card-glow:    radial-gradient(circle at top left, rgba(56, 116, 255, 0.12), transparent 60%);
+  --gradient-primary-soft: linear-gradient(135deg, rgba(27, 78, 245, 0.12) 0%, rgba(56, 116, 255, 0.06) 100%);
+  --gradient-hero:         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+  --gradient-card-glow:    radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 60%);
 
   /* Solid Theme Surfaces */
-  --glass-bg:       #0F1422;
-  --glass-bg-hover: #151B2C;
+  --glass-bg:       #16181D;
+  --glass-bg-hover: #1D2026;
   --glass-border:   1px solid rgba(255, 255, 255, 0.08);
   --glass-blur:     none;
   --glass-shadow:   var(--shadow-md);
 
-  /* Shadows */
-  --shadow-sm:   0 2px 6px rgba(0,0,0,0.5);
-  --shadow-md:   0 8px 24px rgba(0,0,0,0.6);
-  --shadow-lg:   0 16px 48px rgba(0,0,0,0.7);
-  --shadow-glow: 0 0 25px rgba(27, 78, 245, 0.35);
-  --shadow-cyan: 0 0 20px rgba(56, 116, 255, 0.25);
+  /* Shadows (Neutral Deep Shadows) */
+  --shadow-sm:   0 2px 6px rgba(0,0,0,0.4);
+  --shadow-md:   0 8px 24px rgba(0,0,0,0.5);
+  --shadow-lg:   0 16px 48px rgba(0,0,0,0.6);
+  --shadow-glow: 0 0 25px rgba(0,0,0,0.4);
+  --shadow-cyan: 0 0 20px rgba(56, 116, 255, 0.20);
 
   /* Borders */
   --radius-sm:  8px;
