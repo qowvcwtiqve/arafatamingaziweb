@@ -475,6 +475,22 @@ export async function query(sql, params = []) {
     return { rows: paginated };
   }
 
+  // Handle: SELECT * FROM orders WHERE buyer_id=$1 OR buyer_email=$2 ORDER BY created_at DESC LIMIT 50
+  if (lowerSql.includes('from orders') && lowerSql.includes('buyer_id=$1') && lowerSql.includes('buyer_email=$2')) {
+    const buyerId = params[0];
+    const buyerEmail = String(params[1] || '').toLowerCase();
+    let userOrders = JSON.parse(JSON.stringify((db.orders || []).filter(o =>
+      (buyerId && o.buyer_id === buyerId) ||
+      (buyerEmail && (o.buyer_email || '').toLowerCase() === buyerEmail)
+    )));
+    userOrders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    userOrders = userOrders.slice(0, parseInt(params[2]) || 50);
+    userOrders.forEach(o => {
+      o.items = (db.order_items || []).filter(oi => oi.order_id === o.id);
+    });
+    return { rows: userOrders };
+  }
+
   if (lowerSql.includes('from orders') && lowerSql.includes('where o.buyer_id=$1')) {
     const buyerId = params[0];
     const userOrders = JSON.parse(JSON.stringify((db.orders || []).filter(o => o.buyer_id === buyerId)));

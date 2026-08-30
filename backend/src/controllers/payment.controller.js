@@ -513,6 +513,20 @@ export const fulfillPaidOrder = async (orderId) => {
     const endTs = variant?.duration > 0 ? now + variant.duration * 30 * 24 * 3600 : null;
     const saleId = order.id || generateSaleId();
 
+    // Look up buyer details from users table for proper attribution
+    let buyerName = 'Customer';
+    let buyerEmail = order.buyer_email || 'customer@quantumxd.store';
+    const buyerId = order.buyer_id || null;
+    if (buyerId) {
+      try {
+        const { rows: userRows } = await query('SELECT name, email FROM users WHERE id=$1', [buyerId]);
+        if (userRows[0]) {
+          buyerName = userRows[0].name || 'Customer';
+          buyerEmail = userRows[0].email || buyerEmail;
+        }
+      } catch (_) {}
+    }
+
     const sale = await Sale.create({
       sale_id: saleId,
       source: 'website',
@@ -524,9 +538,9 @@ export const fulfillPaidOrder = async (orderId) => {
       price: parseFloat(order.total_amount || 0),
       original_price: parseFloat(order.base_amount || order.total_amount || 0),
       quantity: qty,
-      user_id: order.buyer_id || 'guest',
-      user_email: order.buyer_email || 'customer@quantumxd.store',
-      user_name: 'Customer',
+      user_id: buyerId || 'guest',
+      user_email: buyerEmail,
+      user_name: buyerName,
       credentials: deliveredItems.join('\n\n') || '',
       status: saleStatus,
       delivery_method: deliveryMethod,
