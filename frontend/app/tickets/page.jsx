@@ -764,9 +764,7 @@ export default function TicketsPage() {
                               <span className="tkt-num">{tkt.ticket_number}</span>
                             </div>
                             <span className={`status-pill status-${tkt.status}`}>
-                              <span className="icon icon--xs">
-                                {tkt.status === 'open' ? 'pending' : tkt.status === 'in_progress' ? 'hourglass_top' : tkt.status === 'resolved' ? 'check_circle' : 'lock'}
-                              </span>
+                              <span className="pill-dot" />
                               <span>{tkt.status.replace('_', ' ')}</span>
                             </span>
                           </div>
@@ -815,9 +813,7 @@ export default function TicketsPage() {
                     <span className="modal-tkt-number">{activeTicketData?.ticket?.ticket_number || 'Ticket'}</span>
                     {activeTicketData?.ticket?.status && (
                       <span className={`status-pill status-${activeTicketData.ticket.status}`}>
-                        <span className="icon icon--xs">
-                          {activeTicketData.ticket.status === 'open' ? 'pending' : activeTicketData.ticket.status === 'in_progress' ? 'hourglass_top' : activeTicketData.ticket.status === 'resolved' ? 'check_circle' : 'lock'}
-                        </span>
+                        <span className="pill-dot" />
                         <span>{activeTicketData.ticket.status.replace('_', ' ')}</span>
                       </span>
                     )}
@@ -1043,15 +1039,15 @@ export default function TicketsPage() {
                       disabled={uploadingImage}
                       title="Attach Screenshot / Image"
                     >
-                      <span className="icon icon--sm icon--cyan">
+                      <span className="icon icon--sm">
                         {uploadingImage ? 'sync' : 'attach_file'}
                       </span>
                     </button>
 
                     <textarea
                       className="modal-reply-textarea"
-                      rows={2}
-                      placeholder="Type your response... (Shift+Enter for new line, Enter to send)"
+                      rows={1}
+                      placeholder="Type your message..."
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
                       onKeyDown={(e) => {
@@ -1072,6 +1068,9 @@ export default function TicketsPage() {
                     >
                       <span className="icon icon--sm">send</span>
                     </button>
+                  </div>
+                  <div className="modal-composer-hint">
+                    Press Enter to send &bull; Shift + Enter for new line
                   </div>
                 </form>
               ) : activeTicketData?.ticket?.status === 'closed' ? (

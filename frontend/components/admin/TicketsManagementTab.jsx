@@ -364,7 +364,7 @@ export default function TicketsManagementTab() {
           </div>
         ) : (
           <div className="admin-table-responsive hide-on-mobile">
-            <table className="admin-data-table">
+            <table className="admin-table">
               <thead>
                 <tr>
                   <th>Ticket</th>
