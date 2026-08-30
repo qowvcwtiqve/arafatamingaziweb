@@ -147,7 +147,11 @@ router.get('/orders/:id', protect, async (req, res, next) => {
     }
 
     // Ensure authorized user (or admin)
-    if (sale.user_id !== req.user.id && sale.user_id !== 'guest' && req.user.role !== 'admin') {
+    // For guest orders: allow access if the sale's email matches the logged-in user's email
+    const isOwner = sale.user_id === req.user.id;
+    const isEmailMatch = sale.user_email?.toLowerCase() === req.user.email?.toLowerCase();
+    const isAdmin = req.user.role === 'admin';
+    if (!isOwner && !isEmailMatch && !isAdmin) {
       return res.status(403).json({ error: 'Unauthorized to view this order' });
     }
 
