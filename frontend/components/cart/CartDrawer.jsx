@@ -6,6 +6,7 @@ import { useCurrency } from '../../store/currencyStore';
 import Link from 'next/link';
 import ProductIconBanner from '../product/ProductIconBanner';
 import AgreementCheckbox from '../ui/AgreementCheckbox';
+import { toast } from 'react-hot-toast';
 
 function CartItemImage({ item, size = 56 }) {
   const [imgError, setImgError] = useState(false);
@@ -59,6 +60,10 @@ export default function CartDrawer({ open, onClose }) {
 
   const handleProceedCheckout = (e) => {
     e.preventDefault();
+    if (!agreed) {
+      toast.error('Please agree to the Terms of Service & Refund Policy');
+      return;
+    }
     onClose();
     router.push('/checkout');
   };
@@ -233,6 +238,15 @@ export default function CartDrawer({ open, onClose }) {
               </span>
             </div>
 
+            {/* Policy Agreement Checkbox */}
+            <div style={{ marginBottom: 14 }}>
+              <AgreementCheckbox
+                checked={agreed}
+                onChange={setAgreed}
+                mode="checkout"
+              />
+            </div>
+
             <button
               type="button"
               onClick={handleProceedCheckout}
@@ -243,7 +257,9 @@ export default function CartDrawer({ open, onClose }) {
                 fontSize: 14.5,
                 fontWeight: 700,
                 cursor: 'pointer',
-                boxShadow: 'var(--shadow-glow)'
+                opacity: agreed ? 1 : 0.7,
+                boxShadow: agreed ? 'var(--shadow-glow)' : 'none',
+                transition: 'all 0.25s ease'
               }}
             >
               <span className="icon icon--md icon--filled">bolt</span>

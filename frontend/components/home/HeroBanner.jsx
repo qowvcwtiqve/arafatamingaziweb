@@ -19,37 +19,45 @@ export default function HeroBanner() {
       icon: 'bolt',
       colorClass: 'icon--cyan',
       iconBg: 'rgba(56, 116, 255, 0.12)',
+      accentColor: '#3874FF',
+      badge: '< 60s Delivery',
       title: 'Instant Dispatch',
-      description: 'Credentials delivered immediately upon payment verification.'
+      description: 'Automated digital keys & credentials delivered immediately upon payment verification.'
     },
     {
       icon: 'verified_user',
       colorClass: 'icon--accent',
       iconBg: 'rgba(16, 185, 129, 0.12)',
-      title: '100% Genuine',
-      description: 'Every product, account & license is pre-tested and verified.'
+      accentColor: '#10B981',
+      badge: '100% Tested',
+      title: 'Official Licenses',
+      description: 'Every product, account & license is pre-tested, genuine, and backed by full warranty.'
     },
     {
       icon: 'shield',
       colorClass: 'icon--primary',
       iconBg: 'rgba(139, 92, 246, 0.12)',
+      accentColor: '#8B5CF6',
+      badge: 'Zero Surcharge',
       title: 'Secure Multi-Payment',
-      description: 'Instant auto-checkout via UPI QR, Binance Pay & Crypto.'
+      description: 'Instant auto-checkout via UPI QR, Binance Pay, Crypto & major Credit Cards.'
     },
     {
       icon: 'support_agent',
       colorClass: 'icon--warning',
       iconBg: 'rgba(245, 158, 11, 0.12)',
-      title: '24/7 Fast Support',
-      description: 'Round-the-clock customer assistance on Telegram & email.'
+      accentColor: '#F59E0B',
+      badge: '24/7 Human',
+      title: 'Priority Assistance',
+      description: 'Round-the-clock dedicated customer assistance on Telegram and Email Helpdesk.'
     }
   ];
 
   const stats = [
-    { value: '500+', label: 'Digital Products', icon: 'inventory_2' },
-    { value: '15,000+', label: 'Orders Completed', icon: 'shopping_bag' },
-    { value: '99.9%', label: 'Positive Rating', icon: 'thumb_up' },
-    { value: '< 10 Sec', label: 'Average Delivery', icon: 'speed' }
+    { value: '500+', label: 'Active Products', icon: 'inventory_2', color: '#3874FF' },
+    { value: '15,000+', label: 'Orders Fulfilled', icon: 'shopping_bag', color: '#10B981' },
+    { value: '99.9%', label: 'Positive Rating', icon: 'thumb_up', color: '#8B5CF6' },
+    { value: '< 10s', label: 'Average Dispatch', icon: 'speed', color: '#F59E0B' }
   ];
 
   return (
@@ -85,7 +93,7 @@ export default function HeroBanner() {
             dispatched automatically within seconds of payment verification.
           </p>
 
-          {/* 4. Integrated Search Box */}
+          {/* 4. Unified Seamless Pill Search Box */}
           <form onSubmit={handleSearchSubmit} className="hero-custom-search-form">
             <span className="icon hero-custom-search-icon">search</span>
             <input
@@ -131,15 +139,24 @@ export default function HeroBanner() {
             </Link>
           </div>
 
-          {/* 6. 4 Value Highlight Cards (4-col on PC, 2x2 compact on Mobile) */}
+          {/* 6. 4 Value Highlight Cards (4-col on PC, 2x2 on Mobile) */}
           <div className="hero-custom-features-grid">
             {featureCards.map((feat) => (
-              <div key={feat.title} className="hero-custom-feature-card">
-                <div
-                  className="hero-custom-feature-icon"
-                  style={{ background: feat.iconBg }}
-                >
-                  <span className={`icon icon--md ${feat.colorClass}`}>{feat.icon}</span>
+              <div
+                key={feat.title}
+                className="hero-custom-feature-card"
+                style={{ '--card-accent': feat.accentColor }}
+              >
+                <div className="hero-custom-feature-top">
+                  <div
+                    className="hero-custom-feature-icon"
+                    style={{ background: feat.iconBg }}
+                  >
+                    <span className={`icon icon--md ${feat.colorClass}`}>{feat.icon}</span>
+                  </div>
+                  <span className="hero-custom-feature-badge">
+                    {feat.badge}
+                  </span>
                 </div>
                 <div className="hero-custom-feature-body">
                   <h3 className="hero-custom-feature-title">{feat.title}</h3>
@@ -153,8 +170,11 @@ export default function HeroBanner() {
           <div className="hero-custom-stats-bar">
             {stats.map((s, idx) => (
               <div key={s.label} className="hero-custom-stat-item">
-                <div className="hero-custom-stat-icon">
-                  <span className="icon icon--sm icon--cyan">{s.icon}</span>
+                <div
+                  className="hero-custom-stat-icon"
+                  style={{ background: `${s.color}15`, color: s.color }}
+                >
+                  <span className="icon icon--sm">{s.icon}</span>
                 </div>
                 <div className="hero-custom-stat-info">
                   <div className="hero-custom-stat-value">{s.value}</div>

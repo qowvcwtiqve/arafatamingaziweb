@@ -35,14 +35,17 @@ export default function AgreementCheckbox({
         <span className="icon checkmark-icon">check</span>
       </div>
 
-      <div className="agreement-text" onClick={(e) => e.stopPropagation()}>
+      <div className="agreement-text">
         {mode === 'auth' ? (
           <span>
             I agree to the{' '}
             <Link
               href="/terms"
               target="_blank"
-              onClick={onLinkClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onLinkClick) onLinkClick(e);
+              }}
             >
               Terms of Service
             </Link>{' '}
@@ -50,7 +53,10 @@ export default function AgreementCheckbox({
             <Link
               href="/privacy"
               target="_blank"
-              onClick={onLinkClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onLinkClick) onLinkClick(e);
+              }}
             >
               Privacy Policy
             </Link>
@@ -62,7 +68,10 @@ export default function AgreementCheckbox({
             <Link
               href="/terms"
               target="_blank"
-              onClick={onLinkClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onLinkClick) onLinkClick(e);
+              }}
             >
               Terms of Service
             </Link>{' '}
@@ -70,7 +79,10 @@ export default function AgreementCheckbox({
             <Link
               href="/refund"
               target="_blank"
-              onClick={onLinkClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onLinkClick) onLinkClick(e);
+              }}
             >
               Refund Policy
             </Link>
