@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../../lib/api';
 import toast from 'react-hot-toast';
+import CustomDropdown from '../ui/CustomDropdown';
 
 export default function TicketsManagementTab() {
   const [tickets, setTickets] = useState([]);
@@ -268,30 +269,34 @@ export default function TicketsManagementTab() {
         </div>
 
         <div className="tickets-filter-group">
-          <select
-            className="tickets-filter-select"
+          <CustomDropdown
+            options={[
+              { value: 'all', label: 'All Statuses' },
+              { value: 'open', label: 'Open', color: '#10B981' },
+              { value: 'in_progress', label: 'In Progress', color: '#F59E0B' },
+              { value: 'resolved', label: 'Resolved', color: '#3874FF' },
+              { value: 'closed', label: 'Closed', color: '#64748B' },
+            ]}
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">All Statuses</option>
-            <option value="open">Open</option>
-            <option value="in_progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-            <option value="closed">Closed</option>
-          </select>
+            onChange={setStatusFilter}
+            placeholder="All Statuses"
+            minWidth={140}
+          />
 
-          <select
-            className="tickets-filter-select"
+          <CustomDropdown
+            options={[
+              { value: 'all', label: 'All Categories' },
+              { value: 'order_issue', label: 'Order Issue' },
+              { value: 'payment_issue', label: 'Payment Issue' },
+              { value: 'key_replacement', label: 'Key Replacement' },
+              { value: 'deposit_query', label: 'Wallet Deposit' },
+              { value: 'general', label: 'General Support' },
+            ]}
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-          >
-            <option value="all">All Categories</option>
-            <option value="order_issue">Order Issue</option>
-            <option value="payment_issue">Payment Issue</option>
-            <option value="key_replacement">Key Replacement</option>
-            <option value="deposit_query">Wallet Deposit</option>
-            <option value="general">General Support</option>
-          </select>
+            onChange={setCategoryFilter}
+            placeholder="All Categories"
+            minWidth={160}
+          />
 
           <button className="tickets-refresh-btn" onClick={fetchTickets} title="Refresh Tickets">
             <span className="icon icon--sm">refresh</span>
@@ -429,19 +434,20 @@ export default function TicketsManagementTab() {
               </div>
 
               <div className="modal-top-right">
-                <div className="admin-status-changer-box">
-                  <label>Status:</label>
-                  <select
+                <div className="admin-status-changer-box" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)' }}>Status:</label>
+                  <CustomDropdown
+                    options={[
+                      { value: 'open', label: 'Open', color: '#10B981' },
+                      { value: 'in_progress', label: 'In Progress', color: '#F59E0B' },
+                      { value: 'waiting_user', label: 'Waiting on Customer', color: '#8B5CF6' },
+                      { value: 'resolved', label: 'Resolved', color: '#3874FF' },
+                      { value: 'closed', label: 'Closed', color: '#64748B' },
+                    ]}
                     value={activeTicketData?.ticket?.status || 'open'}
-                    onChange={(e) => handleStatusChange(e.target.value)}
-                    className="admin-modal-select"
-                  >
-                    <option value="open">Open</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="waiting_user">Waiting on Customer</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
-                  </select>
+                    onChange={(val) => handleStatusChange(val)}
+                    minWidth={150}
+                  />
                 </div>
 
                 <button

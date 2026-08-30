@@ -1,31 +1,29 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { ChevronDown, Search, Check } from 'lucide-react';
 
 /**
- * Premium Custom Dropdown Component
- * Features: Material Icons, Glassmorphism menu, Search/filter options, Smooth animation, Keyboard & outside click handling
+ * Obsidian Custom Dropdown Component
+ * Features: Zero-emoji, Lucide icons, Obsidian Glassmorphism menu, Search/filter options, Keyboard & outside click handling
  */
 export default function CustomDropdown({
   options = [],
   value,
   onChange,
   placeholder = 'Select option...',
-  icon = null,
-  minWidth = 180,
+  icon: IconComponent = null,
+  minWidth = 170,
   maxWidth = 320,
   style = {},
-  variant = 'default', // default | compact | outline
-  align = 'left',      // left | right
+  align = 'left',
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef(null);
 
-  // Find currently selected option
   const selectedOption = options.find((opt) => String(opt.value) === String(value)) || null;
 
-  // Handle outside click
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -75,50 +73,34 @@ export default function CustomDropdown({
         onClick={() => setIsOpen(!isOpen)}
         style={{
           width: '100%',
-          height: 38,
+          height: 40,
           padding: '0 12px',
           background: isFiltered
-            ? 'rgba(99, 102, 241, 0.12)'
-            : isOpen
-            ? 'var(--color-surface-3)'
-            : 'var(--color-surface-2)',
+            ? 'rgba(56, 116, 255, 0.12)'
+            : 'var(--color-surface-2, #141822)',
           border: isFiltered
-            ? '1px solid var(--color-primary)'
+            ? '1.5px solid #3874FF'
             : isOpen
-            ? '1px solid var(--color-primary-light)'
-            : '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-md)',
-          color: isFiltered ? 'var(--color-primary-light)' : 'var(--color-text)',
+            ? '1.5px solid #3874FF'
+            : '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+          borderRadius: 10,
+          color: isFiltered ? '#3874FF' : 'var(--color-text, #FFFFFF)',
           fontSize: 13,
-          fontWeight: isFiltered ? 600 : 500,
-          fontFamily: 'var(--font-body)',
+          fontWeight: isFiltered ? 700 : 500,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 8,
           cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          boxShadow: isOpen ? '0 0 0 3px rgba(99, 102, 241, 0.15)' : 'none',
+          transition: 'all 0.15s ease',
           userSelect: 'none',
-        }}
-        onMouseEnter={(e) => {
-          if (!isOpen && !isFiltered) e.currentTarget.style.borderColor = 'var(--color-border-hover)';
-        }}
-        onMouseLeave={(e) => {
-          if (!isOpen && !isFiltered) e.currentTarget.style.borderColor = 'var(--color-border)';
+          boxShadow: isOpen ? '0 0 0 3px rgba(56, 116, 255, 0.18)' : 'none',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-          {(selectedOption?.icon || icon) && (
-            <span
-              className="icon icon--sm"
-              style={{
-                fontSize: 16,
-                color: selectedOption?.color || (isFiltered ? 'var(--color-primary-light)' : 'var(--color-text-muted)'),
-                flexShrink: 0,
-              }}
-            >
-              {selectedOption?.icon || icon}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+          {IconComponent && (
+            <span style={{ display: 'flex', alignItems: 'center', color: isFiltered ? '#3874FF' : 'var(--color-text-muted)' }}>
+              {typeof IconComponent === 'function' ? <IconComponent size={15} /> : IconComponent}
             </span>
           )}
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -126,32 +108,29 @@ export default function CustomDropdown({
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-          {selectedOption?.badge && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          {selectedOption?.badge !== undefined && selectedOption?.badge !== null && (
             <span
               style={{
-                fontSize: 11,
+                fontSize: 10.5,
                 padding: '1px 6px',
-                borderRadius: 10,
+                borderRadius: 6,
                 background: 'rgba(255, 255, 255, 0.08)',
                 color: 'var(--color-text-muted)',
-                fontWeight: 600,
+                fontWeight: 700,
               }}
             >
               {selectedOption.badge}
             </span>
           )}
-          <span
-            className="icon icon--sm"
+          <ChevronDown
+            size={15}
+            color={isFiltered ? '#3874FF' : 'var(--color-text-muted)'}
             style={{
-              fontSize: 18,
-              color: isFiltered ? 'var(--color-primary-light)' : 'var(--color-text-faint)',
-              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transform: isOpen ? 'rotate(180deg)' : 'none',
               transition: 'transform 0.2s ease',
             }}
-          >
-            expand_more
-          </span>
+          />
         </div>
       </button>
 
@@ -162,131 +141,118 @@ export default function CustomDropdown({
             position: 'absolute',
             top: 'calc(100% + 6px)',
             [align === 'right' ? 'right' : 'left']: 0,
-            minWidth: Math.max(minWidth, 200),
+            minWidth: '100%',
             width: 'max-content',
-            maxWidth: 360,
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
+            maxWidth: 320,
+            background: 'var(--color-surface, #0F131C)',
+            border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.12))',
             borderRadius: 12,
-            boxShadow: 'var(--shadow-lg), 0 0 20px rgba(99, 102, 241, 0.1)',
-            zIndex: 1050,
-            padding: 6,
+            boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 0, 0, 0.4)',
+            zIndex: 9999,
+            overflow: 'hidden',
+            animation: 'adminScaleIn 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
-            animation: 'dropdownFadeIn 0.15s ease-out',
-            maxHeight: 280,
-            overflowY: 'auto',
           }}
         >
-          {/* Optional inline search if more than 8 options */}
-          {options.length > 8 && (
-            <div style={{ padding: '4px 6px 8px', borderBottom: '1px solid var(--color-border)', marginBottom: 4 }}>
+          {/* Search Header if many options */}
+          {options.length > 5 && (
+            <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--color-border, rgba(255, 255, 255, 0.08))', position: 'relative' }}>
+              <Search size={13} color="var(--color-text-muted)" style={{ position: 'absolute', left: 18, top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
                 autoFocus
                 style={{
                   width: '100%',
                   height: 30,
-                  padding: '0 8px',
-                  background: 'var(--color-surface-2)',
-                  border: '1px solid var(--color-border)',
+                  padding: '0 8px 0 26px',
+                  background: 'var(--color-surface-2, #141822)',
+                  border: '1px solid var(--color-border, rgba(255, 255, 255, 0.1))',
                   borderRadius: 6,
-                  color: 'var(--color-text)',
                   fontSize: 12,
+                  color: 'var(--color-text, #FFFFFF)',
                   outline: 'none',
                 }}
               />
             </div>
           )}
 
-          {filteredOptions.length === 0 ? (
-            <div style={{ padding: '12px 14px', fontSize: 12, color: 'var(--color-text-faint)', textAlign: 'center' }}>
-              No options found
-            </div>
-          ) : (
-            filteredOptions.map((opt) => {
-              const isSelected = String(opt.value) === String(value);
-              return (
-                <div
-                  key={String(opt.value)}
-                  onClick={() => {
-                    onChange(opt.value);
-                    setIsOpen(false);
-                    setSearchQuery('');
-                  }}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                    background: isSelected ? 'rgba(99, 102, 241, 0.18)' : 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 10,
-                    transition: 'all 0.12s ease',
-                    color: isSelected ? '#fff' : 'var(--color-text)',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected) e.currentTarget.style.background = 'transparent';
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
-                    {opt.icon && (
-                      <span
-                        className="icon icon--sm"
-                        style={{
-                          fontSize: 16,
-                          color: opt.color || (isSelected ? 'var(--color-primary-light)' : 'var(--color-text-muted)'),
-                          flexShrink: 0,
-                        }}
-                      >
-                        {opt.icon}
-                      </span>
-                    )}
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: isSelected ? 600 : 400, whiteSpace: 'nowrap' }}>
-                        {opt.label}
-                      </div>
-                      {opt.description && (
-                        <div style={{ fontSize: 11, color: 'var(--color-text-faint)', whiteSpace: 'nowrap' }}>
-                          {opt.description}
-                        </div>
+          {/* Options List */}
+          <div style={{ maxHeight: 240, overflowY: 'auto', padding: '6px' }}>
+            {filteredOptions.length === 0 ? (
+              <div style={{ padding: '12px 14px', fontSize: 12, color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                No options found
+              </div>
+            ) : (
+              filteredOptions.map((opt) => {
+                const isSelected = String(opt.value) === String(value);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt.value);
+                      setIsOpen(false);
+                      setSearchQuery('');
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 8,
+                      background: isSelected ? 'rgba(56, 116, 255, 0.15)' : 'transparent',
+                      border: 'none',
+                      borderRadius: 8,
+                      color: isSelected ? '#3874FF' : 'var(--color-text, #FFFFFF)',
+                      fontSize: 12.5,
+                      fontWeight: isSelected ? 700 : 500,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 0.1s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) e.currentTarget.style.background = 'var(--color-surface-2, #141822)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
+                      {opt.color && (
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: opt.color, flexShrink: 0 }} />
                       )}
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {opt.label}
+                      </span>
                     </div>
-                  </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                    {opt.badge && (
-                      <span
-                        style={{
-                          fontSize: 10,
-                          padding: '1px 5px',
-                          borderRadius: 6,
-                          background: isSelected ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.08)',
-                          color: isSelected ? '#fff' : 'var(--color-text-faint)',
-                          fontWeight: 700,
-                        }}
-                      >
-                        {opt.badge}
-                      </span>
-                    )}
-                    {isSelected && (
-                      <span className="icon icon--sm" style={{ fontSize: 16, color: 'var(--color-primary-light)' }}>
-                        check
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                      {opt.badge !== undefined && opt.badge !== null && (
+                        <span
+                          style={{
+                            fontSize: 10,
+                            padding: '1px 5px',
+                            borderRadius: 4,
+                            background: 'var(--color-surface-2)',
+                            color: 'var(--color-text-muted)',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {opt.badge}
+                        </span>
+                      )}
+                      {isSelected && <Check size={14} color="#3874FF" />}
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
       )}
     </div>

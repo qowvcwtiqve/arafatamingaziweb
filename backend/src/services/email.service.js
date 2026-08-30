@@ -42,7 +42,7 @@ export async function sendOrderConfirmationEmail(orderId) {
     const html = `
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Order Confirmed — QuantumXD Store</title></head>
+<head><meta charset="UTF-8"><title>Order Confirmed — QuantumXD</title></head>
 <body style="margin:0;padding:0;background:#080B14;font-family:'Segoe UI',Arial,sans-serif;color:#e2e8f0;">
   <div style="max-width:600px;margin:40px auto;background:#0d1117;border:1px solid rgba(110,58,255,0.3);border-radius:16px;overflow:hidden;">
     <div style="background:linear-gradient(135deg,#6E3AFF,#00D4FF);padding:32px;text-align:center;">
@@ -77,7 +77,7 @@ export async function sendOrderConfirmationEmail(orderId) {
     await transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: order.email,
-      subject: `Order Confirmed #${order.order_number} — QuantumXD Store`,
+      subject: `Order Confirmed #${order.order_number} — QuantumXD`,
       html,
     });
 

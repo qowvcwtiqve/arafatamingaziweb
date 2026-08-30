@@ -29,11 +29,11 @@ const FAQS = [
   },
   {
     q: 'What payment methods do you accept?',
-    a: 'We accept Indian UPI (GPay, PhonePe, Paytm, BHIM) with automatic instant QR verification, all major Cryptocurrencies via NowPayments (BTC, ETH, USDT, LTC, SOL, etc.), Binance Pay, and QuantumXD Store Wallet Balance.',
+    a: 'We accept Indian UPI (GPay, PhonePe, Paytm, BHIM) with automatic instant QR verification, all major Cryptocurrencies via NowPayments (BTC, ETH, USDT, LTC, SOL, etc.), Binance Pay, and QuantumXD Wallet Balance.',
   },
   {
     q: 'Can I cancel a pre-order?',
-    a: 'Yes! Pre-orders in the processing queue can be cancelled at any time before key dispatch begins by contacting support. When cancelled, 100% of the purchase amount is instantly refunded to your Store Wallet.',
+    a: 'Yes! Pre-orders in the processing queue can be cancelled at any time before key dispatch begins by contacting support. When cancelled, 100% of the purchase amount is instantly refunded to your QuantumXD Wallet.',
   },
 ];
 

@@ -284,7 +284,7 @@ router.post('/wallet/topup', protect, async (req, res, next) => {
         success: true,
         orderId,
         upi_id: upiConfig.upi_id || 'quantumxd@upi',
-        merchant_name: upiConfig.merchant_name || 'QuantumXD Store',
+        merchant_name: upiConfig.merchant_name || 'QuantumXD',
         qr_image_url: upiConfig.qr_image_url || '/upi-qr.png',
         amount: numAmount,
         instructions: upiConfig.instructions || 'Pay to UPI ID or QR, then submit your 12-digit UTR.'

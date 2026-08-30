@@ -1,6 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { 
+  ReceiptText, 
+  CheckCircle2, 
+  Clock, 
+  RotateCcw, 
+  XCircle, 
+  Search, 
+  Copy, 
+  Trash2, 
+  X, 
+  ChevronDown, 
+  Check, 
+  Edit3, 
+  RefreshCw,
+  Zap,
+  User,
+  IndianRupee,
+  Layers
+} from 'lucide-react';
 import api from '../../lib/api';
 import toast from 'react-hot-toast';
 
@@ -16,7 +35,7 @@ export default function OrdersManagementTab() {
     total_revenue: 0,
   });
   const [pagination, setPagination] = useState({ page: 1, limit: 25, total_count: 0, total_pages: 1 });
-  const [statusTab, setStatusTab] = useState('all'); // all | Delivered | Pre-Order | Pending | Refunded | Canceled
+  const [statusTab, setStatusTab] = useState('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -35,7 +54,7 @@ export default function OrdersManagementTab() {
       if (data.stats) setStats(data.stats);
       if (data.pagination) setPagination(data.pagination);
     } catch {
-      toast.error('Failed to load website orders');
+      toast.error('Failed to load orders');
     } finally {
       setLoading(false);
     }
@@ -59,27 +78,27 @@ export default function OrdersManagementTab() {
   const getStatusBadge = (status) => {
     const st = (status || '').toLowerCase();
     if (st === 'delivered' || st === 'paid') {
-      return { label: 'Delivered', color: '#10b981', bg: 'rgba(16,185,129,0.12)', icon: 'check_circle' };
+      return { label: 'Delivered', color: '#10B981', badgeClass: 'approved', icon: CheckCircle2 };
     }
     if (st === 'pre-order' || st === 'preorder') {
-      return { label: 'Pre-Order', color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: 'rocket_launch' };
+      return { label: 'Pre-Order', color: '#8B5CF6', badgeClass: 'processing', icon: Zap };
     }
     if (st === 'pending') {
-      return { label: 'Pending', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: 'hourglass_empty' };
+      return { label: 'Pending', color: '#F59E0B', badgeClass: 'pending', icon: Clock };
     }
     if (st === 'refunded') {
-      return { label: 'Refunded', color: '#00D4FF', bg: 'rgba(0,212,255,0.15)', icon: 'replay' };
+      return { label: 'Refunded', color: '#3874FF', badgeClass: 'processing', icon: RotateCcw };
     }
-    return { label: status || 'Canceled', color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: 'cancel' };
+    return { label: status || 'Canceled', color: '#EF4444', badgeClass: 'failed', icon: XCircle };
   };
 
   const ORDER_TABS = [
-    { id: 'all', label: 'All Website Orders', count: stats.total, icon: 'receipt_long' },
-    { id: 'Delivered', label: 'Delivered / Paid', count: stats.delivered, icon: 'check_circle', color: '#10b981' },
-    { id: 'Pre-Order', label: 'Pre-Orders', count: stats.preorder, icon: 'rocket_launch', color: '#a855f7' },
-    { id: 'Pending', label: 'Pending Queue', count: stats.pending, icon: 'hourglass_empty', color: '#f59e0b' },
-    { id: 'Refunded', label: 'Refunded', count: stats.refunded, icon: 'replay', color: '#00D4FF' },
-    { id: 'Canceled', label: 'Canceled', count: stats.canceled, icon: 'cancel', color: '#ef4444' },
+    { id: 'all', label: 'All Orders', count: stats.total },
+    { id: 'Delivered', label: 'Delivered', count: stats.delivered, color: '#10B981' },
+    { id: 'Pre-Order', label: 'Pre-Orders', count: stats.preorder, color: '#8B5CF6' },
+    { id: 'Pending', label: 'Pending', count: stats.pending, color: '#F59E0B' },
+    { id: 'Refunded', label: 'Refunded', count: stats.refunded, color: '#3874FF' },
+    { id: 'Canceled', label: 'Canceled', count: stats.canceled, color: '#EF4444' },
   ];
 
   const handleDirectDelete = async (e, o) => {
@@ -98,462 +117,225 @@ export default function OrdersManagementTab() {
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 16 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700, margin: 0 }}>
-              Website <span className="text-gradient">Orders Hub</span>
-            </h1>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                padding: '4px 10px',
-                borderRadius: 20,
-                background: 'rgba(110, 58, 255, 0.15)',
-                color: 'var(--color-primary-light)',
-                border: '1px solid rgba(110, 58, 255, 0.3)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 5,
-              }}
-            >
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-primary-light)' }} />
-              Website Sales Stream
-            </span>
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: '4px 0 0' }}>
-            Manage website customer purchases, pre-orders, pending deliveries, and key fulfillment
-          </p>
-        </div>
-      </div>
-
-      {/* Summary KPI Cards */}
-      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: 20 }}>
-        <div className="stat-card">
-          <div className="stat-card__icon" style={{ color: 'var(--color-accent)', background: 'rgba(16,185,129,0.12)' }}>
-            <span className="icon icon--md">payments</span>
-          </div>
-          <div className="stat-card__label">Website Revenue</div>
-          <div className="stat-card__value" style={{ color: 'var(--color-accent)' }}>
-            ₹{stats.total_revenue?.toLocaleString('en-IN', { maximumFractionDigits: 0 }) || 0}
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-card__icon" style={{ color: 'var(--color-primary-light)', background: 'rgba(110,58,255,0.12)' }}>
-            <span className="icon icon--md">shopping_bag</span>
-          </div>
-          <div className="stat-card__label">Paid / Delivered Orders</div>
-          <div className="stat-card__value" style={{ color: 'var(--color-primary-light)' }}>
-            {stats.delivered || 0}
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-card__icon" style={{ color: '#a855f7', background: 'rgba(168,85,247,0.12)' }}>
-            <span className="icon icon--md">rocket_launch</span>
-          </div>
-          <div className="stat-card__label">Active Pre-Orders</div>
-          <div className="stat-card__value" style={{ color: '#a855f7' }}>
-            {stats.preorder || 0}
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-card__icon" style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.12)' }}>
-            <span className="icon icon--md">hourglass_empty</span>
-          </div>
-          <div className="stat-card__label">Pending Manual Queue</div>
-          <div className="stat-card__value" style={{ color: '#f59e0b' }}>
-            {stats.pending || 0}
-          </div>
-        </div>
-      </div>
-
-      {/* Ribbon Navigation Tabs */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 6,
-          overflowX: 'auto',
-          paddingBottom: 10,
-          marginBottom: 16,
-          borderBottom: '1px solid var(--color-border)',
-        }}
-      >
-        {ORDER_TABS.map((t) => {
-          const isActive = statusTab === t.id;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setStatusTab(t.id)}
-              className={`btn ${isActive ? 'btn--primary' : 'btn--ghost'}`}
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                padding: '6px 14px',
-                borderRadius: 'var(--radius-md)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 7,
-                whiteSpace: 'nowrap',
-                background: isActive ? undefined : 'var(--color-surface-2)',
-                border: isActive ? undefined : '1px solid var(--color-border)',
-              }}
-            >
-              <span className="icon icon--sm" style={{ color: t.color || 'inherit' }}>
-                {t.icon}
-              </span>
-              <span>{t.label}</span>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  padding: '1px 6px',
-                  borderRadius: 10,
-                  background: isActive ? 'rgba(255,255,255,0.25)' : 'var(--color-surface-3)',
-                  color: isActive ? '#fff' : 'var(--color-text-muted)',
-                }}
-              >
-                {t.count || 0}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Filter / Search Bar */}
-      <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-        <div style={{ position: 'relative', flex: 1 }}>
-          <span
-            className="icon icon--sm"
-            style={{
-              position: 'absolute',
-              left: 12,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--color-text-faint)',
-            }}
-          >
-            search
-          </span>
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Search by Order ID (#QXD-...), buyer email, product name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ paddingLeft: 36, height: 38, fontSize: 13 }}
-          />
-        </div>
-        <button type="submit" className="btn btn--secondary" style={{ height: 38, gap: 6 }}>
-          <span className="icon icon--sm">filter_alt</span>
-          <span>Search</span>
-        </button>
-        {(search || statusTab !== 'all') && (
-          <button
-            type="button"
-            onClick={() => {
-              setSearch('');
-              setStatusTab('all');
-            }}
-            className="btn btn--ghost"
-            style={{ height: 38 }}
-          >
-            Reset
-          </button>
-        )}
-      </form>
-
-      {/* Orders Table */}
-      <div className="table-responsive" style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-        <table className="table" style={{ margin: 0, width: '100%' }}>
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Product &amp; Plan</th>
-              <th>Customer</th>
-              <th>Price</th>
-              <th>Status</th>
-              <th>Delivered Keys / Content</th>
-              <th>Date</th>
-              <th style={{ textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <div className="skeleton" style={{ height: 20, width: 140, margin: '0 auto 8px' }} />
-                  <div style={{ color: 'var(--color-text-faint)', fontSize: 12 }}>Loading website orders...</div>
-                </td>
-              </tr>
-            ) : orders.length === 0 ? (
-              <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '50px 0', color: 'var(--color-text-faint)' }}>
-                  <span className="icon icon--xl" style={{ display: 'block', margin: '0 auto 8px', color: 'var(--color-text-faint)' }}>
-                    receipt_long
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      
+      {/* FILTER TABS & SEARCH BAR */}
+      <div className="admin-card-section" style={{ margin: 0 }}>
+        <div className="admin-card-header">
+          {/* Scrollable Tab Filters */}
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2, maxWidth: '100%' }}>
+            {ORDER_TABS.map((t) => {
+              const isActive = statusTab.toLowerCase() === t.id.toLowerCase();
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setStatusTab(t.id)}
+                  className={`admin-btn ${isActive ? 'admin-btn-primary' : 'admin-btn-secondary'} admin-btn-sm`}
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  <span>{t.label}</span>
+                  <span style={{
+                    fontSize: 10.5,
+                    fontWeight: 800,
+                    padding: '1px 6px',
+                    borderRadius: 9999,
+                    background: isActive ? 'rgba(255,255,255,0.25)' : 'var(--color-surface-2, #141822)',
+                    marginLeft: 4,
+                  }}>
+                    {t.count || 0}
                   </span>
-                  No website orders found matching this filter.
-                </td>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Search Bar */}
+          <form onSubmit={handleSearchSubmit} className="admin-search-box">
+            <Search size={16} color="var(--color-text-muted)" style={{ marginRight: 8, flexShrink: 0 }} />
+            <input
+              type="text"
+              className="admin-search-input"
+              placeholder="Search by order #, email, product..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </form>
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="admin-table-responsive hide-on-mobile">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Order Number</th>
+                <th>Customer</th>
+                <th>Product / Plan</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Purchased</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
-            ) : (
-              orders.map((o) => {
+            </thead>
+            <tbody>
+              {orders.map((o) => {
                 const badge = getStatusBadge(o.status);
-                const d = new Date(o.purchase_ts || o.created_at || Date.now());
-                const dateStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-
+                const BadgeIcon = badge.icon;
                 return (
-                  <tr
-                    key={o.id || o.order_number}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => setSelectedOrder(o)}
-                    className="hover-row"
-                  >
-                    {/* Order ID */}
+                  <tr key={o.id || o.order_number}>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: 'var(--color-primary-light)' }}>
-                          #{o.order_number || o.id}
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopy(o.order_number || o.id, 'Order ID');
-                          }}
-                          className="btn btn--ghost btn--sm"
-                          style={{ padding: 2, height: 20, width: 20 }}
-                          title="Copy ID"
-                        >
-                          <span className="icon icon--sm" style={{ fontSize: 12 }}>content_copy</span>
-                        </button>
-                      </div>
+                      <span style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 800, color: '#3874FF', fontSize: 13.5 }}>
+                        #{o.order_number || o.id}
+                      </span>
                     </td>
-
-                    {/* Product & Variant */}
                     <td>
-                      <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-text)' }}>
-                        {o.product_name}
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--color-text-faint)', display: 'flex', gap: 6, marginTop: 2 }}>
-                        <span>{o.variant_name || 'Standard'}</span>
-                        <span>•</span>
-                        <span style={{ fontFamily: 'monospace' }}>Pool: {o.pool_id || 'default'}</span>
-                      </div>
-                    </td>
-
-                    {/* Customer */}
-                    <td>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--color-text)' }}>
                         {o.username && o.username !== 'Customer' ? o.username : (o.user_email ? o.user_email.split('@')[0] : 'Customer')}
                       </div>
-                      {o.user_email && <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>{o.user_email}</div>}
+                      <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{o.user_email || '-'}</div>
                     </td>
-
-                    {/* Price */}
                     <td>
-                      <span style={{ fontWeight: 700, fontSize: 14 }}>
-                        ₹{o.price?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      <div style={{ fontWeight: 600 }}>{o.product_name || 'Digital Item'}</div>
+                      <div style={{ fontSize: 11.5, color: 'var(--color-text-muted)' }}>{o.variant_name || 'Standard'}</div>
+                    </td>
+                    <td>
+                      <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, color: '#10B981', fontSize: 14 }}>
+                        ₹{parseFloat(o.price || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                       </span>
                     </td>
-
-                    {/* Status Badge */}
                     <td>
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 5,
-                          padding: '3px 9px',
-                          borderRadius: 20,
-                          fontSize: 11,
-                          fontWeight: 700,
-                          background: badge.bg,
-                          color: badge.color,
-                          border: `1px solid ${badge.color}40`,
-                        }}
-                      >
-                        <span className="icon icon--sm" style={{ fontSize: 13 }}>
-                          {badge.icon}
-                        </span>
-                        {badge.label}
+                      <span className={`admin-badge ${badge.badgeClass}`}>
+                        <BadgeIcon size={12} />
+                        <span>{badge.label}</span>
                       </span>
                     </td>
-
-                    {/* Credentials Preview */}
-                    <td onClick={(e) => e.stopPropagation()}>
-                      {o.credentials ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span
-                            style={{
-                              fontFamily: 'monospace',
-                              fontSize: 11,
-                              background: 'rgba(16,185,129,0.08)',
-                              border: '1px solid rgba(16,185,129,0.25)',
-                              color: '#10b981',
-                              padding: '2px 8px',
-                              borderRadius: 4,
-                              maxWidth: 160,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              display: 'inline-block',
-                            }}
-                            title={o.credentials}
-                          >
-                            {o.credentials}
-                          </span>
-                          <button
-                            onClick={() => handleCopy(o.credentials, 'Keys')}
-                            className="btn btn--ghost btn--sm"
-                            style={{ padding: 4, height: 26, width: 26 }}
-                            title="Copy credentials"
-                          >
-                            <span className="icon icon--sm" style={{ fontSize: 14 }}>content_copy</span>
-                          </button>
-                        </div>
-                      ) : (
-                        <span style={{ fontSize: 12, color: 'var(--color-text-faint)', fontStyle: 'italic' }}>
-                          {o.status === 'Pre-Order' ? '⏳ Pre-order' : 'No content'}
-                        </span>
-                      )}
+                    <td style={{ fontSize: 12.5, color: 'var(--color-text-muted)' }}>
+                      {new Date(o.purchase_ts || o.created_at || Date.now()).toLocaleDateString('en-GB')}
                     </td>
-
-                    {/* Date */}
-                    <td>
-                      <div style={{ fontSize: 12, color: 'var(--color-text)' }}>{dateStr}</div>
-                      <div style={{ fontSize: 10, color: 'var(--color-text-faint)' }}>{timeStr}</div>
-                    </td>
-
-                    {/* Actions */}
-                    <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: 6 }}>
                         <button
+                          type="button"
+                          className="admin-btn admin-btn-secondary admin-btn-sm"
                           onClick={() => setSelectedOrder(o)}
-                          className="btn btn--secondary btn--sm"
-                          style={{ padding: '4px 10px', height: 28, fontSize: 11, gap: 4 }}
+                          title="Edit / Fulfill Order"
                         >
-                          <span className="icon icon--sm" style={{ fontSize: 13 }}>visibility</span>
-                          Manage
+                          <Edit3 size={14} />
+                          <span>Fulfill</span>
                         </button>
                         <button
+                          type="button"
+                          className="admin-btn admin-btn-danger admin-btn-sm"
                           onClick={(e) => handleDirectDelete(e, o)}
-                          className="btn btn--ghost btn--sm"
-                          style={{ padding: '4px 6px', height: 28, color: 'var(--color-text-faint)' }}
                           title="Delete Order"
                         >
-                          <span className="icon icon--sm" style={{ fontSize: 14, color: '#ef4444' }}>delete</span>
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </td>
                   </tr>
                 );
-              })
-            )}
-          </tbody>
-        </table>
+              })}
+              {orders.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: 36, color: 'var(--color-text-muted)' }}>
+                    No orders found matching this filter.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Dedicated Touch Cards */}
+        <div className="admin-mobile-card-list">
+          {orders.map((o) => {
+            const badge = getStatusBadge(o.status);
+            const BadgeIcon = badge.icon;
+            return (
+              <div key={o.id || o.order_number} className="admin-mobile-card">
+                <div className="admin-mobile-card-header">
+                  <div>
+                    <span style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 800, color: '#3874FF', fontSize: 14 }}>
+                      #{o.order_number || o.id}
+                    </span>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--color-text)', marginTop: 2 }}>
+                      {o.product_name || 'Digital Item'}
+                    </div>
+                  </div>
+                  <span className={`admin-badge ${badge.badgeClass}`}>
+                    <BadgeIcon size={12} />
+                    <span>{badge.label}</span>
+                  </span>
+                </div>
+
+                <div className="admin-mobile-card-rows">
+                  <div className="admin-mobile-card-row">
+                    <span>Customer:</span>
+                    <strong style={{ color: 'var(--color-text)' }}>
+                      {o.username && o.username !== 'Customer' ? o.username : (o.user_email || 'Customer')}
+                    </strong>
+                  </div>
+                  <div className="admin-mobile-card-row">
+                    <span>Amount:</span>
+                    <strong style={{ color: '#10B981', fontSize: 14 }}>
+                      ₹{parseFloat(o.price || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    </strong>
+                  </div>
+                  <div className="admin-mobile-card-row">
+                    <span>Date:</span>
+                    <span>{new Date(o.purchase_ts || o.created_at || Date.now()).toLocaleDateString('en-GB')}</span>
+                  </div>
+                </div>
+
+                <div className="admin-mobile-card-actions">
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-primary"
+                    onClick={() => setSelectedOrder(o)}
+                  >
+                    <Edit3 size={15} />
+                    <span>Manage / Fulfill</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-danger"
+                    onClick={(e) => handleDirectDelete(e, o)}
+                  >
+                    <Trash2 size={15} />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
       </div>
 
-      {/* Pagination Footer */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, flexWrap: 'wrap', gap: 10 }}>
-        <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
-          Showing {(pagination.page - 1) * pagination.limit + 1} – {Math.min(pagination.page * pagination.limit, pagination.total_count)} of {pagination.total_count} orders
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button
-            className="btn btn--secondary btn--sm"
-            disabled={pagination.page <= 1}
-            onClick={() => fetchOrders(pagination.page - 1)}
-          >
-            Previous
-          </button>
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-muted)' }}>
-            Page {pagination.page} of {pagination.total_pages || 1}
-          </span>
-          <button
-            className="btn btn--secondary btn--sm"
-            disabled={pagination.page >= (pagination.total_pages || 1)}
-            onClick={() => fetchOrders(pagination.page + 1)}
-          >
-            Next
-          </button>
-        </div>
-      </div>
-
-      {/* Order Details & Fulfillment Modal */}
+      {/* ORDER FULFILLMENT & EDIT MODAL */}
       {selectedOrder && (
-        <OrderDetailsModal
+        <OrderFulfillModal
           order={selectedOrder}
           onClose={() => setSelectedOrder(null)}
-          onUpdate={() => {
+          onUpdate={(updated) => {
+            setOrders((prev) => prev.map((item) => ((item.id === updated.id || item.order_number === updated.order_number) ? updated : item)));
             setSelectedOrder(null);
             fetchOrders(pagination.page);
           }}
           onDelete={(deletedId) => {
-            setSelectedOrder(null);
             setOrders((prev) => prev.filter((item) => item.id !== deletedId && item.order_number !== deletedId));
-            setStats((prev) => ({ ...prev, total: Math.max(0, (prev.total || 1) - 1) }));
+            setSelectedOrder(null);
             fetchOrders(pagination.page);
           }}
         />
       )}
+
     </div>
   );
 }
 
-const STATUS_DROPDOWN_OPTIONS = [
-  {
-    value: 'Delivered',
-    label: 'Delivered / Completed (Active)',
-    icon: 'check_circle',
-    color: '#10b981',
-    bg: 'rgba(16, 185, 129, 0.12)',
-    border: 'rgba(16, 185, 129, 0.35)',
-    desc: 'Credentials dispatched and active for customer',
-  },
-  {
-    value: 'Pre-Order',
-    label: 'Pre-Order (Awaiting Release / Stock)',
-    icon: 'rocket_launch',
-    color: '#a855f7',
-    bg: 'rgba(168, 85, 247, 0.12)',
-    border: 'rgba(168, 85, 247, 0.35)',
-    desc: 'Queued for automated delivery when stock arrives',
-  },
-  {
-    value: 'Pending',
-    label: 'Pending Delivery (Manual Dispatch)',
-    icon: 'hourglass_top',
-    color: '#f59e0b',
-    bg: 'rgba(245, 158, 11, 0.12)',
-    border: 'rgba(245, 158, 11, 0.35)',
-    desc: 'Requires manual admin preparation & fulfillment',
-  },
-  {
-    value: 'Refunded',
-    label: 'Refunded',
-    icon: 'replay',
-    color: '#00D4FF',
-    bg: 'rgba(0, 212, 255, 0.12)',
-    border: 'rgba(0, 212, 255, 0.35)',
-    desc: 'Payment returned to user wallet balance',
-  },
-  {
-    value: 'Canceled',
-    label: 'Canceled',
-    icon: 'cancel',
-    color: '#ef4444',
-    bg: 'rgba(239, 68, 68, 0.12)',
-    border: 'rgba(239, 68, 68, 0.35)',
-    desc: 'Order voided / canceled',
-  },
-];
-
-function OrderDetailsModal({ order, onClose, onUpdate, onDelete }) {
+function OrderFulfillModal({ order, onClose, onUpdate, onDelete }) {
   const [status, setStatus] = useState(order.status || 'Delivered');
   const [credentials, setCredentials] = useState(order.credentials || '');
   const [adminNotes, setAdminNotes] = useState(order.admin_notes || '');
@@ -561,22 +343,28 @@ function OrderDetailsModal({ order, onClose, onUpdate, onDelete }) {
   const [deleting, setDeleting] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const selectedStatusOpt =
-    STATUS_DROPDOWN_OPTIONS.find((o) => o.value.toLowerCase() === (status || '').toLowerCase()) ||
-    STATUS_DROPDOWN_OPTIONS[0];
+  const STATUS_OPTIONS = [
+    { value: 'Delivered', label: 'Delivered / Fulfilled', color: '#10B981', desc: 'Credentials active & accessible' },
+    { value: 'Pre-Order', label: 'Pre-Order In Queue', color: '#8B5CF6', desc: 'Awaiting supplier key generation' },
+    { value: 'Pending', label: 'Pending Verification', color: '#F59E0B', desc: 'Payment or fraud verification' },
+    { value: 'Refunded', label: 'Refunded to Wallet', color: '#3874FF', desc: '100% credited to user balance' },
+    { value: 'Canceled', label: 'Canceled / Void', color: '#EF4444', desc: 'Order terminated without delivery' },
+  ];
+
+  const currentStatusOpt = STATUS_OPTIONS.find(o => o.value.toLowerCase() === status.toLowerCase()) || STATUS_OPTIONS[0];
 
   const handleSave = async (e) => {
-    e?.preventDefault();
-    setSaving(true);
+    e.preventDefault();
     try {
-      const orderParam = encodeURIComponent(String(order.id || order.order_number || '').replace(/^#/, '').trim());
-      await api.put(`/admin/orders/${orderParam}/status`, {
+      setSaving(true);
+      const targetId = String(order.id || order.order_number || '').replace(/^#/, '').trim();
+      const { data } = await api.put(`/admin/orders/${encodeURIComponent(targetId)}`, {
         status,
         credentials,
         admin_notes: adminNotes,
       });
-      toast.success('Order status updated successfully');
-      onUpdate();
+      toast.success('Order updated successfully');
+      onUpdate(data.order || { ...order, status, credentials, admin_notes: adminNotes });
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update order');
     } finally {
@@ -586,19 +374,12 @@ function OrderDetailsModal({ order, onClose, onUpdate, onDelete }) {
 
   const handleDelete = async () => {
     const targetId = String(order.id || order.order_number || '').replace(/^#/, '').trim();
-    if (!window.confirm(`Are you sure you want to permanently delete Order #${order.order_number || order.id}? This will remove it from the system.`)) {
-      return;
-    }
-    setDeleting(true);
+    if (!window.confirm(`Are you sure you want to delete Order #${order.order_number || order.id}?`)) return;
     try {
-      const orderParam = encodeURIComponent(targetId);
-      await api.delete(`/admin/orders/${orderParam}`);
-      toast.success('Order deleted successfully');
-      if (typeof onDelete === 'function') {
-        onDelete(targetId);
-      } else {
-        onUpdate();
-      }
+      setDeleting(true);
+      await api.delete(`/admin/orders/${encodeURIComponent(targetId)}`);
+      toast.success('Order deleted');
+      onDelete(targetId);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to delete order');
     } finally {
@@ -606,130 +387,80 @@ function OrderDetailsModal({ order, onClose, onUpdate, onDelete }) {
     }
   };
 
-  const handleCopy = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
-  };
-
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.75)',
-        backdropFilter: 'blur(6px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: 16,
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          background: 'var(--color-surface)',
-          borderRadius: 16,
-          border: '1px solid var(--color-border)',
-          width: '100%',
-          maxWidth: 600,
-          maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-          overflow: 'visible',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>
-              Order #{order.order_number}
-            </h2>
-            <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: '2px 0 0' }}>
-              Purchased on {new Date(order.purchase_ts).toLocaleString('en-IN')}
-            </p>
+    <div className="admin-modal-backdrop" onClick={onClose}>
+      <div className="admin-modal-panel large" onClick={(e) => e.stopPropagation()}>
+        
+        <div className="admin-modal-header">
+          <div className="admin-modal-title">
+            <ReceiptText size={20} color="#3874FF" />
+            <span>Manage Order #{order.order_number || order.id}</span>
           </div>
-          <button onClick={onClose} className="btn btn--ghost btn--sm" style={{ padding: 6 }}>
-            <span className="icon icon--sm">close</span>
+          <button type="button" className="admin-modal-close-btn" onClick={onClose} aria-label="Close">
+            <X size={18} />
           </button>
         </div>
 
-        {/* Content */}
-        <form onSubmit={handleSave} style={{ padding: 24, overflowY: 'visible', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Product & Buyer Overview */}
-          <div style={{ padding: 14, background: 'var(--color-surface-2)', borderRadius: 10, border: '1px solid var(--color-border)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <form onSubmit={handleSave} className="admin-modal-body">
+          
+          {/* Order Details Grid */}
+          <div style={{
+            padding: 16,
+            background: 'var(--color-surface-2, #141822)',
+            borderRadius: 14,
+            border: '1px solid var(--color-border, rgba(255, 255, 255, 0.08))',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            gap: 12
+          }}>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', fontWeight: 600 }}>Product & Plan</div>
-              <div style={{ fontWeight: 700, fontSize: 14, marginTop: 2 }}>{order.product_name}</div>
-              <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{order.variant_name || 'Standard'} (Pool: {order.pool_id})</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Item & Plan</div>
+              <div style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--color-text)', marginTop: 2 }}>{order.product_name}</div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{order.variant_name || 'Standard'}</div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', fontWeight: 600 }}>Customer / Buyer</div>
-              <div style={{ fontWeight: 700, fontSize: 14, marginTop: 2, color: 'var(--color-text)' }}>
-                {order.username && order.username !== 'Customer' ? order.username : (order.user_email ? order.user_email.split('@')[0] : 'Customer')}
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Customer</div>
+              <div style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--color-text)', marginTop: 2 }}>
+                {order.username && order.username !== 'Customer' ? order.username : (order.user_email || 'Customer')}
               </div>
-              {order.user_email && <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{order.user_email}</div>}
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{order.user_email || '-'}</div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', fontWeight: 600 }}>Amount Paid</div>
-              <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--color-accent)', marginTop: 2 }}>
-                ₹{order.price?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', fontWeight: 600 }}>Delivery Mode</div>
-              <div style={{ fontSize: 13, textTransform: 'capitalize', marginTop: 2 }}>
-                {order.delivery_method || 'Instant Auto'}
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Amount</div>
+              <div style={{ fontWeight: 800, fontSize: 15, color: '#10B981', marginTop: 2 }}>
+                ₹{parseFloat(order.price || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </div>
             </div>
           </div>
 
-          {/* Status Switcher (Custom Dropdown without Emojis) */}
-          <div className="form-group" style={{ position: 'relative' }}>
-            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-              <span className="icon icon--sm" style={{ color: 'var(--color-primary-light)' }}>tune</span>
-              <span>Order Fulfillment Status</span>
+          {/* Custom Status Dropdown */}
+          <div style={{ position: 'relative' }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+              Order Fulfillment Status
             </label>
-
-            {/* Custom Dropdown Trigger */}
             <div
               onClick={() => setDropdownOpen(!dropdownOpen)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '12px 14px',
-                background: selectedStatusOpt.bg,
-                border: `1.5px solid ${selectedStatusOpt.border}`,
-                borderRadius: 'var(--radius-md)',
+                padding: '10px 14px',
+                background: 'var(--color-surface-2, #141822)',
+                border: `1.5px solid ${currentStatusOpt.color}40`,
+                borderRadius: 10,
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
                 userSelect: 'none',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span className="icon icon--sm" style={{ color: selectedStatusOpt.color, fontVariationSettings: "'FILL' 1" }}>
-                  {selectedStatusOpt.icon}
-                </span>
-                <span style={{ fontWeight: 700, fontSize: 13, color: selectedStatusOpt.color }}>
-                  {selectedStatusOpt.label}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: currentStatusOpt.color }} />
+                <span style={{ fontWeight: 700, fontSize: 13, color: currentStatusOpt.color }}>
+                  {currentStatusOpt.label}
                 </span>
               </div>
-              <span
-                className="icon icon--sm icon--muted"
-                style={{
-                  transform: dropdownOpen ? 'rotate(180deg)' : 'none',
-                  transition: 'transform 0.2s ease',
-                  color: selectedStatusOpt.color,
-                }}
-              >
-                expand_more
-              </span>
+              <ChevronDown size={16} color={currentStatusOpt.color} />
             </div>
 
-            {/* Custom Dropdown Menu */}
             {dropdownOpen && (
               <div
                 style={{
@@ -737,20 +468,19 @@ function OrderDetailsModal({ order, onClose, onUpdate, onDelete }) {
                   top: 'calc(100% + 6px)',
                   left: 0,
                   right: 0,
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-lg)',
-                  boxShadow: '0 16px 40px rgba(0,0,0,0.65)',
+                  background: 'var(--color-surface, #0F131C)',
+                  border: '1px solid var(--color-border, rgba(255, 255, 255, 0.12))',
+                  borderRadius: 12,
+                  boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
                   zIndex: 100,
-                  overflow: 'hidden',
                   padding: 6,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 4,
                 }}
               >
-                {STATUS_DROPDOWN_OPTIONS.map((opt) => {
-                  const isSelected = opt.value.toLowerCase() === (status || '').toLowerCase();
+                {STATUS_OPTIONS.map((opt) => {
+                  const isSelected = opt.value.toLowerCase() === status.toLowerCase();
                   return (
                     <div
                       key={opt.value}
@@ -763,36 +493,20 @@ function OrderDetailsModal({ order, onClose, onUpdate, onDelete }) {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         padding: '10px 12px',
-                        borderRadius: 'var(--radius-md)',
-                        background: isSelected ? opt.bg : 'transparent',
+                        borderRadius: 8,
+                        background: isSelected ? `${opt.color}15` : 'transparent',
                         cursor: 'pointer',
-                        transition: 'background 0.15s ease',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isSelected) e.currentTarget.style.background = 'var(--color-surface-2)';
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSelected) e.currentTarget.style.background = 'transparent';
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span className="icon icon--sm" style={{ color: opt.color, fontVariationSettings: "'FILL' 1" }}>
-                          {opt.icon}
-                        </span>
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: 13, color: isSelected ? opt.color : 'var(--color-text)' }}>
-                            {opt.label}
-                          </div>
-                          <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>
-                            {opt.desc}
-                          </div>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 13, color: isSelected ? opt.color : 'var(--color-text)' }}>
+                          {opt.label}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
+                          {opt.desc}
                         </div>
                       </div>
-                      {isSelected && (
-                        <span className="icon icon--sm" style={{ color: opt.color }}>
-                          check
-                        </span>
-                      )}
+                      {isSelected && <Check size={16} color={opt.color} />}
                     </div>
                   );
                 })}
@@ -800,71 +514,94 @@ function OrderDetailsModal({ order, onClose, onUpdate, onDelete }) {
             )}
           </div>
 
-          {/* Credentials / Delivery Content */}
-          <div className="form-group">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <label className="form-label" style={{ margin: 0 }}>
-                Delivered Credentials / Digital Keys
+          {/* Credentials Field */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)' }}>
+                Digital Credentials / Product License Keys
               </label>
               {credentials && (
                 <button
                   type="button"
-                  onClick={() => handleCopy(credentials)}
-                  className="btn btn--ghost btn--sm"
-                  style={{ height: 24, padding: '0 8px', fontSize: 11, gap: 4 }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(credentials);
+                    toast.success('Copied credentials!');
+                  }}
+                  className="admin-btn admin-btn-secondary admin-btn-sm"
+                  style={{ height: 26, padding: '0 8px', fontSize: 11 }}
                 >
-                  <span className="icon icon--sm" style={{ fontSize: 13 }}>content_copy</span> Copy
+                  <Copy size={12} />
+                  <span>Copy</span>
                 </button>
               )}
             </div>
             <textarea
-              className="form-input"
               rows={4}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                background: 'var(--color-surface-2, #141822)',
+                border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                borderRadius: 10,
+                fontSize: 12.5,
+                fontFamily: 'ui-monospace, monospace',
+                color: 'var(--color-text, #FFFFFF)',
+                outline: 'none',
+              }}
               placeholder="user@example.com:password&#10;KEY-XXXX-YYYY"
               value={credentials}
               onChange={(e) => setCredentials(e.target.value)}
-              style={{ fontFamily: 'monospace', fontSize: 12 }}
             />
-            <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginTop: 4 }}>
-              {status === 'Pre-Order' || status === 'Pending'
-                ? 'Paste the newly generated credentials here and set Status to "Delivered" to fulfill this order.'
-                : 'Credentials already dispatched to the customer. You can edit or re-dispatch if needed.'}
-            </div>
           </div>
 
           {/* Admin Notes */}
-          <div className="form-group">
-            <label className="form-label">Internal Admin Notes (Optional)</label>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+              Internal Admin Notes
+            </label>
             <input
-              className="form-input"
-              placeholder="e.g. Account replaced on 18 Apr, Warranty valid till Dec..."
+              type="text"
+              style={{
+                width: '100%',
+                height: 40,
+                padding: '0 12px',
+                background: 'var(--color-surface-2, #141822)',
+                border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                borderRadius: 10,
+                fontSize: 13,
+                color: 'var(--color-text, #FFFFFF)',
+                outline: 'none',
+              }}
+              placeholder="e.g. Warranty valid till Dec, replacement provided..."
               value={adminNotes}
               onChange={(e) => setAdminNotes(e.target.value)}
             />
           </div>
 
-          {/* Actions */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginTop: 10 }}>
+          {/* Footer Actions */}
+          <div className="admin-modal-footer" style={{ margin: '8px -24px -24px', padding: '16px 24px' }}>
             <button
               type="button"
+              className="admin-btn admin-btn-danger"
               onClick={handleDelete}
-              className="btn btn--danger btn--sm"
               disabled={deleting || saving}
-              style={{ gap: 5, background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '6px 14px' }}
             >
-              <span className="icon icon--sm">delete</span>
-              {deleting ? 'Deleting...' : 'Delete Order'}
+              <Trash2 size={15} />
+              <span>{deleting ? 'Deleting...' : 'Delete Order'}</span>
             </button>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button type="button" onClick={onClose} className="btn btn--secondary">
+              <button type="button" className="admin-btn admin-btn-secondary" onClick={onClose}>
                 Cancel
               </button>
-              <button type="submit" className="btn btn--primary" disabled={saving || deleting}>
-                {saving ? 'Saving...' : 'Update & Sync Order'}
+              <button type="submit" className="admin-btn admin-btn-primary" disabled={saving || deleting}>
+                <Check size={15} />
+                <span>{saving ? 'Syncing...' : 'Save & Sync Order'}</span>
               </button>
             </div>
           </div>
+
         </form>
+
       </div>
     </div>
   );

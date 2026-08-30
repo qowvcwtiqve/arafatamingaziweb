@@ -17,7 +17,7 @@ const nextConfig = {
     ];
   },
   env: {
-    NEXT_PUBLIC_STORE_NAME: process.env.NEXT_PUBLIC_STORE_NAME || 'QuantumXD Store',
+    NEXT_PUBLIC_STORE_NAME: process.env.NEXT_PUBLIC_STORE_NAME || 'QuantumXD',
     NEXT_PUBLIC_UPI_QR_URL: process.env.NEXT_PUBLIC_UPI_QR_URL || '',
   },
 };

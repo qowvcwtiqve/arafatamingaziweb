@@ -16,15 +16,15 @@ import Footer from '../components/layout/Footer';
 
 export const metadata = {
   title: {
-    default: 'QuantumXD Store — Digital Marketplace',
-    template: '%s | QuantumXD Store',
+    default: 'QuantumXD — Digital Marketplace',
+    template: '%s | QuantumXD',
   },
   description: 'Buy premium digital products, software, templates, and tools. Instant delivery, secure payments via UPI, Crypto & Binance Pay.',
   keywords: ['digital products', 'software', 'templates', 'instant download', 'UPI payment', 'crypto payment'],
   metadataBase: new URL(process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://quantumxd.store'),
   openGraph: {
     type: 'website',
-    title: 'QuantumXD Store — Digital Marketplace',
+    title: 'QuantumXD — Digital Marketplace',
     icons: {
       icon: '/favicon.svg',
     },

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Privacy Policy | QuantumXD Store',
+  title: 'Privacy Policy | QuantumXD',
   description: 'How QuantumXD protects your personal data, transaction references, and ensures zero storage of banking information.',
 };
 

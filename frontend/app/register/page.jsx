@@ -37,7 +37,7 @@ export default function RegisterPage() {
       <div style={{ width: '100%', maxWidth: 420, position: 'relative', zIndex: 1 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Link href="/" style={{ fontFamily: 'var(--font-heading)', fontSize: 24, fontWeight: 700, background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-            QuantumXD Store
+            QuantumXD
           </Link>
           <p style={{ color: 'var(--color-text-muted)', marginTop: 6, fontSize: 15 }}>Create your free account</p>
         </div>

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Refund & Cancellation Policy | QuantumXD Store',
+  title: 'Refund & Cancellation Policy | QuantumXD',
   description: 'Our policy on digital product fulfillment, replacements, store wallet credits, and non-refundable digital goods.',
 };
 
@@ -130,7 +130,7 @@ export default function RefundPage() {
               <div style={{ padding: 14, background: 'var(--color-surface-2)', borderRadius: 10, border: '1px solid var(--color-border)' }}>
                 <strong style={{ color: 'var(--color-text)' }}>B. Undeliverable / Out-of-Stock Orders:</strong>
                 <p style={{ margin: '4px 0 0', color: 'var(--color-text-muted)', fontSize: 13.5 }}>
-                  If an order cannot be fulfilled due to inventory exhaustion, supplier delay, or administrative cancellation prior to key generation, 100% of the purchase amount will be credited to your <strong>QuantumXD Store Wallet</strong> or refunded.
+                  If an order cannot be fulfilled due to inventory exhaustion, supplier delay, or administrative cancellation prior to key generation, 100% of the purchase amount will be credited to your <strong>QuantumXD Wallet</strong> or refunded.
                 </p>
               </div>
               <div style={{ padding: 14, background: 'var(--color-surface-2)', borderRadius: 10, border: '1px solid var(--color-border)' }}>
@@ -148,10 +148,10 @@ export default function RefundPage() {
           <div>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 700, color: 'var(--color-text)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span className="icon icon--sm icon--cyan">account_balance_wallet</span>
-              4. Store Wallet Balance Credits
+              4. Wallet Balance Credits
             </h2>
             <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>
-              All approved refunds for delivered items or replacement reconciliations are credited exclusively to the user's <strong>QuantumXD Store Wallet</strong>. Wallet balance credits have no expiration date and can be used immediately across any product in our catalog. Wallet balance cannot be withdrawn to external bank accounts or converted into fiat cash.
+              All approved refunds for delivered items or replacement reconciliations are credited exclusively to the user's <strong>QuantumXD Wallet</strong>. Wallet balance credits have no expiration date and can be used immediately across any product in our catalog. Wallet balance cannot be withdrawn to external bank accounts or converted into fiat cash.
             </p>
           </div>
 

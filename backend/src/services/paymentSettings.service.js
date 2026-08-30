@@ -9,7 +9,7 @@ const DEFAULT_PAYMENT_SETTINGS = {
     icon: 'qr_code_2',
     color: '#10B981',
     upi_id: 'quantumxd@upi',
-    merchant_name: 'QuantumXD Store',
+    merchant_name: 'QuantumXD',
     qr_image_url: '/upi-qr.png',
     instructions: 'Scan QR code or pay to UPI ID, then enter your 12-digit UTR / Reference ID.',
   },

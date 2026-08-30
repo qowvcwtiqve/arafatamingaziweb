@@ -10,10 +10,29 @@ import {
   Users,
   CreditCard,
   TicketPercent,
-  Edit,
+  Edit2,
   Tags,
   Wallet,
   MessageSquare,
+  Menu,
+  X,
+  ExternalLink,
+  Sun,
+  Moon,
+  LogOut,
+  Plus,
+  Trash2,
+  Lock,
+  Unlock,
+  Eye,
+  IndianRupee,
+  Search,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  ChevronRight,
+  TrendingUp,
+  ShieldCheck,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
@@ -35,11 +54,11 @@ const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'tickets', label: 'Support Tickets', icon: MessageSquare },
   { id: 'orders', label: 'Orders', icon: ReceiptText },
-  { id: 'products', label: 'Products', icon: Box },
-  { id: 'users', label: 'Users', icon: Users },
-  { id: 'payments', label: 'Payment Settings', icon: Wallet },
-  { id: 'deposits', label: 'Deposits', icon: CreditCard },
-  { id: 'coupons', label: 'Coupons', icon: TicketPercent },
+  { id: 'products', label: 'Products Catalog', icon: Box },
+  { id: 'users', label: 'Users & Wallets', icon: Users },
+  { id: 'payments', label: 'Payment Gateways', icon: Wallet },
+  { id: 'deposits', label: 'Deposit Verifications', icon: CreditCard },
+  { id: 'coupons', label: 'Discount Coupons', icon: TicketPercent },
   { id: 'categories', label: 'Categories', icon: Tags },
 ];
 
@@ -54,7 +73,9 @@ export default function AdminPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [users, setUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState('');
   const [deposits, setDeposits] = useState([]);
+  const [depositSearch, setDepositSearch] = useState('');
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState({});
   const [modalConfig, setModalConfig] = useState(null);
@@ -110,7 +131,7 @@ export default function AdminPage() {
     loadTab('overview');
   }, [user, mounted, _hasHydrated]);
 
-  // ⚡ Live Real-time Auto-Sync with Telegram Bot Database
+  // ⚡ Live Real-time Auto-Sync with Realtime Events
   useEffect(() => {
     if (!mounted) return;
 
@@ -131,7 +152,6 @@ export default function AdminPage() {
       // ignore
     }
 
-    // High-speed background sync every 5 seconds (Zero refresh needed)
     const syncInterval = setInterval(() => {
       if (activeTab === 'products') {
         api.get('/admin/bot/products').then(({ data }) => {
@@ -249,7 +269,7 @@ export default function AdminPage() {
         setCategories(prev => prev.filter(c => c.id !== id));
         toast.success('Category deleted');
       } catch (err) {
-        toast.error(err.response?.data?.error || 'Failed to delete category');
+        toast.error('Failed to delete category');
       }
     });
   };
@@ -260,487 +280,749 @@ export default function AdminPage() {
 
   if (!mounted || !displayUser || displayUser.role !== 'admin') {
     return (
-      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="skeleton" style={{ width: 60, height: 60, borderRadius: '50%' }} />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0B0E14' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', border: '3px solid rgba(56, 116, 255, 0.2)', borderTopColor: '#3874FF', animation: 'spin 0.8s linear infinite' }} />
       </div>
     );
   }
 
+  const currentTabObj = TABS.find(t => t.id === activeTab) || TABS[0];
+  const CurrentIcon = currentTabObj.icon;
+
+  const filteredUsers = users.filter(u => {
+    if (!userSearch) return true;
+    const s = userSearch.toLowerCase();
+    return (u.name || '').toLowerCase().includes(s) || (u.email || '').toLowerCase().includes(s) || (u.id || '').toLowerCase().includes(s);
+  });
+
+  const filteredDeposits = deposits.filter(d => {
+    if (!depositSearch) return true;
+    const s = depositSearch.toLowerCase();
+    return (d.user_name || '').toLowerCase().includes(s) || (d.user_email || '').toLowerCase().includes(s) || (d.transaction_id || '').toLowerCase().includes(s) || (d.gateway || '').toLowerCase().includes(s);
+  });
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg)', position: 'relative' }}>
+    <div className="admin-master-wrapper">
       <AdminModal config={modalConfig} onClose={() => setModalConfig(null)} />
-      
-      {/* Mobile Top Header (only on <= 992px) */}
-      <div
-        className="admin-mobile-topbar"
-        style={{
-          display: 'none',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 56,
-          background: 'var(--color-surface)',
-          borderBottom: '1px solid var(--color-border)',
-          zIndex: 90,
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 16px',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+
+      {/* MOBILE TOP APPBAR */}
+      <header className="admin-mobile-header">
+        <div className="admin-mobile-header-left">
           <button
+            type="button"
+            className="admin-hamburger-btn"
             onClick={() => setMobileSidebarOpen(true)}
-            className="btn btn--ghost btn--icon"
-            style={{ padding: 6 }}
-            aria-label="Open menu"
+            aria-label="Open Navigation Menu"
           >
-            <span className="icon icon--md">menu</span>
+            <Menu size={20} />
           </button>
-          <Logo size="small" showTag={false} />
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 800,
-              padding: '2px 6px',
-              borderRadius: 6,
-              background: 'rgba(124, 58, 237, 0.15)',
-              color: 'var(--color-primary-light)',
-            }}
-          >
-            ADMIN
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Logo size="small" showTag={false} />
+            <span className="admin-brand-badge">ADMIN</span>
+          </div>
         </div>
 
-        <button
-          onClick={toggleTheme}
-          className="btn btn--ghost btn--icon"
-          style={{ padding: 6 }}
-          aria-label="Toggle theme"
-        >
-          <span className="icon icon--sm">
-            {theme === 'light' ? 'dark_mode' : 'light_mode'}
-          </span>
-        </button>
-      </div>
+        <div className="admin-mobile-header-actions">
+          <button
+            type="button"
+            className="admin-theme-switch-btn"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
+            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
+          <Link
+            href="/"
+            target="_blank"
+            className="admin-theme-switch-btn"
+            title="Open Live Store"
+          >
+            <ExternalLink size={15} />
+          </Link>
+        </div>
+      </header>
 
-      {/* Mobile Overlay Backdrop */}
-      {mobileSidebarOpen && (
-        <div
-          onClick={() => setMobileSidebarOpen(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.6)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 95,
-          }}
-        />
-      )}
+      {/* MOBILE DRAWER BACKDROP */}
+      <div 
+        className={`admin-drawer-backdrop ${mobileSidebarOpen ? 'is-open' : ''}`}
+        onClick={() => setMobileSidebarOpen(false)}
+      />
 
-      {/* Standalone Clean Admin Sidebar */}
-      <aside
-        className={`admin-sidebar ${mobileSidebarOpen ? 'admin-sidebar--mobile-open' : ''}`}
-        style={{
-          width: 250,
-          background: 'var(--color-surface)',
-          borderRight: '1px solid var(--color-border)',
-          position: 'fixed',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          padding: '20px 16px',
-          zIndex: 100,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          overflowY: 'auto',
-          transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-        }}
-      >
-        <div>
-          {/* Brand Logo & Store Link */}
-          <div style={{ padding: '0 4px 18px', borderBottom: '1px solid var(--color-border)', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <Logo size="medium" />
-              <span style={{
-                fontSize: 10,
-                fontWeight: 800,
-                letterSpacing: '0.06em',
-                padding: '3px 8px',
-                borderRadius: 12,
-                background: 'rgba(110, 58, 255, 0.15)',
-                color: 'var(--color-primary-light)',
-                textTransform: 'uppercase'
-              }}>
-                ADMIN
-              </span>
+      {/* DESKTOP & SLIDE-OVER MOBILE SIDEBAR */}
+      <aside className={`admin-sidebar ${mobileSidebarOpen ? 'is-mobile-open' : ''}`}>
+        <div className="admin-sidebar-header">
+          <Link href="/" className="admin-brand-tag" target="_blank">
+            <Logo size="medium" showTag={false} />
+            <div className="admin-brand-text">
+              <span className="admin-brand-badge">EXECUTIVE SUITE</span>
             </div>
+          </Link>
+          <button
+            type="button"
+            className="admin-sidebar-close-btn"
+            onClick={() => setMobileSidebarOpen(false)}
+            aria-label="Close navigation"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-            {/* Direct 1-Click Link to Live Store */}
-            <Link
-              href="/"
-              target="_blank"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '9px 12px',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--color-surface-2)',
-                border: '1px solid var(--color-border)',
-                textDecoration: 'none',
-                color: 'var(--color-text)',
-                fontSize: 12,
-                fontWeight: 600,
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
-              onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--color-border)'}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                <span className="icon icon--sm icon--cyan">storefront</span>
-                <span>Go to Store</span>
-              </div>
-              <span className="icon icon--sm icon--muted" style={{ fontSize: 14 }}>open_in_new</span>
-            </Link>
-          </div>
-
-          {/* Nav Tabs */}
-          <nav className="admin-sidebar-nav" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {TABS.map(t => (
+        <nav className="admin-sidebar-nav">
+          {TABS.map(t => {
+            const Icon = t.icon;
+            const isActive = activeTab === t.id;
+            return (
               <button
                 key={t.id}
+                type="button"
                 onClick={() => loadTab(t.id)}
-                className="admin-sidebar-btn"
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 11, padding: '10px 14px',
-                  borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer',
-                  background: activeTab === t.id ? 'var(--gradient-primary)' : 'transparent',
-                  color: activeTab === t.id ? '#fff' : 'var(--color-text-muted)',
-                  fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: activeTab === t.id ? 700 : 500,
-                  transition: 'all 0.2s ease', textAlign: 'left', width: '100%',
-                  boxShadow: activeTab === t.id ? '0 4px 14px rgba(110, 58, 255, 0.35)' : 'none'
-                }}
+                className={`admin-nav-item-btn ${isActive ? 'is-active' : ''}`}
               >
-                <t.icon size={18} />
-                <span>{t.label}</span>
+                <div className="admin-nav-item-left">
+                  <Icon className="admin-nav-icon" />
+                  <span className="admin-nav-label">{t.label}</span>
+                </div>
+                {t.id === 'tickets' && stats?.open_tickets > 0 && (
+                  <span className="admin-nav-pill-count alert">{stats.open_tickets}</span>
+                )}
+                {t.id === 'orders' && stats?.pending_orders > 0 && (
+                  <span className="admin-nav-pill-count">{stats.pending_orders}</span>
+                )}
               </button>
-            ))}
-          </nav>
-        </div>
+            );
+          })}
+        </nav>
 
-        {/* Sidebar Footer */}
-        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 14, marginTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          
-          {/* Dark / Light Mode Switch */}
-          <button
-            onClick={toggleTheme}
-            type="button"
-            className="btn btn--outline btn--sm"
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '8px 12px',
-              fontSize: 12,
-              fontWeight: 600,
-              background: 'var(--color-surface-2)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)',
-              color: 'var(--color-text)',
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="icon icon--sm" style={{ color: theme === 'light' ? '#f59e0b' : 'var(--color-cyan)' }}>
-                {theme === 'light' ? 'light_mode' : 'dark_mode'}
-              </span>
-              <span>{theme === 'light' ? 'Light Theme' : 'Dark Theme'}</span>
+        <div className="admin-sidebar-footer">
+          <div className="admin-user-tag">
+            <div className="admin-user-avatar">
+              {(displayUser.name || displayUser.email || 'A')[0].toUpperCase()}
             </div>
-            <span className="icon icon--sm icon--muted" style={{ fontSize: 13 }}>tune</span>
-          </button>
-
-          <div style={{ padding: '4px 6px' }}>
-            <div style={{ fontSize: 11, color: 'var(--color-text-faint)', textTransform: 'uppercase', fontWeight: 700 }}>
-              Logged in as
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {displayUser.email}
+            <div className="admin-user-info">
+              <span className="admin-user-name">{displayUser.name || 'Administrator'}</span>
+              <span className="admin-user-role">Super Admin</span>
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              useAuthStore.getState().logout();
-              router.push('/login');
-            }}
-            className="btn btn--ghost btn--sm"
-            style={{ width: '100%', justifyContent: 'flex-start', gap: 8, color: 'var(--color-error)' }}
-          >
-            <span className="icon icon--sm">logout</span>
-            <span>Sign Out</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button
+              type="button"
+              className="admin-theme-switch-btn"
+              onClick={toggleTheme}
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            >
+              {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
+            </button>
+            <button
+              type="button"
+              className="admin-theme-switch-btn"
+              onClick={() => {
+                useAuthStore.getState().logout();
+                router.push('/login');
+              }}
+              title="Sign Out"
+            >
+              <LogOut size={15} color="#EF4444" />
+            </button>
+          </div>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="admin-content" style={{ marginLeft: 250, flex: 1, padding: '32px 40px', maxWidth: 'calc(100% - 250px)' }}>
+      {/* MAIN CONTENT WORKSPACE */}
+      <div className="admin-main-container">
         
-        {/* OVERVIEW */}
-        {activeTab === 'overview' && (
-          <div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700, marginBottom: 28 }}>
-              Dashboard <span className="text-gradient">Overview</span>
-            </h1>
-            {stats ? (
-              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                {[
-                  { label: 'Total Revenue', value: `₹${parseFloat(stats.total_revenue || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, icon: 'payments', color: 'var(--color-accent)' },
-                  { label: 'Paid Orders', value: stats.paid_orders || 0, icon: 'shopping_bag', color: 'var(--color-primary-light)' },
-                  { label: 'Active Bot Products', value: `${stats.active_products || 0} Products`, icon: 'inventory_2', color: '#00D4FF' },
-                  { label: 'Bot Categories', value: `${stats.total_categories || 7} Categories`, icon: 'category', color: '#10b981' },
-                ].map(s => (
-                  <div key={s.label} className="stat-card">
-                    <div className="stat-card__icon" style={{ color: s.color, background: `${s.color}18` }}>
-                      <span className="icon icon--md">{s.icon}</span>
+        {/* DESKTOP TOP HEADER STRIP */}
+        <div className="admin-top-header-strip">
+          <div className="admin-header-title-box">
+            <CurrentIcon size={22} color="#3874FF" />
+            <h1 className="admin-section-heading">{currentTabObj.label}</h1>
+            <div className="admin-live-pulse-badge">
+              <span className="admin-pulse-dot" />
+              <span>Realtime Engine Active</span>
+            </div>
+          </div>
+
+          <div className="admin-header-actions">
+            <Link href="/" target="_blank" className="admin-view-store-link">
+              <ExternalLink size={14} />
+              <span>Live Marketplace</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* CONTENT BODY */}
+        <main className="admin-content-body">
+          
+          {/* TAB 1: OVERVIEW */}
+          {activeTab === 'overview' && (
+            <div>
+              {/* Metric Cards Grid */}
+              <div className="admin-stats-grid">
+                <div className="admin-stat-card">
+                  <div className="admin-stat-top">
+                    <span className="admin-stat-label">Total Revenue</span>
+                    <div className="admin-stat-icon-wrap emerald">
+                      <IndianRupee size={18} />
                     </div>
-                    <div className="stat-card__label">{s.label}</div>
-                    <div className="stat-card__value" style={{ color: s.color }}>{s.value}</div>
+                  </div>
+                  <div className="admin-stat-value" style={{ color: '#10B981' }}>
+                    ₹{parseFloat(stats?.total_revenue || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </div>
+                  <div className="admin-stat-subtext">
+                    <TrendingUp size={13} color="#10B981" />
+                    <span>Verified gateway transactions</span>
+                  </div>
+                </div>
+
+                <div className="admin-stat-card">
+                  <div className="admin-stat-top">
+                    <span className="admin-stat-label">Delivered Orders</span>
+                    <div className="admin-stat-icon-wrap">
+                      <ReceiptText size={18} />
+                    </div>
+                  </div>
+                  <div className="admin-stat-value" style={{ color: '#3874FF' }}>
+                    {stats?.paid_orders || 0}
+                  </div>
+                  <div className="admin-stat-subtext">
+                    <span>Instant automated fulfillment</span>
+                  </div>
+                </div>
+
+                <div className="admin-stat-card">
+                  <div className="admin-stat-top">
+                    <span className="admin-stat-label">Live Catalog</span>
+                    <div className="admin-stat-icon-wrap purple">
+                      <Box size={18} />
+                    </div>
+                  </div>
+                  <div className="admin-stat-value" style={{ color: '#8B5CF6' }}>
+                    {stats?.active_products || 0}
+                  </div>
+                  <div className="admin-stat-subtext">
+                    <span>Active keys & license stock</span>
+                  </div>
+                </div>
+
+                <div className="admin-stat-card">
+                  <div className="admin-stat-top">
+                    <span className="admin-stat-label">Registered Accounts</span>
+                    <div className="admin-stat-icon-wrap amber">
+                      <Users size={18} />
+                    </div>
+                  </div>
+                  <div className="admin-stat-value" style={{ color: '#F59E0B' }}>
+                    {stats?.total_users || users.length || 0}
+                  </div>
+                  <div className="admin-stat-subtext">
+                    <span>Customer wallet profiles</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Navigation Matrix */}
+              <div className="admin-card-section">
+                <div className="admin-card-header">
+                  <div className="admin-card-title">
+                    <ShieldCheck size={18} color="#3874FF" />
+                    <span>Executive Quick Controls</span>
+                  </div>
+                </div>
+                <div style={{ padding: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <button 
+                    type="button" 
+                    className="admin-btn admin-btn-primary" 
+                    onClick={() => loadTab('products')}
+                  >
+                    <Box size={16} />
+                    <span>Manage Catalog</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    className="admin-btn admin-btn-secondary" 
+                    onClick={() => loadTab('orders')}
+                  >
+                    <ReceiptText size={16} />
+                    <span>View Orders</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    className="admin-btn admin-btn-secondary" 
+                    onClick={() => loadTab('tickets')}
+                  >
+                    <MessageSquare size={16} />
+                    <span>Support Queue</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    className="admin-btn admin-btn-secondary" 
+                    onClick={() => loadTab('deposits')}
+                  >
+                    <CreditCard size={16} />
+                    <span>Deposit Logs</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    className="admin-btn admin-btn-secondary" 
+                    onClick={() => loadTab('payments')}
+                  >
+                    <Wallet size={16} />
+                    <span>Payment Gateways</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: SUPPORT TICKETS */}
+          {activeTab === 'tickets' && (
+            <TicketsManagementTab />
+          )}
+
+          {/* TAB 3: ORDERS */}
+          {activeTab === 'orders' && (
+            <OrdersManagementTab />
+          )}
+
+          {/* TAB 4: PRODUCTS */}
+          {activeTab === 'products' && (
+            <ProductsManagementTab
+              products={products}
+              setProducts={setProducts}
+              categories={categories}
+              onEditMeta={setEditProductConfig}
+              onDelete={handleDeleteProduct}
+              onAddProduct={() => setShowAddProduct(true)}
+              loading={loading.products}
+            />
+          )}
+
+          {/* TAB 5: USERS */}
+          {activeTab === 'users' && (
+            <div className="admin-card-section">
+              <div className="admin-card-header">
+                <div className="admin-card-title">
+                  <Users size={18} color="#3874FF" />
+                  <span>Customer Directory ({filteredUsers.length})</span>
+                </div>
+                <div className="admin-card-actions">
+                  <div className="admin-search-box">
+                    <Search size={16} color="var(--color-text-muted)" style={{ marginRight: 8, flexShrink: 0 }} />
+                    <input
+                      type="text"
+                      className="admin-search-input"
+                      placeholder="Search by name, email, ID..."
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop Table */}
+              <div className="admin-table-responsive hide-on-mobile">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Role</th>
+                      <th>Wallet Balance</th>
+                      <th>Status</th>
+                      <th>Registered</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map(u => (
+                      <tr key={u.id}>
+                        <td>
+                          <div style={{ fontWeight: 700, color: 'var(--color-text)' }}>{u.name || 'User'}</div>
+                          <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{u.email}</div>
+                        </td>
+                        <td>
+                          <span className={`admin-badge ${u.role === 'admin' ? 'processing' : 'closed'}`}>
+                            {u.role}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, color: '#10B981', fontSize: 14 }}>
+                            ₹{parseFloat(u.balance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`admin-badge ${u.is_frozen ? 'failed' : 'approved'}`}>
+                            {u.is_frozen ? 'Frozen' : 'Active'}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: 12.5, color: 'var(--color-text-muted)' }}>
+                          {new Date(u.created_at).toLocaleDateString('en-GB')}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: 6 }}>
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn-secondary admin-btn-sm"
+                              onClick={() => setSelectedUserId(u.id)}
+                            >
+                              <Eye size={14} />
+                              <span>Details</span>
+                            </button>
+                            <button
+                              type="button"
+                              className={`admin-btn admin-btn-sm ${u.is_frozen ? 'admin-btn-secondary' : 'admin-btn-danger'}`}
+                              onClick={async () => {
+                                try {
+                                  await api.put(`/admin/users/${u.id}/freeze`);
+                                  setUsers(us => us.map(x => x.id === u.id ? { ...x, is_frozen: !x.is_frozen } : x));
+                                  toast.success(u.is_frozen ? 'User un-frozen' : 'User frozen');
+                                } catch (err) {
+                                  toast.error(err.response?.data?.error || 'Action failed');
+                                }
+                              }}
+                            >
+                              {u.is_frozen ? <Unlock size={14} /> : <Lock size={14} />}
+                              <span>{u.is_frozen ? 'Unfreeze' : 'Freeze'}</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredUsers.length === 0 && (
+                      <tr>
+                        <td colSpan="6" style={{ textAlign: 'center', padding: 32, color: 'var(--color-text-muted)' }}>
+                          No users matched your search criteria.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Dedicated Touch Cards */}
+              <div className="admin-mobile-card-list">
+                {filteredUsers.map(u => (
+                  <div key={u.id} className="admin-mobile-card">
+                    <div className="admin-mobile-card-header">
+                      <div>
+                        <div className="admin-mobile-card-title">{u.name || 'User'}</div>
+                        <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{u.email}</div>
+                      </div>
+                      <span className={`admin-badge ${u.is_frozen ? 'failed' : 'approved'}`}>
+                        {u.is_frozen ? 'Frozen' : 'Active'}
+                      </span>
+                    </div>
+
+                    <div className="admin-mobile-card-rows">
+                      <div className="admin-mobile-card-row">
+                        <span>Role:</span>
+                        <strong style={{ textTransform: 'capitalize' }}>{u.role}</strong>
+                      </div>
+                      <div className="admin-mobile-card-row">
+                        <span>Wallet Balance:</span>
+                        <strong style={{ color: '#10B981', fontSize: 14 }}>
+                          ₹{parseFloat(u.balance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </strong>
+                      </div>
+                      <div className="admin-mobile-card-row">
+                        <span>Joined:</span>
+                        <span>{new Date(u.created_at).toLocaleDateString('en-GB')}</span>
+                      </div>
+                    </div>
+
+                    <div className="admin-mobile-card-actions">
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-secondary"
+                        onClick={() => setSelectedUserId(u.id)}
+                      >
+                        <Eye size={15} />
+                        <span>Manage User</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`admin-btn ${u.is_frozen ? 'admin-btn-secondary' : 'admin-btn-danger'}`}
+                        onClick={async () => {
+                          try {
+                            await api.put(`/admin/users/${u.id}/freeze`);
+                            setUsers(us => us.map(x => x.id === u.id ? { ...x, is_frozen: !x.is_frozen } : x));
+                            toast.success(u.is_frozen ? 'User un-frozen' : 'User frozen');
+                          } catch (err) {
+                            toast.error(err.response?.data?.error || 'Action failed');
+                          }
+                        }}
+                      >
+                        {u.is_frozen ? <Unlock size={15} /> : <Lock size={15} />}
+                        <span>{u.is_frozen ? 'Unfreeze' : 'Freeze'}</span>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                {[1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height: 120, borderRadius: 16 }} />)}
+            </div>
+          )}
+
+          {/* TAB 6: PAYMENT GATEWAY SETTINGS */}
+          {activeTab === 'payments' && (
+            <PaymentSettingsTab />
+          )}
+
+          {/* TAB 7: DEPOSITS VERIFICATIONS */}
+          {activeTab === 'deposits' && (
+            <div className="admin-card-section">
+              <div className="admin-card-header">
+                <div className="admin-card-title">
+                  <CreditCard size={18} color="#3874FF" />
+                  <span>Deposit Transactions Log ({filteredDeposits.length})</span>
+                </div>
+                <div className="admin-card-actions">
+                  <div className="admin-search-box">
+                    <Search size={16} color="var(--color-text-muted)" style={{ marginRight: 8, flexShrink: 0 }} />
+                    <input
+                      type="text"
+                      className="admin-search-input"
+                      placeholder="Search by user, UTR, gateway..."
+                      value={depositSearch}
+                      onChange={(e) => setDepositSearch(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
-            )}
-            <div style={{ marginTop: 24, padding: 20, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)' }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, marginBottom: 12 }}>Quick Actions</h3>
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <button className="btn btn--primary btn--sm" onClick={() => loadTab('products')}>
-                  <span className="icon icon--sm">inventory_2</span> Manage Bot Products ({stats?.active_products || 0})
-                </button>
-                <button className="btn btn--ghost btn--sm" onClick={() => loadTab('orders')}>
-                  <span className="icon icon--sm">receipt</span> View Orders
-                </button>
-                <button className="btn btn--ghost btn--sm" onClick={() => loadTab('categories')}>
-                  <span className="icon icon--sm">category</span> Categories ({stats?.total_categories || 7})
-                </button>
-                <button className="btn btn--ghost btn--sm" onClick={() => loadTab('coupons')}>
-                  <span className="icon icon--sm">local_offer</span> Manage Coupons
-                </button>
+
+              {/* Desktop Table */}
+              <div className="admin-table-responsive hide-on-mobile">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>Amount</th>
+                      <th>Gateway</th>
+                      <th>Transaction ID / UTR</th>
+                      <th>Timestamp</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredDeposits.map(d => (
+                      <tr key={d.id}>
+                        <td>
+                          <div style={{ fontWeight: 700 }}>{d.user_name || 'Customer'}</div>
+                          <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{d.user_email || '-'}</div>
+                        </td>
+                        <td>
+                          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, color: '#10B981', fontSize: 14 }}>
+                            ₹{parseFloat(d.amount).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="admin-badge processing" style={{ textTransform: 'uppercase' }}>
+                            {d.gateway}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12, color: 'var(--color-text-muted)' }}>
+                            {d.transaction_id || '-'}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: 12.5, color: 'var(--color-text-muted)' }}>
+                          {new Date(d.created_at).toLocaleString('en-GB')}
+                        </td>
+                        <td>
+                          <span className="admin-badge approved">
+                            <CheckCircle2 size={12} />
+                            <span>Credited</span>
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredDeposits.length === 0 && (
+                      <tr>
+                        <td colSpan="6" style={{ textAlign: 'center', padding: 32, color: 'var(--color-text-muted)' }}>
+                          No deposit records found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Touch Cards */}
+              <div className="admin-mobile-card-list">
+                {filteredDeposits.map(d => (
+                  <div key={d.id} className="admin-mobile-card">
+                    <div className="admin-mobile-card-header">
+                      <div>
+                        <div className="admin-mobile-card-title">{d.user_name || 'Customer'}</div>
+                        <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{d.user_email || '-'}</div>
+                      </div>
+                      <span className="admin-badge approved">
+                        <CheckCircle2 size={12} />
+                        <span>Credited</span>
+                      </span>
+                    </div>
+
+                    <div className="admin-mobile-card-rows">
+                      <div className="admin-mobile-card-row">
+                        <span>Amount:</span>
+                        <strong style={{ color: '#10B981', fontSize: 15 }}>
+                          ₹{parseFloat(d.amount).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </strong>
+                      </div>
+                      <div className="admin-mobile-card-row">
+                        <span>Gateway:</span>
+                        <span className="admin-badge processing" style={{ textTransform: 'uppercase' }}>{d.gateway}</span>
+                      </div>
+                      <div className="admin-mobile-card-row">
+                        <span>TX ID / UTR:</span>
+                        <span style={{ fontFamily: 'monospace', fontSize: 11.5 }}>{d.transaction_id || '-'}</span>
+                      </div>
+                      <div className="admin-mobile-card-row">
+                        <span>Timestamp:</span>
+                        <span>{new Date(d.created_at).toLocaleString('en-GB')}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* SUPPORT TICKETS */}
-        {activeTab === 'tickets' && (
-          <TicketsManagementTab />
-        )}
+          {/* TAB 8: COUPONS */}
+          {activeTab === 'coupons' && (
+            <CouponsTab
+              coupons={coupons}
+              onAdd={(c) => setCoupons(cs => [c, ...cs])}
+              onDelete={handleDeleteCoupon}
+            />
+          )}
 
-        {/* ORDERS */}
-        {activeTab === 'orders' && (
-          <OrdersManagementTab />
-        )}
+          {/* TAB 9: CATEGORIES */}
+          {activeTab === 'categories' && (
+            <div className="admin-card-section">
+              <div className="admin-card-header">
+                <div className="admin-card-title">
+                  <Tags size={18} color="#3874FF" />
+                  <span>Product Categories ({categories.length})</span>
+                </div>
+                <div className="admin-card-actions">
+                  <button 
+                    type="button" 
+                    className="admin-btn admin-btn-primary" 
+                    onClick={handleAddCategory}
+                  >
+                    <Plus size={16} />
+                    <span>Create Category</span>
+                  </button>
+                </div>
+              </div>
 
-        {/* PRODUCTS */}
-        {activeTab === 'products' && (
-          <ProductsManagementTab
-            products={products}
-            setProducts={setProducts}
-            categories={categories}
-            onEditMeta={setEditProductConfig}
-            onDelete={handleDeleteProduct}
-            onAddProduct={() => setShowAddProduct(true)}
-            loading={loading.products}
-          />
-        )}
-
-        {/* CATEGORIES */}
-        {activeTab === 'categories' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700 }}>
-                Manage <span className="text-gradient">Categories</span>
-              </h1>
-              <button onClick={handleAddCategory} className="btn btn--primary">
-                <span className="icon icon--sm">add</span> Add Category
-              </button>
-            </div>
-            <div className="table-wrapper">
-              <table className="table">
-                <thead>
-                  <tr><th>Name</th><th>Slug</th><th>Created At</th><th>Actions</th></tr>
-                </thead>
-                <tbody>
-                  {categories.map(c => (
-                    <tr key={c.id}>
-                      <td style={{ fontWeight: 500 }}>{c.name}</td>
-                      <td><span style={{ fontSize: 12, padding: '2px 8px', background: 'var(--color-surface-2)', borderRadius: 4 }}>{c.slug}</span></td>
-                      <td style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>{new Date(c.created_at).toLocaleDateString()}</td>
-                      <td>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <button onClick={() => handleEditCategory(c)} className="btn btn--ghost btn--sm" title="Edit Category">
-                            <Edit size={16} />
-                          </button>
-                          <button onClick={() => handleDeleteCategory(c.id, c.name)} className="btn btn--danger btn--sm" title="Delete Category">
-                            <span className="icon icon--sm">delete</span>
-                          </button>
-                        </div>
-                      </td>
+              {/* Desktop Table */}
+              <div className="admin-table-responsive hide-on-mobile">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Category Name</th>
+                      <th>Slug Identifier</th>
+                      <th>Created Date</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
                     </tr>
-                  ))}
-                  {categories.length === 0 && (
-                    <tr><td colSpan="4" style={{ textAlign: 'center', padding: 20 }}>No categories found.</td></tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {categories.map(c => (
+                      <tr key={c.id}>
+                        <td style={{ fontWeight: 700, color: 'var(--color-text)' }}>{c.name}</td>
+                        <td>
+                          <span style={{ fontSize: 12, padding: '3px 8px', background: 'var(--color-surface-2)', borderRadius: 6, fontFamily: 'monospace' }}>
+                            {c.slug}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: 12.5, color: 'var(--color-text-muted)' }}>
+                          {new Date(c.created_at || Date.now()).toLocaleDateString('en-GB')}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: 6 }}>
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn-secondary admin-btn-sm"
+                              onClick={() => handleEditCategory(c)}
+                              title="Edit Category"
+                            >
+                              <Edit2 size={14} />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn-danger admin-btn-sm"
+                              onClick={() => handleDeleteCategory(c.id, c.name)}
+                              title="Delete Category"
+                            >
+                              <Trash2 size={14} />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {categories.length === 0 && (
+                      <tr>
+                        <td colSpan="4" style={{ textAlign: 'center', padding: 32, color: 'var(--color-text-muted)' }}>
+                          No categories found. Click 'Create Category' to add one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Touch Cards */}
+              <div className="admin-mobile-card-list">
+                {categories.map(c => (
+                  <div key={c.id} className="admin-mobile-card">
+                    <div className="admin-mobile-card-header">
+                      <div>
+                        <div className="admin-mobile-card-title">{c.name}</div>
+                        <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontFamily: 'monospace', marginTop: 2 }}>{c.slug}</div>
+                      </div>
+                    </div>
+
+                    <div className="admin-mobile-card-actions">
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-secondary"
+                        onClick={() => handleEditCategory(c)}
+                      >
+                        <Edit2 size={15} />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-danger"
+                        onClick={() => handleDeleteCategory(c.id, c.name)}
+                      >
+                        <Trash2 size={15} />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* USERS */}
-        {activeTab === 'users' && (
-          <div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700, marginBottom: 24 }}>
-              Registered <span className="text-gradient">Users</span>
-            </h1>
-            <div className="table-wrapper">
-              <table className="table">
-                <thead>
-                  <tr><th>Name</th><th>Email</th><th>Role</th><th>Balance</th><th>Joined</th><th>Actions</th></tr>
-                </thead>
-                <tbody>
-                  {users.map(u => (
-                    <tr key={u.id}>
-                      <td style={{ fontWeight: 500 }}>{u.name}</td>
-                      <td style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>{u.email}</td>
-                      <td><span className="badge badge--new" style={{ textTransform: 'capitalize' }}>{u.role}</span></td>
-                      <td style={{ fontWeight: 700, color: 'var(--color-accent)' }}>₹{parseFloat(u.balance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                      <td style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>{new Date(u.created_at).toLocaleDateString()}</td>
-                      <td>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button
-                            className="btn btn--secondary btn--sm"
-                            onClick={() => setSelectedUserId(u.id)}
-                            style={{ gap: 5 }}
-                          >
-                            <span className="icon icon--sm">person</span>
-                            View Details
-                          </button>
-                          <button
-                            className={`btn btn--sm ${u.is_frozen ? 'btn--outline' : 'btn--danger'}`}
-                            onClick={async () => {
-                              try {
-                                await api.put(`/admin/users/${u.id}/freeze`);
-                                setUsers(us => us.map(x => x.id === u.id ? { ...x, is_frozen: !x.is_frozen } : x));
-                                toast.success(u.is_frozen ? 'User unfrozen' : 'User frozen');
-                              } catch (err) {
-                                toast.error(err.response?.data?.error || 'Action failed');
-                              }
-                            }}
-                          >
-                            <span className="icon icon--sm">{u.is_frozen ? 'lock_open' : 'block'}</span>
-                            {u.is_frozen ? 'Unfreeze' : 'Freeze'}
-                          </button>
-                          <button
-                            className="btn btn--ghost btn--sm"
-                            onClick={() => setSelectedUserId(u.id)}
-                            style={{ gap: 5 }}
-                          >
-                            <span className="icon icon--sm icon--accent">account_balance_wallet</span>
-                            Manage Balance
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        </main>
+      </div>
 
-        {/* USER DETAIL MODAL */}
-        {selectedUserId && (
-          <UserDetailModal
-            userId={selectedUserId}
-            onClose={() => setSelectedUserId(null)}
-            onUserUpdated={(id, newBalance) => {
-              setUsers(us => us.map(u => u.id === id ? { ...u, balance: newBalance } : u));
-            }}
-          />
-        )}
-
-        {/* DEPOSITS */}
-        {activeTab === 'deposits' && (
-          <div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700, marginBottom: 24 }}>
-              Payment <span className="text-gradient">History</span>
-            </h1>
-            <div className="table-wrapper">
-              <table className="table">
-                <thead>
-                  <tr><th>User</th><th>Amount</th><th>Gateway</th><th>TX ID</th><th>Date</th></tr>
-                </thead>
-                <tbody>
-                  {deposits.map(d => (
-                    <tr key={d.id}>
-                      <td>
-                        <div style={{ fontSize: 14, fontWeight: 500 }}>{d.user_name || 'Customer'}</div>
-                        <div style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>{d.user_email || '-'}</div>
-                      </td>
-                      <td><span style={{ fontWeight: 700, color: 'var(--color-accent)' }}>₹{parseFloat(d.amount).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></td>
-                      <td><span style={{ textTransform: 'capitalize', fontSize: 13 }}>{d.gateway}</span></td>
-                      <td><span style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--color-text-faint)' }}>{(d.transaction_id || '').slice(0, 20)}...</span></td>
-                      <td style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>{new Date(d.created_at).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* PAYMENT GATEWAY SETTINGS */}
-        {activeTab === 'payments' && (
-          <PaymentSettingsTab />
-        )}
-
-        {/* COUPONS */}
-        {activeTab === 'coupons' && (
-          <CouponsTab
-            coupons={coupons}
-            onAdd={(c) => setCoupons(cs => [c, ...cs])}
-            onDelete={handleDeleteCoupon}
-          />
-        )}
-
-      </main>
-
-      {/* Admin Prompt & Confirm Modal */}
-      {modalConfig && (
-        <AdminModal
-          config={modalConfig}
-          onClose={() => setModalConfig(null)}
-        />
-      )}
-
-      {/* User Detail & Balance Management Modal */}
+      {/* USER DETAIL MODAL */}
       {selectedUserId && (
         <UserDetailModal
           userId={selectedUserId}
           onClose={() => setSelectedUserId(null)}
-          onUserUpdated={(uId, newBal) => {
-            setUsers(us => us.map(x => x.id === uId ? { ...x, balance: newBal } : x));
+          onUserUpdated={(id, newBal) => {
+            setUsers(us => us.map(u => u.id === id ? { ...u, balance: newBal } : u));
           }}
         />
       )}
 
-      {/* Edit Product Meta Modal */}
+      {/* EDIT PRODUCT META MODAL */}
       {editProductConfig && (
         <EditProductMetaModal 
           product={editProductConfig} 
@@ -752,7 +1034,7 @@ export default function AdminPage() {
         />
       )}
 
-      {/* Add New Bot Product Modal */}
+      {/* CREATE NEW PRODUCT MODAL */}
       {showAddProduct && (
         <CreateProductModal 
           categories={categories}
@@ -763,6 +1045,7 @@ export default function AdminPage() {
           }}
         />
       )}
+
     </div>
   );
 }

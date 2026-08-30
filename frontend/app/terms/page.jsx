@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Terms of Service | QuantumXD Store',
+  title: 'Terms of Service | QuantumXD',
   description: 'Terms and conditions governing the purchase, delivery, licensing, and usage of digital assets on QuantumXD.',
 };
 
@@ -94,7 +94,7 @@ export default function TermsPage() {
               Prices on QuantumXD are displayed dynamically with multi-currency support (INR, USD, EUR, etc.).
             </p>
             <ul style={{ paddingLeft: 22, margin: 0, color: 'var(--color-text-muted)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <li><strong>Wallet Balances:</strong> Funds deposited into your QuantumXD Store Wallet or received as store credit are non-transferable, non-expiring, and cannot be withdrawn as cash.</li>
+              <li><strong>Wallet Balances:</strong> Funds deposited into your QuantumXD Wallet or received as store credit are non-transferable, non-expiring, and cannot be withdrawn as cash.</li>
               <li><strong>Pricing Changes:</strong> We reserve the right to modify catalog pricing, discounts, and promotional offers at any time without prior notice.</li>
             </ul>
           </div>

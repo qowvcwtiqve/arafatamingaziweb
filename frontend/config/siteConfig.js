@@ -9,7 +9,7 @@
 export const siteConfig = {
   // Store Branding & Identity
   brand: {
-    name: 'QuantumXD Store',
+    name: 'QuantumXD',
     tagline: 'Instant Automated Delivery for Digital Subscriptions & Licenses',
     shortDescription: 'Instant automated delivery for premium digital software, subscriptions & licenses with 100% warranty.',
     logoText: 'QuantumXD',
@@ -53,7 +53,7 @@ export const siteConfig = {
     },
     {
       q: 'Can I top up my store wallet balance?',
-      a: 'Yes! You can top up your QuantumXD Store wallet in your dashboard with 1 click using UPI or Crypto, and enjoy 1-click instant checkouts anytime.'
+      a: 'Yes! You can top up your QuantumXD wallet in your dashboard with 1 click using UPI or Crypto, and enjoy 1-click instant checkouts anytime.'
     },
     {
       q: 'How do I contact customer support?',

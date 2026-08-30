@@ -1,30 +1,42 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { 
+  QrCode, 
+  CreditCard, 
+  Banknote, 
+  Bitcoin, 
+  Wallet, 
+  ChevronDown, 
+  Save, 
+  Check, 
+  Key, 
+  ShieldCheck, 
+  Lock,
+  Layers
+} from 'lucide-react';
 import api from '../../lib/api';
 import toast from 'react-hot-toast';
 
 export default function PaymentSettingsTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [expandedGateway, setExpandedGateway] = useState(null); // Accordion state for config
+  const [expandedGateway, setExpandedGateway] = useState(null);
 
   const [settings, setSettings] = useState({
     upi_qr: {
       enabled: true,
       title: 'UPI / QR Code',
       desc: 'Google Pay, PhonePe, Paytm, BHIM with UTR verification',
-      icon: 'qr_code_2',
       color: '#10B981',
       upi_id: 'quantumxd@upi',
-      merchant_name: 'QuantumXD Store',
+      merchant_name: 'QuantumXD',
       qr_image_url: '/upi-qr.png',
     },
     cashfree: {
       enabled: true,
       title: 'Cashfree PG',
       desc: 'Automated Cards, NetBanking & UPI PG checkout',
-      icon: 'credit_card',
       color: '#00A0E3',
       client_id: '',
       client_secret: '',
@@ -34,7 +46,6 @@ export default function PaymentSettingsTab() {
       enabled: true,
       title: 'Binance Pay',
       desc: 'Instant USDT / crypto transfer via Binance App (0% fee)',
-      icon: 'payments',
       color: '#F0B90B',
       binance_pay_id: '1133813547',
       api_key: '',
@@ -44,7 +55,6 @@ export default function PaymentSettingsTab() {
       enabled: true,
       title: 'Crypto (NOWPayments)',
       desc: 'BTC, ETH, SOL, USDT + 100 cryptocurrencies invoice',
-      icon: 'currency_bitcoin',
       color: '#F7931A',
       api_key: '',
       ipn_secret: '',
@@ -53,7 +63,6 @@ export default function PaymentSettingsTab() {
       enabled: true,
       title: 'Account Wallet Balance',
       desc: '1-Click instant automated checkout with user wallet funds',
-      icon: 'account_balance_wallet',
       color: '#8B5CF6',
     },
   });
@@ -77,10 +86,16 @@ export default function PaymentSettingsTab() {
     fetchSettings();
   }, []);
 
+  const GATEWAYS = [
+    { key: 'upi_qr', name: 'UPI / QR Code', icon: QrCode, color: '#10B981', tag: 'Direct UPI' },
+    { key: 'cashfree', name: 'Cashfree Payment Gateway', icon: CreditCard, color: '#00A0E3', tag: 'PG / Cards' },
+    { key: 'binance', name: 'Binance Pay', icon: Banknote, color: '#F0B90B', tag: '0% Fee Crypto' },
+    { key: 'nowpayments', name: 'NOWPayments (Crypto)', icon: Bitcoin, color: '#F7931A', tag: '100+ Coins' },
+    { key: 'wallet', name: 'Wallet Balance', icon: Wallet, color: '#8B5CF6', tag: 'Instant 1-Click' },
+  ];
+
   const handleToggle = async (gatewayKey, e) => {
-    if (e) {
-      e.stopPropagation();
-    }
+    if (e) e.stopPropagation();
     const currentVal = Boolean(settings[gatewayKey]?.enabled);
     const nextEnabled = !currentVal;
     
@@ -101,7 +116,6 @@ export default function PaymentSettingsTab() {
     } catch (err) {
       console.error('Failed to toggle gateway:', err);
       toast.error('Failed to update status');
-      // Rollback
       setSettings(prev => ({
         ...prev,
         [gatewayKey]: {
@@ -137,124 +151,74 @@ export default function PaymentSettingsTab() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 10 }}>
-        <div className="skeleton" style={{ height: 48, borderRadius: 10 }} />
-        <div className="skeleton" style={{ height: 60, borderRadius: 10 }} />
-        <div className="skeleton" style={{ height: 60, borderRadius: 10 }} />
-        <div className="skeleton" style={{ height: 60, borderRadius: 10 }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ height: 60, borderRadius: 14, background: 'var(--color-surface-2)' }} />
+        <div style={{ height: 60, borderRadius: 14, background: 'var(--color-surface-2)' }} />
+        <div style={{ height: 60, borderRadius: 14, background: 'var(--color-surface-2)' }} />
       </div>
     );
   }
 
   const activeCount = Object.values(settings).filter((g) => g?.enabled).length;
 
-  const GATEWAYS = [
-    { key: 'upi_qr', name: 'UPI / QR Code', icon: 'qr_code_2', color: '#10B981', tag: 'Direct UPI' },
-    { key: 'cashfree', name: 'Cashfree Payment Gateway', icon: 'credit_card', color: '#00A0E3', tag: 'PG / Cards' },
-    { key: 'binance', name: 'Binance Pay', icon: 'payments', color: '#F0B90B', tag: '0% Fee Crypto' },
-    { key: 'nowpayments', name: 'NOWPayments (Crypto)', icon: 'currency_bitcoin', color: '#F7931A', tag: '100+ Coins' },
-    { key: 'wallet', name: 'Wallet Balance', icon: 'account_balance_wallet', color: '#8B5CF6', tag: 'Instant 1-Click' },
-  ];
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {/* Sleek Minimal Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '14px 18px',
-          background: 'var(--color-surface)',
-          borderRadius: 'var(--radius-lg, 12px)',
-          border: '1px solid var(--color-border)',
-          boxShadow: 'var(--shadow-sm)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              background: 'rgba(79, 70, 229, 0.12)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--color-primary-light)',
-            }}
-          >
-            <span className="icon icon--sm icon--filled">account_balance_wallet</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      
+      {/* HEADER BAR */}
+      <div className="admin-card-section" style={{ margin: 0 }}>
+        <div className="admin-card-header">
+          <div className="admin-card-title">
+            <Wallet size={18} color="#3874FF" />
+            <span>Gateway Engine ({activeCount} Active)</span>
           </div>
-          <div>
-            <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--color-text)' }}>
-              Payment Methods
-            </h2>
-            <span style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>
-              {activeCount} of 5 active on checkout
-            </span>
+          <div className="admin-card-actions">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="admin-btn admin-btn-primary"
+            >
+              <Save size={16} />
+              <span>{saving ? 'Syncing...' : 'Save Settings'}</span>
+            </button>
           </div>
         </div>
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="btn btn--primary btn--sm"
-          style={{
-            padding: '7px 16px',
-            fontSize: 13,
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            borderRadius: 8,
-          }}
-        >
-          <span className="icon icon--sm">save</span>
-          <span>{saving ? 'Saving...' : 'Save Settings'}</span>
-        </button>
       </div>
 
-      {/* Compact Gateway Rows */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* GATEWAYS LIST */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {GATEWAYS.map((g) => {
+          const Icon = g.icon;
           const cfg = settings[g.key] || {};
           const isEnabled = Boolean(cfg.enabled);
           const isExpanded = expandedGateway === g.key;
           const hasFields = g.key !== 'wallet';
 
           return (
-            <div
-              key={g.key}
-              style={{
-                background: 'var(--color-surface)',
-                borderRadius: 'var(--radius-md, 10px)',
-                border: `1px solid ${isEnabled ? 'var(--color-border)' : 'var(--color-border)'}`,
-                overflow: 'hidden',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {/* Row Header */}
+            <div key={g.key} className="admin-card-section" style={{ margin: 0 }}>
+              
+              {/* Row Bar */}
               <div
                 onClick={() => hasFields && setExpandedGateway(isExpanded ? null : g.key)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '12px 16px',
+                  padding: '16px 20px',
                   cursor: hasFields ? 'pointer' : 'default',
-                  background: isExpanded ? 'var(--color-surface-2)' : 'transparent',
+                  background: isExpanded ? 'var(--color-surface-2, #141822)' : 'transparent',
+                  flexWrap: 'wrap',
+                  gap: 12,
                 }}
               >
-                {/* Left: Icon & Name */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <div
                     style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 8,
-                      background: `${g.color}15`,
-                      border: `1px solid ${g.color}30`,
+                      width: 42,
+                      height: 42,
+                      borderRadius: 12,
+                      background: `${g.color}18`,
+                      border: `1px solid ${g.color}35`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -262,105 +226,71 @@ export default function PaymentSettingsTab() {
                       flexShrink: 0,
                     }}
                   >
-                    <span className="icon icon--sm icon--filled">{g.icon}</span>
+                    <Icon size={20} />
                   </div>
 
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text)' }}>
                         {g.name}
                       </span>
-                      <span
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          padding: '1px 6px',
-                          borderRadius: 6,
-                          background: 'var(--color-surface-2)',
-                          color: 'var(--color-text-muted)',
-                          border: '1px solid var(--color-border)',
-                        }}
-                      >
+                      <span style={{ fontSize: 10.5, fontWeight: 800, padding: '2px 7px', borderRadius: 6, background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}>
                         {g.tag}
                       </span>
                     </div>
-                    <span style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
                       {cfg.desc}
-                    </span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Right: Toggle Switch & Expand */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }} onClick={(e) => e.stopPropagation()}>
-                  {/* Status Indicator & Animated Slider Switch */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }} onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isEnabled}
+                    onClick={(e) => handleToggle(g.key, e)}
+                    style={{
+                      width: 48,
+                      height: 26,
+                      borderRadius: 9999,
+                      background: isEnabled ? (g.color || '#10B981') : 'rgba(255,255,255,0.12)',
+                      position: 'relative',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s ease',
+                      padding: 3,
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div
                       style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: isEnabled ? '#10B981' : 'var(--color-text-faint)',
-                        letterSpacing: '0.02em',
+                        width: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        background: '#FFFFFF',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
+                        transform: isEnabled ? 'translateX(22px)' : 'translateX(0px)',
+                        transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       }}
-                    >
-                      {isEnabled ? 'ON' : 'OFF'}
-                    </span>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={isEnabled}
-                      onClick={(e) => handleToggle(g.key, e)}
-                      style={{
-                        width: 44,
-                        height: 24,
-                        borderRadius: 999,
-                        background: isEnabled ? (g.color || '#10B981') : 'rgba(255,255,255,0.12)',
-                        position: 'relative',
-                        border: 'none',
-                        cursor: 'pointer',
-                        transition: 'background 0.2s ease',
-                        padding: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: '50%',
-                          background: '#FFFFFF',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                          transform: isEnabled ? 'translateX(20px)' : 'translateX(0px)',
-                          transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                        }}
-                      />
-                    </button>
-                  </div>
+                    />
+                  </button>
 
-                  {/* Expand Chevron (if editable) */}
                   {hasFields && (
                     <button
                       type="button"
                       onClick={() => setExpandedGateway(isExpanded ? null : g.key)}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'var(--color-text-muted)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: 4,
-                      }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: 4, display: 'flex' }}
                     >
-                      <span
-                        className="icon icon--sm"
+                      <ChevronDown
+                        size={18}
                         style={{
-                          transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transform: isExpanded ? 'rotate(180deg)' : 'none',
                           transition: 'transform 0.2s ease',
                         }}
-                      >
-                        expand_more
-                      </span>
+                      />
                     </button>
                   )}
                 </div>
@@ -370,110 +300,116 @@ export default function PaymentSettingsTab() {
               {isExpanded && hasFields && (
                 <div
                   style={{
-                    padding: '14px 16px',
-                    borderTop: '1px solid var(--color-border)',
-                    background: 'var(--color-surface-2)',
+                    padding: 20,
+                    borderTop: '1px solid var(--color-border, rgba(255, 255, 255, 0.06))',
+                    background: 'var(--color-surface-2, #141822)',
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: 12,
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                    gap: 14,
                   }}
                 >
-                  {/* UPI QR Inputs */}
                   {g.key === 'upi_qr' && (
                     <>
                       <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
-                          UPI ID (VPA)
+                        <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 5 }}>
+                          UPI Virtual Payment Address (VPA)
                         </label>
                         <input
                           type="text"
                           value={cfg.upi_id || ''}
                           onChange={(e) => handleFieldChange('upi_qr', 'upi_id', e.target.value)}
-                          placeholder="e.g. quantumxd@upi"
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
+                          placeholder="e.g. yourname@okaxis"
+                          style={{
+                            width: '100%',
+                            height: 38,
+                            padding: '0 12px',
+                            background: 'var(--color-surface, #0F131C)',
+                            border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                            borderRadius: 8,
+                            fontSize: 13,
+                            color: 'var(--color-text, #FFFFFF)',
+                            outline: 'none',
+                          }}
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
-                          Merchant Name
+                        <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 5 }}>
+                          Merchant Business Name
                         </label>
                         <input
                           type="text"
                           value={cfg.merchant_name || ''}
                           onChange={(e) => handleFieldChange('upi_qr', 'merchant_name', e.target.value)}
-                          placeholder="e.g. QuantumXD Store"
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
-                          Custom QR Image URL (Optional)
-                        </label>
-                        <input
-                          type="text"
-                          value={cfg.qr_image_url || ''}
-                          onChange={(e) => handleFieldChange('upi_qr', 'qr_image_url', e.target.value)}
-                          placeholder="/upi-qr.png or leave empty"
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
+                          placeholder="e.g. QuantumXD"
+                          style={{
+                            width: '100%',
+                            height: 38,
+                            padding: '0 12px',
+                            background: 'var(--color-surface, #0F131C)',
+                            border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                            borderRadius: 8,
+                            fontSize: 13,
+                            color: 'var(--color-text, #FFFFFF)',
+                            outline: 'none',
+                          }}
                         />
                       </div>
                     </>
                   )}
 
-                  {/* Cashfree Inputs */}
                   {g.key === 'cashfree' && (
                     <>
                       <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
-                          App ID / Client ID
+                        <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 5 }}>
+                          Cashfree App ID / Client ID
                         </label>
                         <input
                           type="text"
                           value={cfg.client_id || ''}
                           onChange={(e) => handleFieldChange('cashfree', 'client_id', e.target.value)}
-                          placeholder="CF App ID"
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
+                          placeholder="CF_APP_ID..."
+                          style={{
+                            width: '100%',
+                            height: 38,
+                            padding: '0 12px',
+                            background: 'var(--color-surface, #0F131C)',
+                            border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                            borderRadius: 8,
+                            fontSize: 13,
+                            color: 'var(--color-text, #FFFFFF)',
+                            outline: 'none',
+                          }}
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
+                        <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 5 }}>
                           Secret Key
                         </label>
                         <input
                           type="password"
                           value={cfg.client_secret || ''}
                           onChange={(e) => handleFieldChange('cashfree', 'client_secret', e.target.value)}
-                          placeholder="CF Secret Key"
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
+                          placeholder="CF_SECRET_KEY..."
+                          style={{
+                            width: '100%',
+                            height: 38,
+                            padding: '0 12px',
+                            background: 'var(--color-surface, #0F131C)',
+                            border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                            borderRadius: 8,
+                            fontSize: 13,
+                            color: 'var(--color-text, #FFFFFF)',
+                            outline: 'none',
+                          }}
                         />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
-                          Environment
-                        </label>
-                        <select
-                          value={cfg.env || 'PRODUCTION'}
-                          onChange={(e) => handleFieldChange('cashfree', 'env', e.target.value)}
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
-                        >
-                          <option value="PRODUCTION">PRODUCTION (Live)</option>
-                          <option value="TEST">TEST (Sandbox)</option>
-                        </select>
                       </div>
                     </>
                   )}
 
-                  {/* Binance Inputs */}
                   {g.key === 'binance' && (
                     <>
                       <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
+                        <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 5 }}>
                           Binance Pay ID
                         </label>
                         <input
@@ -481,76 +417,78 @@ export default function PaymentSettingsTab() {
                           value={cfg.binance_pay_id || ''}
                           onChange={(e) => handleFieldChange('binance', 'binance_pay_id', e.target.value)}
                           placeholder="e.g. 1133813547"
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
-                          Binance API Key (Optional)
-                        </label>
-                        <input
-                          type="password"
-                          value={cfg.api_key || ''}
-                          onChange={(e) => handleFieldChange('binance', 'api_key', e.target.value)}
-                          placeholder="API Key"
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
-                          API Secret (Optional)
-                        </label>
-                        <input
-                          type="password"
-                          value={cfg.api_secret || ''}
-                          onChange={(e) => handleFieldChange('binance', 'api_secret', e.target.value)}
-                          placeholder="API Secret"
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
+                          style={{
+                            width: '100%',
+                            height: 38,
+                            padding: '0 12px',
+                            background: 'var(--color-surface, #0F131C)',
+                            border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                            borderRadius: 8,
+                            fontSize: 13,
+                            color: 'var(--color-text, #FFFFFF)',
+                            outline: 'none',
+                          }}
                         />
                       </div>
                     </>
                   )}
 
-                  {/* NOWPayments Inputs */}
                   {g.key === 'nowpayments' && (
                     <>
                       <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
+                        <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 5 }}>
                           NOWPayments API Key
                         </label>
                         <input
-                          type="password"
+                          type="text"
                           value={cfg.api_key || ''}
                           onChange={(e) => handleFieldChange('nowpayments', 'api_key', e.target.value)}
-                          placeholder="API Key"
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
+                          placeholder="API Key..."
+                          style={{
+                            width: '100%',
+                            height: 38,
+                            padding: '0 12px',
+                            background: 'var(--color-surface, #0F131C)',
+                            border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                            borderRadius: 8,
+                            fontSize: 13,
+                            color: 'var(--color-text, #FFFFFF)',
+                            outline: 'none',
+                          }}
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 4 }}>
-                          IPN Secret (Optional)
+                        <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 5 }}>
+                          IPN Secret
                         </label>
                         <input
                           type="password"
                           value={cfg.ipn_secret || ''}
                           onChange={(e) => handleFieldChange('nowpayments', 'ipn_secret', e.target.value)}
-                          placeholder="IPN Secret"
-                          className="form-input"
-                          style={{ width: '100%', height: 34, fontSize: 12 }}
+                          placeholder="IPN Secret Key..."
+                          style={{
+                            width: '100%',
+                            height: 38,
+                            padding: '0 12px',
+                            background: 'var(--color-surface, #0F131C)',
+                            border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                            borderRadius: 8,
+                            fontSize: 13,
+                            color: 'var(--color-text, #FFFFFF)',
+                            outline: 'none',
+                          }}
                         />
                       </div>
                     </>
                   )}
                 </div>
               )}
+
             </div>
           );
         })}
       </div>
+
     </div>
   );
 }

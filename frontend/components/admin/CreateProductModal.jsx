@@ -1,12 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { 
+  Box, 
+  X, 
+  Layers, 
+  Image as ImageIcon, 
+  Sliders, 
+  Check, 
+  Plus, 
+  Zap, 
+  IndianRupee, 
+  Tag,
+  Eye,
+  ShieldCheck
+} from 'lucide-react';
 import api from '../../lib/api';
 import toast from 'react-hot-toast';
+import CustomDropdown from '../ui/CustomDropdown';
 
 export default function CreateProductModal({ categories: initialCategories = [], onClose, onAdd }) {
   const [categories, setCategories] = useState(initialCategories);
-  const [formTab, setFormTab] = useState('general'); // general | stock | variant | website
+  const [formTab, setFormTab] = useState('general');
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -66,7 +81,7 @@ export default function CreateProductModal({ categories: initialCategories = [],
       const { data } = await api.post('/admin/bot/products', payload);
       if (data.product) {
         onAdd(data.product);
-        toast.success(`Product "${form.name}" created and synced with Bot!`);
+        toast.success(`Product "${form.name}" created successfully!`);
         onClose();
       }
     } catch (err) {
@@ -76,443 +91,417 @@ export default function CreateProductModal({ categories: initialCategories = [],
     }
   };
 
+  const TABS = [
+    { id: 'general', label: '1. Basic Info', icon: Box },
+    { id: 'variant', label: '2. Pricing & Plan', icon: IndianRupee },
+    { id: 'stock', label: '3. Stock & Keys', icon: Layers },
+    { id: 'website', label: '4. Media & Meta', icon: ImageIcon },
+  ];
+
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.8)',
-        backdropFilter: 'blur(6px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: 20,
-      }}
-      onClick={onClose}
-    >
-      <div
-        className="card card--elevated"
-        style={{
-          width: '100%',
-          maxWidth: 780,
-          maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          padding: 0,
-          border: '1px solid var(--color-border)',
-        }}
+    <div className="admin-modal-backdrop" onClick={onClose}>
+      <div 
+        className="admin-modal-panel large" 
         onClick={(e) => e.stopPropagation()}
+        style={{ maxHeight: '92vh' }}
       >
-        {/* Modal Header */}
-        <div
-          style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid var(--color-border)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            background: 'var(--color-surface)',
-          }}
-        >
-          <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="icon" style={{ color: 'var(--color-primary-light)' }}>add_circle</span>
-              Add New Product (Bot & Website Hub)
-            </h2>
-            <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: '2px 0 0' }}>
-              Creates a live product in MongoDB Atlas with 1:1 Telegram Bot and Storefront synchronization.
-            </p>
+        {/* Header */}
+        <div className="admin-modal-header">
+          <div className="admin-modal-title">
+            <Plus size={20} color="#3874FF" />
+            <span>Create New Digital Product</span>
           </div>
-          <button onClick={onClose} className="btn btn--ghost btn--sm" style={{ padding: 6 }}>
-            <span className="icon">close</span>
+          <button type="button" className="admin-modal-close-btn" onClick={onClose} aria-label="Close">
+            <X size={18} />
           </button>
         </div>
 
-        {/* 4 Tabs Header */}
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid var(--color-border)',
-            background: 'var(--color-surface-2)',
-            overflowX: 'auto',
-          }}
-        >
-          {[
-            { id: 'general', label: 'General & Bot Rules', icon: 'settings' },
-            { id: 'stock', label: 'Stock Pool & Keys', icon: 'inventory_2' },
-            { id: 'variant', label: 'Variant & Pricing', icon: 'payments' },
-            { id: 'website', label: 'Website Display & Media', icon: 'palette' },
-          ].map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setFormTab(t.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '12px 18px',
-                fontSize: 13,
-                fontWeight: formTab === t.id ? 700 : 500,
-                color: formTab === t.id ? 'var(--color-primary-light)' : 'var(--color-text-muted)',
-                background: formTab === t.id ? 'var(--color-surface)' : 'transparent',
-                border: 'none',
-                borderBottom: formTab === t.id ? '2px solid var(--color-primary)' : '2px solid transparent',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <span className="icon icon--sm" style={{ fontSize: 16 }}>{t.icon}</span>
-              {t.label}
-            </button>
-          ))}
+        {/* Wizard Step Tabs */}
+        <div style={{
+          display: 'flex',
+          gap: 6,
+          padding: '10px 20px',
+          borderBottom: '1px solid var(--color-border, rgba(255, 255, 255, 0.06))',
+          background: 'var(--color-surface-2, #141822)',
+          overflowX: 'auto',
+        }}>
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            const isActive = formTab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setFormTab(t.id)}
+                className={`admin-btn ${isActive ? 'admin-btn-primary' : 'admin-btn-secondary'} admin-btn-sm`}
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                <Icon size={14} />
+                <span>{t.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-          <div style={{ padding: 24, overflowY: 'auto', flex: 1 }}>
-            
-            {/* TAB 1: GENERAL & BOT RULES */}
-            {formTab === 'general' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div className="form-group">
-                  <label className="form-label">Product Name (Bot & Global Title) *</label>
-                  <input
-                    className="form-input"
-                    placeholder="e.g. Canva Pro Lifetime, ChatGPT Plus..."
-                    value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    required
-                    autoFocus
+        <form onSubmit={handleSubmit} className="admin-modal-body" style={{ padding: 20 }}>
+          
+          {/* TAB 1: GENERAL */}
+          {formTab === 'general' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                  Product Title *
+                </label>
+                <input
+                  type="text"
+                  style={{
+                    width: '100%',
+                    height: 42,
+                    padding: '0 12px',
+                    background: 'var(--color-surface-2, #141822)',
+                    border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                    borderRadius: 10,
+                    fontSize: 13.5,
+                    color: 'var(--color-text, #FFFFFF)',
+                    outline: 'none',
+                  }}
+                  placeholder="e.g. Netflix Premium 4K UHD"
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Category
+                  </label>
+                  <CustomDropdown
+                    options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                    value={form.category_id}
+                    onChange={(val) => setForm((f) => ({ ...f, category_id: val }))}
+                    placeholder="Select Category"
+                    minWidth={170}
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <div className="form-group">
-                    <label className="form-label">Category</label>
-                    <select
-                      className="form-input"
-                      value={form.category_id}
-                      onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
-                    >
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name || c.title || c.id}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Delivery Process</label>
-                    <select
-                      className="form-input"
-                      value={form.delivery_process}
-                      onChange={(e) => setForm((f) => ({ ...f, delivery_process: e.target.value }))}
-                    >
-                      <option value="auto">Instant Automated Delivery (From Stock Pool)</option>
-                      <option value="manual">Manual Delivery / Ticket Process</option>
-                    </select>
-                  </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Delivery Process
+                  </label>
+                  <CustomDropdown
+                    options={[
+                      { value: 'auto', label: 'Automated (Instant Delivery)' },
+                      { value: 'manual', label: 'Manual (Admin Review)' },
+                    ]}
+                    value={form.delivery_process}
+                    onChange={(val) => setForm((f) => ({ ...f, delivery_process: val }))}
+                    minWidth={180}
+                  />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Delivery Time Guarantee</label>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Delivery Timing
+                  </label>
                   <input
-                    className="form-input"
-                    placeholder="e.g. Instant / 10-30 Mins"
+                    type="text"
+                    style={{
+                      width: '100%',
+                      height: 40,
+                      padding: '0 12px',
+                      background: 'var(--color-surface-2, #141822)',
+                      border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                      borderRadius: 10,
+                      fontSize: 13,
+                      color: 'var(--color-text, #FFFFFF)',
+                      outline: 'none',
+                    }}
                     value={form.delivery_time}
                     onChange={(e) => setForm((f) => ({ ...f, delivery_time: e.target.value }))}
                   />
                 </div>
+              </div>
 
-                <div className="form-group">
-                  <label className="form-label">Global Product Rules, Warranty & Instructions</label>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                  Terms of Service / Replacement Rules
+                </label>
+                <textarea
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    background: 'var(--color-surface-2, #141822)',
+                    border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                    borderRadius: 10,
+                    fontSize: 13,
+                    color: 'var(--color-text, #FFFFFF)',
+                    outline: 'none',
+                  }}
+                  placeholder="e.g. Do not change email/password. 30 days replacement warranty..."
+                  value={form.rules}
+                  onChange={(e) => setForm((f) => ({ ...f, rules: e.target.value }))}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: PRICING & PLAN */}
+          {formTab === 'variant' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Plan / Variant Name *
+                  </label>
+                  <input
+                    type="text"
+                    style={{
+                      width: '100%',
+                      height: 42,
+                      padding: '0 12px',
+                      background: 'var(--color-surface-2, #141822)',
+                      border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                      borderRadius: 10,
+                      fontSize: 13.5,
+                      color: 'var(--color-text, #FFFFFF)',
+                      outline: 'none',
+                    }}
+                    placeholder="e.g. 1 Month Standard"
+                    value={form.variant_name}
+                    onChange={(e) => setForm((f) => ({ ...f, variant_name: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Selling Price (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    style={{
+                      width: '100%',
+                      height: 42,
+                      padding: '0 12px',
+                      background: 'var(--color-surface-2, #141822)',
+                      border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                      borderRadius: 10,
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: '#10B981',
+                      outline: 'none',
+                    }}
+                    placeholder="e.g. 199"
+                    value={form.price}
+                    onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Original Strikethrough Price / MRP (₹)
+                  </label>
+                  <input
+                    type="number"
+                    style={{
+                      width: '100%',
+                      height: 42,
+                      padding: '0 12px',
+                      background: 'var(--color-surface-2, #141822)',
+                      border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                      borderRadius: 10,
+                      fontSize: 13,
+                      color: 'var(--color-text, #FFFFFF)',
+                      outline: 'none',
+                    }}
+                    placeholder="e.g. 499"
+                    value={form.compare_price}
+                    onChange={(e) => setForm((f) => ({ ...f, compare_price: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: STOCK & KEYS */}
+          {formTab === 'stock' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                  Stock Pool ID / Name
+                </label>
+                <input
+                  type="text"
+                  style={{
+                    width: '100%',
+                    height: 42,
+                    padding: '0 12px',
+                    background: 'var(--color-surface-2, #141822)',
+                    border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                    borderRadius: 10,
+                    fontSize: 13,
+                    color: 'var(--color-text, #FFFFFF)',
+                    outline: 'none',
+                  }}
+                  value={form.pool_id}
+                  onChange={(e) => setForm((f) => ({ ...f, pool_id: e.target.value }))}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                  <input
+                    type="checkbox"
+                    checked={form.is_infinite}
+                    onChange={(e) => setForm((f) => ({ ...f, is_infinite: e.target.checked }))}
+                  />
+                  <span>Infinite Stock Mode</span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                  <input
+                    type="checkbox"
+                    checked={form.is_preorder}
+                    onChange={(e) => setForm((f) => ({ ...f, is_preorder: e.target.checked }))}
+                  />
+                  <span>Pre-Order Active</span>
+                </label>
+              </div>
+
+              {!form.is_infinite && !form.is_preorder && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Initial Stock Keys (One key/account per line)
+                  </label>
                   <textarea
-                    className="form-input"
                     rows={4}
-                    placeholder="Enter warranty rules, login guidelines, replacement policies..."
-                    value={form.rules}
-                    onChange={(e) => setForm((f) => ({ ...f, rules: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      background: 'var(--color-surface-2, #141822)',
+                      border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                      borderRadius: 10,
+                      fontSize: 12.5,
+                      fontFamily: 'ui-monospace, monospace',
+                      color: 'var(--color-text, #FFFFFF)',
+                      outline: 'none',
+                    }}
+                    placeholder="user1@mail.com:pass1&#10;user2@mail.com:pass2"
+                    value={form.initial_stock}
+                    onChange={(e) => setForm((f) => ({ ...f, initial_stock: e.target.value }))}
                   />
                 </div>
+              )}
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                  Pool-Specific Delivery Rules (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    background: 'var(--color-surface-2, #141822)',
+                    border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                    borderRadius: 10,
+                    fontSize: 13,
+                    color: 'var(--color-text, #FFFFFF)',
+                    outline: 'none',
+                  }}
+                  placeholder="e.g. Account credentials are sent in user:pass format. Login via official app only."
+                  value={form.pool_rules}
+                  onChange={(e) => setForm((f) => ({ ...f, pool_rules: e.target.value }))}
+                />
               </div>
-            )}
+            </div>
+          )}
 
-            {/* TAB 2: STOCK POOL & KEYS */}
-            {formTab === 'stock' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <div className="form-group">
-                    <label className="form-label">Stock Pool ID</label>
-                    <input
-                      className="form-input"
-                      value={form.pool_id}
-                      onChange={(e) => setForm((f) => ({ ...f, pool_id: e.target.value }))}
-                      placeholder="e.g. default"
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
-                      <input
-                        type="checkbox"
-                        checked={form.is_infinite}
-                        onChange={(e) => setForm((f) => ({ ...f, is_infinite: e.target.checked }))}
-                        style={{ width: 16, height: 16 }}
-                      />
-                      <span style={{ fontWeight: 600, color: 'var(--color-cyan)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span className="icon icon--sm">all_inclusive</span> Infinite Stock Pool (Never runs out)
-                      </span>
-                    </label>
-
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
-                      <input
-                        type="checkbox"
-                        checked={form.is_preorder}
-                        onChange={(e) => setForm((f) => ({ ...f, is_preorder: e.target.checked }))}
-                        style={{ width: 16, height: 16 }}
-                      />
-                      <span>Pre-Order Mode</span>
-                    </label>
-                  </div>
-                </div>
-
-                {!form.is_infinite && (
-                  <div className="form-group">
-                    <label className="form-label">
-                      Initial Stock Credentials / Keys (Paste line by line e.g. email:pass or CODE)
-                    </label>
-                    <textarea
-                      className="form-input"
-                      rows={5}
-                      placeholder="user1@mail.com:pass1&#10;user2@mail.com:pass2&#10;KEY-XXXX-YYYY"
-                      value={form.initial_stock}
-                      onChange={(e) => setForm((f) => ({ ...f, initial_stock: e.target.value }))}
-                      style={{ fontFamily: 'monospace', fontSize: 12 }}
-                    />
-                    <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginTop: 4 }}>
-                      Each line represents 1 stock unit. When purchased, 1 line will be automatically delivered to the buyer.
-                    </div>
-                  </div>
-                )}
-
-                <div className="form-group">
-                  <label className="form-label">Pool-Specific Delivery Rules (Optional)</label>
-                  <input
-                    className="form-input"
-                    placeholder="Instructions delivered specifically with items from this pool..."
-                    value={form.pool_rules}
-                    onChange={(e) => setForm((f) => ({ ...f, pool_rules: e.target.value }))}
-                  />
-                </div>
+          {/* TAB 4: MEDIA & META */}
+          {formTab === 'website' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                  Product Image URLs (One URL per line)
+                </label>
+                <textarea
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    background: 'var(--color-surface-2, #141822)',
+                    border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                    borderRadius: 10,
+                    fontSize: 13,
+                    color: 'var(--color-text, #FFFFFF)',
+                    outline: 'none',
+                  }}
+                  placeholder="https://example.com/image.png"
+                  value={form.images}
+                  onChange={(e) => setForm((f) => ({ ...f, images: e.target.value }))}
+                />
               </div>
-            )}
 
-            {/* TAB 3: VARIANT & PRICING */}
-            {formTab === 'variant' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ padding: 14, background: 'var(--color-surface-2)', borderRadius: 8, border: '1px solid var(--color-border)' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>Initial Plan / Variant</div>
-                  <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
-                    You can add more tiers or plans after creating the product from the Manage Product modal.
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <div className="form-group">
-                    <label className="form-label">Plan Name *</label>
-                    <input
-                      className="form-input"
-                      placeholder="e.g. 1 Month Private, 1 Year UHD"
-                      value={form.variant_name}
-                      onChange={(e) => setForm((f) => ({ ...f, variant_name: e.target.value }))}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Price (₹) *</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      className="form-input"
-                      placeholder="e.g. 199"
-                      value={form.price}
-                      onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <div className="form-group">
-                    <label className="form-label">Compare Price (Old Strikethrough Price ₹)</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      placeholder="e.g. 499"
-                      value={form.compare_price}
-                      onChange={(e) => setForm((f) => ({ ...f, compare_price: e.target.value }))}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Validity Duration (Months)</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      placeholder="1 for 1 month, 0 for Lifetime"
-                      value={form.duration}
-                      onChange={(e) => setForm((f) => ({ ...f, duration: e.target.value }))}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Linked Stock Pool</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Promotional Ribbon Badge
+                  </label>
                   <input
-                    className="form-input"
-                    value={form.pool_id}
-                    onChange={(e) => setForm((f) => ({ ...f, pool_id: e.target.value }))}
-                    placeholder="e.g. default"
-                  />
-                  <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginTop: 4 }}>
-                    Maps this variant to the stock pool created in Step 2.
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 4: WEBSITE DISPLAY & MEDIA */}
-            {formTab === 'website' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div className="form-group">
-                  <label className="form-label">Custom Display Title on Website (Optional)</label>
-                  <input
-                    className="form-input"
-                    placeholder="Leave blank to use global product name"
-                    value={form.website_title}
-                    onChange={(e) => setForm((f) => ({ ...f, website_title: e.target.value }))}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Marketing Badge (e.g. Hot, Best Seller, New)</label>
-                  <input
-                    className="form-input"
-                    placeholder="e.g. Hot, Best Seller, New"
+                    type="text"
+                    style={{
+                      width: '100%',
+                      height: 42,
+                      padding: '0 12px',
+                      background: 'var(--color-surface-2, #141822)',
+                      border: '1.5px solid var(--color-border, rgba(255, 255, 255, 0.1))',
+                      borderRadius: 10,
+                      fontSize: 13,
+                      color: 'var(--color-text, #FFFFFF)',
+                      outline: 'none',
+                    }}
+                    placeholder="e.g. HOT, BESTSELLER, 50% OFF"
                     value={form.badge}
                     onChange={(e) => setForm((f) => ({ ...f, badge: e.target.value }))}
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Product Images URLs (One URL per line)</label>
-                  <textarea
-                    className="form-input"
-                    rows={3}
-                    placeholder="https://images.unsplash.com/...&#10;https://i.imgur.com/..."
-                    value={form.images}
-                    onChange={(e) => setForm((f) => ({ ...f, images: e.target.value }))}
-                  />
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Publish on Website Immediately
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, is_published: !f.is_published }))}
+                    className={`admin-btn ${form.is_published ? 'admin-btn-secondary' : 'admin-btn-ghost'}`}
+                    style={{ width: '100%', height: 42, justifyContent: 'center' }}
+                  >
+                    {form.is_published ? <Eye size={15} /> : <Eye size={15} style={{ opacity: 0.5 }} />}
+                    <span>{form.is_published ? 'Live on Store' : 'Hidden from Store'}</span>
+                  </button>
                 </div>
-
-                <div className="form-group">
-                  <label className="form-label">Rich Store Description</label>
-                  <textarea
-                    className="form-input"
-                    rows={4}
-                    placeholder="Detailed feature list, perks, requirements for store visitors..."
-                    value={form.description}
-                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                  />
-                </div>
-
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    cursor: 'pointer',
-                    padding: 12,
-                    background: 'var(--color-surface-2)',
-                    borderRadius: 8,
-                    border: '1px solid var(--color-border)',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={form.is_published}
-                    onChange={(e) => setForm((f) => ({ ...f, is_published: e.target.checked }))}
-                    style={{ width: 18, height: 18 }}
-                  />
-                  <div>
-                    <div style={{ fontWeight: 600 }}>Publish on Storefront</div>
-                    <div style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>
-                      When checked, this product is immediately visible to all buyers on the website.
-                    </div>
-                  </div>
-                </label>
               </div>
-            )}
+            </div>
+          )}
 
+          {/* Footer Actions */}
+          <div className="admin-modal-footer" style={{ margin: '8px -20px -20px', padding: '16px 20px' }}>
+            <button type="button" className="admin-btn admin-btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="admin-btn admin-btn-primary" disabled={creating}>
+              <Plus size={16} />
+              <span>{creating ? 'Publishing...' : 'Save & Publish Product'}</span>
+            </button>
           </div>
 
-          {/* Modal Footer */}
-          <div
-            style={{
-              padding: '16px 24px',
-              borderTop: '1px solid var(--color-border)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              background: 'var(--color-surface)',
-            }}
-          >
-            <div style={{ display: 'flex', gap: 8 }}>
-              {formTab !== 'general' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const tabs = ['general', 'stock', 'variant', 'website'];
-                    const idx = tabs.indexOf(formTab);
-                    if (idx > 0) setFormTab(tabs[idx - 1]);
-                  }}
-                  className="btn btn--ghost btn--sm"
-                >
-                  ← Previous Step
-                </button>
-              )}
-              {formTab !== 'website' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const tabs = ['general', 'stock', 'variant', 'website'];
-                    const idx = tabs.indexOf(formTab);
-                    if (idx < tabs.length - 1) setFormTab(tabs[idx + 1]);
-                  }}
-                  className="btn btn--ghost btn--sm"
-                >
-                  Next Step →
-                </button>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button type="button" onClick={onClose} className="btn btn--ghost" disabled={creating}>
-                Cancel
-              </button>
-              <button type="submit" className="btn btn--primary" disabled={creating} style={{ gap: 6 }}>
-                <span className="icon icon--sm">check</span>
-                {creating ? 'Creating...' : 'Create & Sync Product'}
-              </button>
-            </div>
-          </div>
         </form>
+
       </div>
     </div>
   );

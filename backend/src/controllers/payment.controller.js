@@ -412,7 +412,7 @@ export const initiatePayment = async (req, res, next) => {
     } else if (payment_method === 'upi' || payment_method === 'upi_qr') {
       const upiCfg = settings.upi_qr || {};
       responseData.upi_id = upiCfg.upi_id || 'quantumxd@upi';
-      responseData.merchant_name = upiCfg.merchant_name || 'QuantumXD Store';
+      responseData.merchant_name = upiCfg.merchant_name || 'QuantumXD';
       responseData.qr_image_url = upiCfg.qr_image_url || '/upi-qr.png';
       responseData.instructions = upiCfg.instructions || 'Scan QR code or pay to UPI ID, then submit your 12-digit UTR.';
     }

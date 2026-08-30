@@ -128,7 +128,7 @@ export default function Footer() {
           {/* Left: Copyright & Subline */}
           <div className="footer-colophon-left">
             <div className="footer-colophon-copy">
-              &copy; {new Date().getFullYear()} <strong className="footer-colophon-brand">QuantumXD Store</strong>. All rights reserved.
+              &copy; {new Date().getFullYear()} <strong className="footer-colophon-brand">QuantumXD</strong>. All rights reserved.
             </div>
             <div className="footer-colophon-tagline">
               India&apos;s leading automated digital key &amp; license marketplace
@@ -141,7 +141,7 @@ export default function Footer() {
             <span className="footer-colophon-dot">&bull;</span>
             <Link href="/privacy" className="footer-colophon-link">Privacy</Link>
             <span className="footer-colophon-dot">&bull;</span>
-            <Link href="/refund-policy" className="footer-colophon-link">Refunds</Link>
+            <Link href="/refund" className="footer-colophon-link">Refunds</Link>
             <span className="footer-colophon-dot">&bull;</span>
             <Link href="/faq" className="footer-colophon-link">FAQs</Link>
           </div>
