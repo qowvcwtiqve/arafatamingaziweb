@@ -327,23 +327,24 @@
   justify-content: center;
   gap: 6px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #1B4EF5 0%, #3874FF 100%);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.18);
+  background: linear-gradient(180deg, #FFFFFF 0%, #E5E7EB 100%);
+  color: #0E1013;
+  border: 1px solid rgba(255,255,255,0.20);
   font-family: var(--font-heading);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(27, 78, 245, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   white-space: nowrap;
   letter-spacing: 0.01em;
 }
 
 .pcard__btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(27, 78, 245, 0.6);
-  background: linear-gradient(135deg, #1B2CC1 0%, #1B4EF5 100%);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+  background: #F3F4F6;
+  color: #0E1013;
 }
 
 .pcard__btn:active:not(:disabled) {
@@ -377,7 +378,7 @@
 
 .marketplace-card:hover, .pro-card:hover, .product-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(27, 78, 245, 0.6);
+  border-color: rgba(255, 255, 255, 0.25);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38), 0 0 24px rgba(27, 78, 245, 0.25);
 }
 
@@ -455,7 +456,7 @@
 }
 
 .market-badge--preorder, .pro-pill--preorder {
-  background: linear-gradient(135deg, #1B4EF5 0%, #3874FF 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, #E5E7EB 100%); color: #0E1013;
   border: 1px solid rgba(255, 255, 255, 0.35);
   color: #FFFFFF;
 }
@@ -537,8 +538,8 @@
 }
 
 .delivery-dot--blue {
-  background: #3874FF;
-  box-shadow: 0 0 6px #3874FF;
+  background: #10B981;
+  box-shadow: 0 0 6px #10B981;
 }
 
 .marketplace-card__body {
@@ -745,7 +746,7 @@
   height: 38px;
   padding: 0 12px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #1B4EF5 0%, #3874FF 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, #E5E7EB 100%); color: #0E1013;
   color: #FFFFFF;
   border: 1px solid rgba(255, 255, 255, 0.2);
   font-family: var(--font-heading);
@@ -753,14 +754,14 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 3px 12px rgba(27, 78, 245, 0.35);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
   white-space: nowrap;
 }
 
 .marketplace-card__buy-btn:hover:not(:disabled) {
   opacity: 0.95;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(27, 78, 245, 0.55);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 .marketplace-card__buy-btn:disabled {
@@ -2183,9 +2184,9 @@
 }
 
 .pro-variant-card--active {
-  border-color: #1B4EF5 !important;
-  background: rgba(27, 78, 245, 0.08) !important;
-  box-shadow: 0 0 20px rgba(27, 78, 245, 0.22);
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.35);
 }
 
 .pro-variant-left {
@@ -2208,7 +2209,7 @@
 }
 
 .pro-variant-card--active .pro-variant-radio {
-  border-color: #1B4EF5;
+  border-color: rgba(255, 255, 255, 0.3);
   background: #1B4EF5;
 }
 
@@ -2374,7 +2375,7 @@
 }
 
 .pro-btn-cart:hover {
-  border-color: #1B4EF5;
+  border-color: rgba(255, 255, 255, 0.3);
   color: #3874FF;
   background: rgba(27, 78, 245, 0.06);
 }
@@ -2384,7 +2385,7 @@
   min-width: 0;
   height: 48px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #1B4EF5 0%, #3874FF 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, #E5E7EB 100%); color: #0E1013;
   color: #FFFFFF;
   border: 1px solid rgba(255, 255, 255, 0.2);
   font-family: var(--font-heading);
@@ -2395,7 +2396,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  box-shadow: 0 6px 20px rgba(27, 78, 245, 0.45);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
   transition: all 0.2s ease;
   white-space: nowrap;
 }
@@ -2410,7 +2411,7 @@
 
 .pro-btn-buy:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(27, 78, 245, 0.65);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
   background: linear-gradient(135deg, #1B2CC1 0%, #1B4EF5 100%);
 }
 
