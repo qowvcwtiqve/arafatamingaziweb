@@ -26,6 +26,9 @@ import { syncAndFulfillPreordersFromBotStock } from './services/orders.service.j
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust Nginx reverse proxy so real client IP is used and rate limits don't group all users into 127.0.0.1
+app.set('trust proxy', 1);
+
 // =====================================================
 // SECURITY & MIDDLEWARE
 // =====================================================
@@ -45,13 +48,20 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 // Global rate limiter
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: 2000,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
 }));
 
 // Stricter rate limit for auth routes
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20 });
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+});
 
 // =====================================================
 // ROUTES
