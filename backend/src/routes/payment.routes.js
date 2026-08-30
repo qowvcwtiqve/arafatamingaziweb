@@ -23,12 +23,12 @@ router.post('/coupon/validate', validateCoupon);
 // Direct wallet purchase (MongoDB stock pop)
 router.post('/wallet-purchase', protect, walletPurchase);
 
-// Gateway payments (Cashfree, Crypto, Binance, UPI)
-router.post('/initiate', optionalAuth, initiatePayment);
-router.post('/upi/submit', optionalAuth, submitUpiPayment);
-router.post('/cashfree/verify', optionalAuth, verifyCashfreePayment);
-router.post('/binance/verify', optionalAuth, verifyBinancePayment);
-router.get('/status/:orderId', getOrderStatus);
+// Gateway payments — LOGIN REQUIRED (protect middleware enforces authentication)
+router.post('/initiate', protect, initiatePayment);
+router.post('/upi/submit', protect, submitUpiPayment);
+router.post('/cashfree/verify', protect, verifyCashfreePayment);
+router.post('/binance/verify', protect, verifyBinancePayment);
+router.get('/status/:orderId', protect, getOrderStatus);
 
 // Cashfree Return URL (Converts Cashfree POST form redirect to 302 GET redirect for Next.js)
 router.all('/cashfree/return', async (req, res) => {

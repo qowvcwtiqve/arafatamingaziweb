@@ -85,6 +85,20 @@ function CheckoutContent() {
     if (user?.email) setEmail(user.email);
   }, [user]);
 
+  // ─── AUTH GUARD: Redirect to login if not logged in ───────────────────────
+  useEffect(() => {
+    if (!mounted) return;
+    // Wait for auth store to hydrate before checking
+    const stored = typeof window !== 'undefined'
+      ? JSON.parse(localStorage.getItem('quantumxd-auth') || '{}')?.state?.user
+      : null;
+    const currentUser = user || stored;
+    if (!currentUser) {
+      toast.error('Please login or create an account to place an order');
+      router.replace('/login?redirect=/checkout');
+    }
+  }, [mounted, user, router]);
+
   // Fetch active payment methods from backend
   useEffect(() => {
     const fetchMethods = async () => {
@@ -188,6 +202,12 @@ function CheckoutContent() {
   };
 
   const handleInitiatePayment = async () => {
+    // Final auth check before payment
+    if (!user) {
+      toast.error('You must be logged in to place an order');
+      router.push('/login?redirect=/checkout');
+      return;
+    }
     if (!email) return toast.error('Email is required to receive your product delivery');
     
     if (paymentMethod === 'wallet') {
