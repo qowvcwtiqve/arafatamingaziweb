@@ -13,6 +13,7 @@ import {
   Edit,
   Tags,
   Wallet,
+  MessageSquare,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
@@ -28,9 +29,11 @@ import OrdersManagementTab from '../../components/admin/OrdersManagementTab';
 import CouponsTab from '../../components/admin/CouponsTab';
 import UserDetailModal from '../../components/admin/UserDetailModal';
 import PaymentSettingsTab from '../../components/admin/PaymentSettingsTab';
+import TicketsManagementTab from '../../components/admin/TicketsManagementTab';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'tickets', label: 'Support Tickets', icon: MessageSquare },
   { id: 'orders', label: 'Orders', icon: ReceiptText },
   { id: 'products', label: 'Products', icon: Box },
   { id: 'users', label: 'Users', icon: Users },
@@ -531,6 +534,11 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* SUPPORT TICKETS */}
+        {activeTab === 'tickets' && (
+          <TicketsManagementTab />
         )}
 
         {/* ORDERS */}

@@ -232,6 +232,38 @@ select option, select optgroup {
   color: var(--color-text);
 }
 
+/* Prevent double-border / inner box artifacts in custom input wrappers across the site */
+.custom-input-box input,
+.custom-input-box textarea,
+.custom-input-box select,
+.custom-input,
+.custom-textarea,
+.modal-composer-input-row input,
+.modal-composer-input-row textarea,
+.admin-composer-box textarea,
+.admin-search-wrap input,
+.search-bar__input {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.custom-input-box input:focus,
+.custom-input-box textarea:focus,
+.custom-input-box select:focus,
+.custom-input:focus,
+.custom-textarea:focus,
+.modal-composer-input-row textarea:focus,
+.admin-composer-box textarea:focus {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
 .form-input--error {
   border-color: var(--color-error) !important;
 }

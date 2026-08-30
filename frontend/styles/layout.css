@@ -1149,21 +1149,53 @@
   opacity: 0.12 !important;
 }
 
-[data-theme='light'] input:not(.hero-custom-search-input):not(.header-search-input),
-[data-theme='light'] textarea,
-[data-theme='light'] select,
+[data-theme='light'] input:not(.hero-custom-search-input):not(.header-search-input):not(.custom-input):not(.search-bar__input):not(.admin-search-input):not(.navbar-search-input),
+[data-theme='light'] textarea:not(.custom-textarea):not(.ticket-direct-textarea):not(.modal-reply-textarea):not(.admin-reply-textarea),
+[data-theme='light'] select:not(.custom-select),
 [data-theme='light'] .form-input {
   background: #FFFFFF !important;
   color: #0F172A !important;
   border: 1px solid #CBD5E1 !important;
 }
 
-[data-theme='light'] input:not(.hero-custom-search-input):not(.header-search-input):focus,
-[data-theme='light'] textarea:focus,
-[data-theme='light'] select:focus,
+[data-theme='light'] input:not(.hero-custom-search-input):not(.header-search-input):not(.custom-input):not(.search-bar__input):not(.admin-search-input):not(.navbar-search-input):focus,
+[data-theme='light'] textarea:not(.custom-textarea):not(.ticket-direct-textarea):not(.modal-reply-textarea):not(.admin-reply-textarea):focus,
+[data-theme='light'] select:not(.custom-select):focus,
 [data-theme='light'] .form-input:focus {
   border-color: #1B4EF5 !important;
   box-shadow: 0 0 0 3px rgba(27, 78, 245, 0.15) !important;
+}
+
+/* Explicitly guarantee no inner double borders for custom input children in light mode */
+[data-theme='light'] .custom-input-box input,
+[data-theme='light'] .custom-input-box textarea,
+[data-theme='light'] .custom-input-box select,
+[data-theme='light'] .custom-input,
+[data-theme='light'] .custom-textarea,
+[data-theme='light'] .modal-composer-input-row input,
+[data-theme='light'] .modal-composer-input-row textarea,
+[data-theme='light'] .admin-composer-box textarea,
+[data-theme='light'] .admin-search-wrap input,
+[data-theme='light'] .search-bar__input {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+[data-theme='light'] .custom-input-box input:focus,
+[data-theme='light'] .custom-input-box textarea:focus,
+[data-theme='light'] .custom-input-box select:focus,
+[data-theme='light'] .custom-input:focus,
+[data-theme='light'] .custom-textarea:focus,
+[data-theme='light'] .modal-composer-input-row textarea:focus,
+[data-theme='light'] .admin-composer-box textarea:focus {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 [data-theme='light'] input::placeholder,

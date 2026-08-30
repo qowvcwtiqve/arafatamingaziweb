@@ -9,3 +9,7 @@ yarn-error.log*
 .pnpm-state.json
 coverage/
 .DS_Store
+scratch/
+backend/uploads/
+backend/data/local_db.json
+

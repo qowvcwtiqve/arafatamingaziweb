@@ -8,6 +8,8 @@ import '../styles/dashboard.css';
 import '../styles/home.css';
 import '../styles/admin.css';
 import '../styles/layout.css';
+import '../styles/tickets.css';
+import '../styles/admin-tickets.css';
 import { Toaster } from 'react-hot-toast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';

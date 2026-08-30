@@ -105,7 +105,7 @@ export default function HeroBanner() {
             dispatched automatically within seconds of payment verification.
           </p>
 
-          {/* 4. Unified Search Box */}
+          {/* 4. Unified Modern Search Box */}
           <form onSubmit={handleSearchSubmit} className="hero-custom-search-form">
             <span className="icon hero-custom-search-icon">search</span>
             <input
@@ -132,7 +132,7 @@ export default function HeroBanner() {
             </button>
           </form>
 
-          {/* 5. Real Dynamic Categories Pills (Only if categories exist in DB) */}
+          {/* 5. Real Dynamic Categories Pills */}
           {categories.length > 0 && (
             <div className="hero-trending-tags-container">
               <span className="hero-trending-label">
@@ -153,11 +153,11 @@ export default function HeroBanner() {
             </div>
           )}
 
-          {/* 6. CTA Action Buttons with Google Icons */}
+          {/* 6. Action Buttons */}
           <div className="hero-custom-actions">
             <Link
               href="/products"
-              className="btn btn--primary hero-custom-btn-primary"
+              className="btn hero-custom-btn-primary"
             >
               <span className="icon icon--md icon--filled">storefront</span>
               <span>Browse All Products</span>
@@ -165,16 +165,16 @@ export default function HeroBanner() {
             </Link>
             <Link
               href="/products?featured=true"
-              className="btn btn--ghost hero-custom-btn-secondary"
+              className="btn hero-custom-btn-secondary"
             >
-              <span className="icon icon--sm icon--cyan icon--filled">star</span>
+              <span className="icon icon--sm icon--filled" style={{ color: '#F59E0B' }}>star</span>
               <span>Featured Picks</span>
             </Link>
             <a
               href="https://t.me/arafatamingazi"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn--ghost hero-custom-btn-telegram"
+              className="btn hero-custom-btn-telegram"
             >
               <span className="icon icon--sm icon--cyan">headset_mic</span>
               <span>Support Helpdesk</span>
@@ -208,7 +208,7 @@ export default function HeroBanner() {
             ))}
           </div>
 
-          {/* 8. Stats Bar Strip */}
+          {/* 8. Modern Stats Metric Bar */}
           <div className="hero-custom-stats-bar">
             {stats.map((s, idx) => (
               <div key={s.label} className="hero-custom-stat-item">

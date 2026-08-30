@@ -85,6 +85,8 @@ const INITIAL_SEED = {
   reviews: [],
   processed_payment_ids: [],
   exchange_rate_cache: [{ from_currency: 'USD', to_currency: 'INR', rate: 84.5, fetched_at: new Date().toISOString() }],
+  tickets: [],
+  ticket_messages: [],
 };
 
 // Initialize Local DB if missing
@@ -793,6 +795,126 @@ export async function query(sql, params = []) {
     db.product_variants.push(newVar);
     writeLocalDb(db);
     return { rows: [newVar] };
+  }
+
+  // 15. Tickets System Handlers
+  if (lowerSql.startsWith('insert into tickets')) {
+    const [id, ticket_number, user_id, user_name, user_email, user_telegram, order_id, deposit_id, category, priority, status, subject, guest_access_token, unread_user_count, unread_admin_count, last_reply_by] = params;
+    const newTicket = {
+      id: id || `tkt_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      ticket_number: ticket_number || `TK-${Math.floor(1000 + Math.random() * 9000)}`,
+      user_id: user_id || null,
+      user_name: user_name || 'Guest Buyer',
+      user_email: user_email || '',
+      user_telegram: user_telegram || '',
+      order_id: order_id || null,
+      deposit_id: deposit_id || null,
+      category: category || 'general',
+      priority: priority || 'medium',
+      status: status || 'open',
+      subject: subject || 'Support Request',
+      guest_access_token: guest_access_token || null,
+      unread_user_count: parseInt(unread_user_count || 0),
+      unread_admin_count: parseInt(unread_admin_count || 1),
+      last_reply_by: last_reply_by || 'user',
+      last_reply_at: new Date().toISOString(),
+      admin_notes: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    db.tickets = db.tickets || [];
+    db.tickets.unshift(newTicket);
+    writeLocalDb(db);
+    return { rows: [newTicket] };
+  }
+
+  if (lowerSql.startsWith('update tickets')) {
+    const id = params[params.length - 1];
+    db.tickets = db.tickets || [];
+    const ticket = db.tickets.find(t => t.id === id || t.ticket_number === id);
+    if (ticket) {
+      if (lowerSql.includes('status=$1')) {
+        ticket.status = params[0];
+      }
+      if (lowerSql.includes('priority=$1')) {
+        ticket.priority = params[0];
+      }
+      if (lowerSql.includes('admin_notes=$1')) {
+        ticket.admin_notes = params[0];
+      }
+      if (lowerSql.includes('last_reply_by=$1')) {
+        ticket.last_reply_by = params[0];
+        ticket.last_reply_at = new Date().toISOString();
+      }
+      if (lowerSql.includes('unread_user_count=')) {
+        if (lowerSql.includes('unread_user_count=0')) ticket.unread_user_count = 0;
+        else if (lowerSql.includes('unread_user_count+1')) ticket.unread_user_count = (ticket.unread_user_count || 0) + 1;
+      }
+      if (lowerSql.includes('unread_admin_count=')) {
+        if (lowerSql.includes('unread_admin_count=0')) ticket.unread_admin_count = 0;
+        else if (lowerSql.includes('unread_admin_count+1')) ticket.unread_admin_count = (ticket.unread_admin_count || 0) + 1;
+      }
+      ticket.updated_at = new Date().toISOString();
+      writeLocalDb(db);
+      return { rows: [ticket], rowCount: 1 };
+    }
+    return { rows: [], rowCount: 0 };
+  }
+
+  if (lowerSql.startsWith('delete from tickets')) {
+    const id = params[0];
+    db.tickets = db.tickets || [];
+    const initLen = db.tickets.length;
+    db.tickets = db.tickets.filter(t => t.id !== id && t.ticket_number !== id);
+    db.ticket_messages = (db.ticket_messages || []).filter(m => m.ticket_id !== id);
+    writeLocalDb(db);
+    return { rows: [], rowCount: initLen - db.tickets.length };
+  }
+
+  if (lowerSql.includes('from tickets')) {
+    db.tickets = db.tickets || [];
+    if (lowerSql.includes('where id=$1 or ticket_number=$1') || lowerSql.includes('where id=$1') || lowerSql.includes('where ticket_number=$1')) {
+      const id = params[0];
+      const ticket = db.tickets.find(t => t.id === id || t.ticket_number === id);
+      return { rows: ticket ? [ticket] : [] };
+    }
+    if (lowerSql.includes('where user_id=$1 or user_email=$2') || lowerSql.includes('where user_id=$1')) {
+      const uid = params[0];
+      const uemail = (params[1] || '').toLowerCase();
+      const list = db.tickets.filter(t => t.user_id === uid || (uemail && t.user_email?.toLowerCase() === uemail));
+      return { rows: list };
+    }
+    return { rows: db.tickets };
+  }
+
+  // 16. Ticket Messages Handlers
+  if (lowerSql.startsWith('insert into ticket_messages')) {
+    const [id, ticket_id, sender_type, sender_id, sender_name, message, is_internal_note, image_url] = params;
+    const newMsg = {
+      id: id || `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      ticket_id,
+      sender_type: sender_type || 'user',
+      sender_id: sender_id || null,
+      sender_name: sender_name || 'Customer',
+      message: message || '',
+      is_internal_note: !!is_internal_note,
+      image_url: image_url || null,
+      created_at: new Date().toISOString(),
+    };
+    db.ticket_messages = db.ticket_messages || [];
+    db.ticket_messages.push(newMsg);
+    writeLocalDb(db);
+    return { rows: [newMsg] };
+  }
+
+  if (lowerSql.includes('from ticket_messages')) {
+    db.ticket_messages = db.ticket_messages || [];
+    if (lowerSql.includes('where ticket_id=$1')) {
+      const tktId = params[0];
+      const msgs = db.ticket_messages.filter(m => m.ticket_id === tktId);
+      return { rows: msgs };
+    }
+    return { rows: db.ticket_messages };
   }
 
   // Generic fallback

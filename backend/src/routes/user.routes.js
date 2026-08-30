@@ -211,6 +211,17 @@ router.get('/profile', protect, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// GET /api/users/deposits
+router.get('/deposits', protect, async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      'SELECT id, user_id, amount, currency, gateway, transaction_id, status, created_at FROM deposits WHERE user_id=$1 ORDER BY created_at DESC LIMIT 30',
+      [req.user.id]
+    );
+    res.json({ success: true, deposits: rows || [] });
+  } catch (err) { next(err); }
+});
+
 // PUT /api/users/profile
 router.put('/profile', protect, async (req, res, next) => {
   try {

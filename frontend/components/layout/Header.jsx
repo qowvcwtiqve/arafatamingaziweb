@@ -90,6 +90,7 @@ export default function Header() {
   const primaryLinks = [
     { href: '/', label: 'Home', icon: 'home' },
     { href: '/products', label: 'Store', icon: 'storefront' },
+    { href: '/tickets', label: 'Support', icon: 'support_agent' },
   ];
 
   const cartCount = mounted ? items.length : 0;
@@ -223,6 +224,9 @@ export default function Header() {
                         </Link>
                         <Link href="/dashboard?tab=wallet" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
                           <span className="icon icon--sm icon--accent">account_balance_wallet</span> Wallet: {format(user.balance || 0)}
+                        </Link>
+                        <Link href="/tickets" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
+                          <span className="icon icon--sm icon--cyan">support_agent</span> Support Tickets
                         </Link>
                         {user.role === 'admin' && (
                           <Link href="/admin" className="user-dropdown__item" onClick={() => setUserDropdownOpen(false)}>
@@ -383,6 +387,23 @@ export default function Header() {
                       <div>
                         <div className="user-bottom-sheet__nav-title">Wallet &amp; Transactions</div>
                         <div className="user-bottom-sheet__nav-subtitle">Deposit via UPI, Binance &amp; Crypto</div>
+                      </div>
+                    </div>
+                    <span className="icon icon--sm icon--muted">chevron_right</span>
+                  </Link>
+
+                  <Link
+                    href="/tickets"
+                    className="user-bottom-sheet__nav-item"
+                    onClick={() => setUserDropdownOpen(false)}
+                  >
+                    <div className="user-bottom-sheet__nav-item-left">
+                      <div className="user-bottom-sheet__nav-icon-box">
+                        <span className="icon icon--md icon--cyan">support_agent</span>
+                      </div>
+                      <div>
+                        <div className="user-bottom-sheet__nav-title">Support Tickets</div>
+                        <div className="user-bottom-sheet__nav-subtitle">Key replacement &amp; payment help</div>
                       </div>
                     </div>
                     <span className="icon icon--sm icon--muted">chevron_right</span>

@@ -249,25 +249,25 @@ export default function HomePage() {
       <TelegramCommunityBanner />
 
       {/* 10. VERIFIED CUSTOMER REVIEWS & LIVE PROOF */}
-      <section className="section section--sm" style={{ paddingBottom: 60, borderTop: '1px solid var(--color-border)', background: 'linear-gradient(180deg, transparent 0%, rgba(124, 58, 237, 0.04) 100%)' }}>
+      <section className="section section--sm" style={{ paddingBottom: 60, borderTop: '1px solid var(--color-border)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto 40px auto' }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '6px 14px', borderRadius: 'var(--radius-full)',
-              background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)',
-              marginBottom: 16
+              padding: '5px 14px', borderRadius: 'var(--radius-full)',
+              background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)',
+              marginBottom: 14
             }}>
               <span className="icon icon--sm icon--filled" style={{ color: '#F59E0B' }}>star</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#F59E0B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                4.9 / 5.0 Rated Marketplace
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: '#F59E0B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                4.9 / 5.0 Rating • 3,500+ Reviews
               </span>
             </div>
             <h2 className="section-title">
-              Loved by <span className="text-gradient">3,500+ Buyers</span>
+              Loved by <span className="text-gradient">3,500+ Happy Buyers</span>
             </h2>
             <p className="section-subtitle" style={{ margin: '8px auto 0 auto' }}>
-              Real feedback from verified purchasers who rely on our instant digital asset deliveries daily.
+              Real feedback from verified purchasers who rely on our automated instant key &amp; account deliveries daily.
             </p>
           </div>
 
@@ -277,16 +277,16 @@ export default function HomePage() {
                 name: 'Rahul Sharma',
                 loc: 'Mumbai, IN',
                 stars: 5,
-                title: 'Instant activation, key worked on first try! ⚡',
-                text: 'Purchased Canva & Tool access. Got login details in less than 30 seconds right inside the dashboard. 100% genuine.',
-                product: 'Canva Pro Lifetime'
+                title: 'Instant activation, key worked on first try',
+                text: 'Purchased tool access and license. Got credentials in less than 30 seconds right inside the dashboard. 100% genuine.',
+                product: 'Software License'
               },
               {
                 name: 'Aman Verma',
                 loc: 'Delhi, IN',
                 stars: 5,
-                title: 'Telegram support solved my query in 2 mins',
-                text: 'Had a quick question on login steps and the admin helped me instantly on Telegram. Exceptional support and unbeatable pricing.',
+                title: 'Telegram support solved my query in 2 minutes',
+                text: 'Had a quick question on login steps and the support team helped me immediately on Telegram. Exceptional service and pricing.',
                 product: 'Digital Subscription'
               },
               {
@@ -294,8 +294,8 @@ export default function HomePage() {
                 loc: 'Ahmedabad, IN',
                 stars: 5,
                 title: 'Best automated store with seamless UPI QR',
-                text: 'Payment verified instantly and credentials were ready immediately. Saved over 70% compared to official pricing.',
-                product: 'Premium License'
+                text: 'Payment verified instantly and credentials were ready immediately. Saved over 70% compared to standard pricing.',
+                product: 'Developer Toolkit'
               }
             ].map(r => (
               <div
@@ -305,12 +305,12 @@ export default function HomePage() {
                 <div className="home-testimonial-card__header">
                   <div className="home-testimonial-card__stars">
                     {[1, 2, 3, 4, 5].map(s => (
-                      <span key={s} className="icon icon--filled" style={{ fontSize: 14, color: '#F59E0B' }}>star</span>
+                      <span key={s} className="icon icon--filled" style={{ fontSize: 15, color: '#F59E0B' }}>star</span>
                     ))}
                   </div>
                   <span className="home-testimonial-card__verified-badge">
-                    <span className="icon icon--sm" style={{ fontSize: 11 }}>verified</span>
-                    Verified Buyer
+                    <span className="icon icon--sm icon--accent" style={{ fontSize: 13 }}>verified</span>
+                    <span>Verified Purchase</span>
                   </span>
                 </div>
 
@@ -318,7 +318,7 @@ export default function HomePage() {
                   <h4 className="home-testimonial-card__title">
                     {r.title}
                   </h4>
-                  <p className="home-testimonial-card__quote" style={{ marginTop: 6 }}>
+                  <p className="home-testimonial-card__quote" style={{ marginTop: 8 }}>
                     "{r.text}"
                   </p>
                 </div>

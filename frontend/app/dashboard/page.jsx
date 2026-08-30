@@ -620,65 +620,9 @@ function DashboardContent() {
               />
             )}
 
-            {/* 4. HELP & SUPPORT TAB */}
+            {/* 4. HELP & SUPPORT / TICKETS TAB */}
             {activeTab === 'support' && (
-              <div>
-                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, marginBottom: 20 }}>
-                  24/7 Client Helpdesk &amp; Support
-                </h2>
-
-                <div className="grid grid--2" style={{ gap: 16 }}>
-                  <div className="dashboard-content-card" style={{ padding: 24 }}>
-                    <div style={{
-                      width: 44, height: 44, borderRadius: 'var(--radius-lg)',
-                      background: 'rgba(0, 212, 255, 0.1)', color: 'var(--color-cyan)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12
-                    }}>
-                      <span className="icon icon--md">send</span>
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
-                      Telegram Support Channel
-                    </h3>
-                    <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
-                      Fastest response time. Direct human support for license issues and inquiries.
-                    </p>
-                    <a
-                      href="https://t.me/quantumxdservices"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn--primary btn--sm"
-                      style={{ gap: 6 }}
-                    >
-                      <span className="icon icon--sm">send</span>
-                      <span>Open Telegram</span>
-                    </a>
-                  </div>
-
-                  <div className="dashboard-content-card" style={{ padding: 24 }}>
-                    <div style={{
-                      width: 44, height: 44, borderRadius: 'var(--radius-lg)',
-                      background: 'rgba(110, 58, 255, 0.1)', color: 'var(--color-primary-light)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12
-                    }}>
-                      <span className="icon icon--md">mail</span>
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
-                      Email Helpdesk
-                    </h3>
-                    <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
-                      For detailed business inquiries and bulk order quotations. Response within 24h.
-                    </p>
-                    <a
-                      href="mailto:support@quantumxd.store"
-                      className="btn btn--outline btn--sm"
-                      style={{ gap: 6 }}
-                    >
-                      <span className="icon icon--sm">mail</span>
-                      <span>Send Email</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
+              <DashboardTicketsTab user={user} />
             )}
 
           </div>
@@ -1162,6 +1106,203 @@ function WalletTopup({ user, refreshUser }) {
         <span className="icon icon--md icon--filled">bolt</span>
         <span>{loading ? 'Processing Gateway...' : `Proceed to Pay ${formatDirect(amount || 0)}`}</span>
       </button>
+    </div>
+  );
+}
+
+function DashboardTicketsTab({ user }) {
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchTickets = async () => {
+    try {
+      const res = await api.get('/tickets/my-tickets');
+      if (res.data?.success) {
+        setTickets(res.data.tickets || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 800, margin: '0 0 4px 0' }}>
+            Help &amp; Support Tickets
+          </h2>
+          <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: 0 }}>
+            Submit tickets for order issues, payment verifications, and key replacements.
+          </p>
+        </div>
+
+        <Link
+          href="/tickets"
+          className="btn btn--primary btn--sm"
+          style={{ gap: 6 }}
+        >
+          <span className="icon icon--sm">add_circle</span>
+          <span>Submit New Ticket</span>
+        </Link>
+      </div>
+
+      {/* Support Channels Row */}
+      <div className="grid grid--2" style={{ gap: 16 }}>
+        <div className="dashboard-content-card" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: 10,
+              background: 'rgba(56, 116, 255, 0.1)', color: '#3874FF',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <span className="icon icon--sm">verified_user</span>
+            </div>
+            <div>
+              <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: 15, fontWeight: 700, margin: 0 }}>
+                100% Replacement Warranty
+              </h4>
+              <span style={{ fontSize: 11.5, color: '#10B981', fontWeight: 700 }}>Priority Ticket Resolution</span>
+            </div>
+          </div>
+          <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', lineHeight: 1.4, margin: '0 0 14px 0' }}>
+            Instant replacement or verification for all purchased accounts and keys.
+          </p>
+          <Link
+            href="/tickets"
+            className="btn btn--primary btn--sm"
+            style={{ gap: 6 }}
+          >
+            <span className="icon icon--sm">add_circle</span>
+            <span>Open Support Ticket</span>
+          </Link>
+        </div>
+
+        <div className="dashboard-content-card" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: 10,
+              background: 'rgba(56, 116, 255, 0.1)', color: '#3874FF',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <span className="icon icon--sm">mail</span>
+            </div>
+            <div>
+              <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: 15, fontWeight: 700, margin: 0 }}>
+                Direct Email Helpdesk
+              </h4>
+              <span style={{ fontSize: 11.5, color: 'var(--color-text-muted)' }}>Within 2-4 Hours</span>
+            </div>
+          </div>
+          <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', lineHeight: 1.4, margin: '0 0 14px 0' }}>
+            For formal receipts, enterprise bulk licenses, and official queries.
+          </p>
+          <a
+            href="mailto:support@quantumxd.store"
+            className="btn btn--outline btn--sm"
+            style={{ gap: 6 }}
+          >
+            <span className="icon icon--sm">mail</span>
+            <span>support@quantumxd.store</span>
+          </a>
+        </div>
+      </div>
+
+      {/* Tickets List Table */}
+      <div className="dashboard-content-card" style={{ padding: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, fontWeight: 700, margin: 0 }}>
+            My Active Tickets ({tickets.length})
+          </h3>
+          <Link href="/tickets" className="btn btn--outline btn--sm" style={{ padding: '4px 10px', fontSize: 12 }}>
+            Open Full Portal &rarr;
+          </Link>
+        </div>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--color-text-muted)' }}>
+            <span className="icon icon--md spin">sync</span>
+            <p style={{ fontSize: 13, marginTop: 8 }}>Loading your tickets...</p>
+          </div>
+        ) : tickets.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--color-text-muted)' }}>
+            <span className="icon icon--xl icon--muted">confirmation_number</span>
+            <h4 style={{ margin: '12px 0 6px 0', color: 'var(--color-text)' }}>No Tickets Created Yet</h4>
+            <p style={{ fontSize: 13, margin: '0 0 16px 0' }}>If you face any issue with a key or payment, open a ticket anytime.</p>
+            <Link
+              href="/tickets"
+              className="btn btn--primary btn--sm"
+            >
+              Open Support Ticket
+            </Link>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {tickets.map((tkt) => (
+              <Link
+                key={tkt.id}
+                href="/tickets"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '14px 16px',
+                  background: 'var(--color-surface-2)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  gap: 12,
+                  flexWrap: 'wrap',
+                  textDecoration: 'none',
+                  transition: 'border-color 0.15s ease',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: 13, color: '#3874FF' }}>
+                      {tkt.ticket_number}
+                    </span>
+                    <span style={{
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: 9999,
+                      background: tkt.status === 'open' ? 'rgba(56, 116, 255, 0.15)' : tkt.status === 'resolved' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                      color: tkt.status === 'open' ? '#3874FF' : tkt.status === 'resolved' ? '#10B981' : '#F59E0B',
+                      textTransform: 'capitalize',
+                    }}>
+                      {tkt.status.replace('_', ' ')}
+                    </span>
+                    {tkt.unread_user_count > 0 && (
+                      <span style={{ fontSize: 11, color: '#3874FF', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        ● New Reply
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-text)' }}>
+                    {tkt.subject}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
+                    {new Date(tkt.updated_at || tkt.created_at).toLocaleDateString()}
+                  </span>
+                  <span className="btn btn--outline btn--sm" style={{ padding: '4px 10px', fontSize: 12 }}>
+                    Open Chat
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -13,6 +14,7 @@ import adminRoutes from './routes/admin.routes.js';
 import downloadRoutes from './routes/download.routes.js';
 import realtimeRoutes, { initRealtimeWatcher } from './routes/realtime.routes.js';
 import currencyRoutes from './routes/currency.routes.js';
+import ticketRoutes, { adminTicketRouter } from './routes/ticket.routes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { connectMongoDB } from './config/mongodb.js';
 
@@ -38,6 +40,7 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Global rate limiter
 app.use(rateLimit({
@@ -59,7 +62,9 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/admin/tickets', adminTicketRouter);
 app.use('/api/admin', adminRoutes);
+app.use('/api/tickets', ticketRoutes);
 app.use('/api/download', downloadRoutes);
 app.use('/api/realtime', realtimeRoutes);
 app.use('/api/currency', currencyRoutes);

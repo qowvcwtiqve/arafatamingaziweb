@@ -70,9 +70,8 @@ export const siteConfig = {
       { href: '/products?sort=popular', label: 'Most Popular' },
     ],
     Support: [
-      { href: '/contact', label: 'Contact Us' },
-      { href: 'https://t.me/quantumxdservices', label: 'Telegram Channel', external: true },
-      { href: 'mailto:support@quantumxd.store', label: 'Email Helpdesk' },
+      { href: '/tickets', label: 'Help & Support' },
+      { href: 'mailto:support@quantumxd.store', label: 'Email Support' },
       { href: '/faq', label: 'Frequently Asked Questions' },
     ],
     Legal: [
