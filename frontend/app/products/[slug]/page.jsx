@@ -285,7 +285,9 @@ export default function ProductDetailPage() {
       variant_name: selectedVariant?.name || null,
       price,
       quantity,
-      thumbnail_url: product.images?.[0] || '',
+      thumbnail_url: product.images?.[0] || product.image_url || '',
+      image_url: product.image_url || product.images?.[0] || '',
+      category: product.category || '',
     });
     toast.success(isPreorder ? 'Pre-Order added to cart' : 'Added to cart');
   };

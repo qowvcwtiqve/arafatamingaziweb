@@ -95,6 +95,36 @@ function getProductCategoryMeta(name = '', category = '') {
 export default function ProductIconBanner({ title = '', category = '', size = 'card' }) {
   const { icon, color, bgGradient, borderColor, label } = getProductCategoryMeta(title, category);
   const isDetail = size === 'detail';
+  const isThumb = size === 'thumb' || size === 'mini' || size === 'cart';
+
+  if (isThumb) {
+    const iconFontSize = size === 'mini' ? 20 : 28;
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: bgGradient,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 'inherit'
+        }}
+      >
+        <span
+          className="icon icon--filled"
+          style={{
+            fontSize: iconFontSize,
+            color: color,
+            filter: `drop-shadow(0 2px 6px ${borderColor})`
+          }}
+        >
+          {icon}
+        </span>
+      </div>
+    );
+  }
+
   const iconSize = isDetail ? 52 : 32;
 
   return (

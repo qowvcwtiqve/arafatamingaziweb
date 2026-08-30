@@ -7,6 +7,47 @@ import Link from 'next/link';
 import ProductIconBanner from '../product/ProductIconBanner';
 import AgreementCheckbox from '../ui/AgreementCheckbox';
 
+function CartItemImage({ item, size = 56 }) {
+  const [imgError, setImgError] = useState(false);
+  const imgUrl = item.image_url || item.thumbnail_url || item.image || (Array.isArray(item.images) ? item.images[0] : null);
+
+  return (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: 'var(--radius-md)',
+      overflow: 'hidden',
+      flexShrink: 0,
+      position: 'relative',
+      border: '1px solid var(--color-border)',
+      background: 'var(--color-surface-2)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      {imgUrl && !imgError ? (
+        <img
+          src={imgUrl}
+          alt={item.title || 'Product'}
+          onError={() => setImgError(true)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            padding: 4
+          }}
+        />
+      ) : (
+        <ProductIconBanner
+          title={item.title}
+          category={item.category || ''}
+          size="thumb"
+        />
+      )}
+    </div>
+  );
+}
+
 export default function CartDrawer({ open, onClose }) {
   const router = useRouter();
   const [agreed, setAgreed] = useState(false);
@@ -108,17 +149,7 @@ export default function CartDrawer({ open, onClose }) {
                   }}
                 >
                   {/* Thumbnail / Product Icon */}
-                  <div style={{
-                    width: 56, height: 56, borderRadius: 'var(--radius-md)',
-                    overflow: 'hidden', flexShrink: 0, position: 'relative',
-                    border: '1px solid var(--color-border)'
-                  }}>
-                    <ProductIconBanner
-                      title={item.title}
-                      category=""
-                      size="card"
-                    />
-                  </div>
+                  <CartItemImage item={item} size={56} />
 
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>

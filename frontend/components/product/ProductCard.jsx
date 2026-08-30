@@ -71,6 +71,8 @@ export default function ProductCard({ product: p }) {
       title: p.website_meta?.title || p.title || p.name,
       price: p.min_price || 0,
       seller_name: 'QuantumXD Store',
+      image_url: p.image_url || p.images?.[0] || p.website_meta?.image_url || '',
+      category: p.category || p.category_name || '',
     });
     toast.success('Added to cart');
   };
