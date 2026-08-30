@@ -63,7 +63,6 @@ export default function CartPage() {
 
   const handleProceedCheckout = (e) => {
     e.preventDefault();
-    if (!agreed) return;
     router.push('/checkout');
   };
 
@@ -251,25 +250,15 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                {/* Mandatory Digital Refund Agreement Checkbox */}
-                <AgreementCheckbox
-                  checked={agreed}
-                  onChange={setAgreed}
-                  mode="checkout"
-                  style={{ marginBottom: 16 }}
-                />
-
                 <button
                   type="button"
-                  disabled={!agreed}
                   onClick={handleProceedCheckout}
-                  className={`btn btn--primary btn--full btn--lg ${!agreed ? 'btn--disabled' : ''}`}
+                  className="btn btn--primary btn--full btn--lg"
                   style={{
                     gap: 8,
                     marginBottom: 16,
-                    opacity: agreed ? 1 : 0.45,
-                    cursor: agreed ? 'pointer' : 'not-allowed',
-                    boxShadow: agreed ? 'var(--shadow-glow)' : 'none'
+                    cursor: 'pointer',
+                    boxShadow: 'var(--shadow-glow)'
                   }}
                 >
                   <span className="icon icon--md icon--filled">bolt</span>

@@ -189,7 +189,6 @@ function CheckoutContent() {
 
   const handleInitiatePayment = async () => {
     if (!email) return toast.error('Email is required to receive your product delivery');
-    if (!agreed) return toast.error('Please agree to the Terms of Service & Refund Policy to continue');
     
     if (paymentMethod === 'wallet') {
       if (!user) return toast.error('Please sign in to use your wallet balance');
@@ -508,27 +507,18 @@ function CheckoutContent() {
                   })}
                 </div>
 
-                {/* Mandatory Digital Refund Agreement Checkbox */}
-                <AgreementCheckbox
-                  checked={agreed}
-                  onChange={setAgreed}
-                  mode="checkout"
-                  style={{ marginTop: 20 }}
-                />
-
                 <button
                   className="btn btn--primary btn--full"
                   style={{
-                    marginTop: 16,
+                    marginTop: 20,
                     height: 48,
                     fontSize: 16,
                     fontWeight: 700,
-                    opacity: agreed ? 1 : 0.45,
-                    cursor: agreed ? 'pointer' : 'not-allowed',
-                    boxShadow: agreed ? 'var(--shadow-glow)' : 'none'
+                    cursor: 'pointer',
+                    boxShadow: 'var(--shadow-glow)'
                   }}
                   onClick={handleInitiatePayment}
-                  disabled={loading || !agreed}
+                  disabled={loading}
                 >
                   {loading ? 'Processing...' : (
                     <>
@@ -537,6 +527,23 @@ function CheckoutContent() {
                     </>
                   )}
                 </button>
+
+                <p style={{
+                  marginTop: 12,
+                  fontSize: 12,
+                  color: 'var(--color-text-faint)',
+                  textAlign: 'center',
+                  lineHeight: 1.4
+                }}>
+                  By placing this order, you agree to our{' '}
+                  <Link href="/terms" target="_blank" style={{ color: 'var(--color-text-muted)', textDecoration: 'underline' }}>
+                    Terms of Service
+                  </Link>{' '}
+                  &amp;{' '}
+                  <Link href="/refund" target="_blank" style={{ color: 'var(--color-text-muted)', textDecoration: 'underline' }}>
+                    Refund Policy
+                  </Link>.
+                </p>
               </div>
             )}
 
