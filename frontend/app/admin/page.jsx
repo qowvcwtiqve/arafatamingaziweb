@@ -353,9 +353,6 @@ export default function AdminPage() {
         <div className="admin-sidebar-header">
           <Link href="/" className="admin-brand-tag" target="_blank">
             <Logo size="medium" showTag={false} />
-            <div className="admin-brand-text">
-              <span className="admin-brand-badge">EXECUTIVE SUITE</span>
-            </div>
           </Link>
           <button
             type="button"
@@ -436,10 +433,6 @@ export default function AdminPage() {
           <div className="admin-header-title-box">
             <CurrentIcon size={22} color="#3874FF" />
             <h1 className="admin-section-heading">{currentTabObj.label}</h1>
-            <div className="admin-live-pulse-badge">
-              <span className="admin-pulse-dot" />
-              <span>Realtime Engine Active</span>
-            </div>
           </div>
 
           <div className="admin-header-actions">

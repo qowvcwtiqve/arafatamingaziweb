@@ -4,6 +4,31 @@ import { useState, useEffect, useRef } from 'react';
 import api from '../../lib/api';
 import toast from 'react-hot-toast';
 import CustomDropdown from '../ui/CustomDropdown';
+import {
+  LifeBuoy,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  Search,
+  X,
+  RefreshCw,
+  Send,
+  Image as ImageIcon,
+  Lock,
+  ShoppingBag,
+  Wallet,
+  Check,
+  ChevronRight,
+  User,
+  Copy,
+  FileText,
+  Sparkles,
+  ShieldCheck,
+  ZoomIn,
+  MessageSquare,
+  Paperclip,
+  Info
+} from 'lucide-react';
 
 export default function TicketsManagementTab() {
   const [tickets, setTickets] = useState([]);
@@ -25,34 +50,48 @@ export default function TicketsManagementTab() {
   const [attachedImage, setAttachedImage] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isInternalNote, setIsInternalNote] = useState(false);
-  const [sendingReply, setSendingReply] = useState(false);
-  const [adminNotes, setAdminNotes] = useState('');
-  const [savingNotes, setSavingNotes] = useState(false);
-  const [lightboxImage, setLightboxImage] = useState(null);
-
-  const messagesEndRef = useRef(null);
-  const fileInputRef = useRef(null);
-
-  // Filters
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState(null);
 
+  const fileInputRef = useRef(null);
+  const messagesEndRef = useRef(null);
+
+  // Quick Preset Templates for Instant 1-Click Replies
+  const CANNED_RESPONSES = [
+    {
+      title: 'Replacement Issued',
+      text: 'Hello! Your replacement credentials have been verified and assigned above. Please check and log in. Let us know if you need any further assistance!',
+    },
+    {
+      title: 'Payment Credited',
+      text: 'We have verified your transaction reference (UTR). Your wallet balance has been successfully credited. Thank you for choosing QuantumXD!',
+    },
+    {
+      title: 'Screenshot Needed',
+      text: 'Please provide a clear screenshot of the error message on your screen so we can resolve your issue immediately.',
+    },
+    {
+      title: 'Order Delivered',
+      text: 'Your order has been verified and delivered. You can also view your full credentials anytime in your User Dashboard > My Orders.',
+    },
+  ];
+
+  // Fetch tickets list & summary stats
   const fetchTickets = async () => {
+    setLoading(true);
     try {
-      const res = await api.get('/admin/tickets', {
-        params: {
-          status: statusFilter,
-          category: categoryFilter,
-          search: searchQuery,
-        },
-      });
+      const res = await api.get('/admin/tickets');
       if (res.data?.success) {
         setTickets(res.data.tickets || []);
-        if (res.data.stats) setStats(res.data.stats);
+        if (res.data.stats) {
+          setStats(res.data.stats);
+        }
       }
     } catch (err) {
-      console.error('Error fetching admin tickets:', err);
+      toast.error('Failed to load support tickets');
     } finally {
       setLoading(false);
     }
@@ -60,36 +99,46 @@ export default function TicketsManagementTab() {
 
   useEffect(() => {
     fetchTickets();
-  }, [statusFilter, categoryFilter, searchQuery]);
+  }, []);
 
-  const fetchTicketDetails = async (id) => {
-    if (!id) return;
-    setLoadingDetails(true);
+  // Fetch ticket details when modal opens
+  const fetchTicketDetails = async (tktId, silent = false) => {
+    if (!tktId) return;
+    if (!silent) setLoadingDetails(true);
     try {
-      const res = await api.get(`/admin/tickets/${id}`);
+      const res = await api.get(`/admin/tickets/${tktId}`);
       if (res.data?.success) {
         setActiveTicketData(res.data);
-        setAdminNotes(res.data.ticket?.admin_notes || '');
       }
     } catch (err) {
-      toast.error('Failed to load ticket conversation');
+      if (!silent) toast.error('Failed to load conversation thread');
     } finally {
-      setLoadingDetails(false);
+      if (!silent) setLoadingDetails(false);
     }
   };
 
-  const openTicketModal = (id) => {
-    setSelectedTicketId(id);
+  // Auto-sync polling when modal is active
+  useEffect(() => {
+    if (!isModalOpen || !selectedTicketId) return;
+    const interval = setInterval(() => {
+      fetchTicketDetails(selectedTicketId, true);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [isModalOpen, selectedTicketId]);
+
+  const openTicketModal = (tktId) => {
+    setSelectedTicketId(tktId);
     setIsModalOpen(true);
-    fetchTicketDetails(id);
+    fetchTicketDetails(tktId);
   };
 
   const closeTicketModal = () => {
     setIsModalOpen(false);
     setSelectedTicketId(null);
     setActiveTicketData(null);
-    setAttachedImage(null);
     setReplyText('');
+    setAttachedImage(null);
+    setIsInternalNote(false);
     fetchTickets();
   };
 
@@ -99,7 +148,7 @@ export default function TicketsManagementTab() {
     }
   }, [activeTicketData?.messages, isModalOpen]);
 
-  // Image Upload Handler
+  // Upload image handler
   const handleUploadImage = async (file) => {
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
@@ -115,16 +164,17 @@ export default function TicketsManagementTab() {
       });
       if (res.data?.success) {
         setAttachedImage(res.data.url);
-        toast.success('Screenshot attached successfully');
+        toast.success('Screenshot attached');
       }
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to upload screenshot');
+      toast.error('Failed to upload image');
     } finally {
       setUploadingImage(false);
     }
   };
 
-  const handleSendReply = async (e, optionalStatus = null) => {
+  // Send admin reply or internal staff note
+  const handleSendReply = async (e) => {
     if (e) e.preventDefault();
     if ((!replyText.trim() && !attachedImage) || !selectedTicketId) return;
 
@@ -132,33 +182,31 @@ export default function TicketsManagementTab() {
     try {
       const res = await api.post(`/admin/tickets/${selectedTicketId}/reply`, {
         message: replyText.trim(),
-        is_internal_note: isInternalNote,
         image_url: attachedImage || null,
+        is_internal_note: isInternalNote,
       });
       if (res.data?.success) {
-        toast.success(isInternalNote ? 'Internal note added' : 'Reply sent to customer');
         setReplyText('');
         setAttachedImage(null);
         setIsInternalNote(false);
-
-        if (optionalStatus) {
-          await api.patch(`/admin/tickets/${selectedTicketId}/status`, { status: optionalStatus });
-        }
-
         fetchTicketDetails(selectedTicketId);
         fetchTickets();
+        toast.success(isInternalNote ? 'Internal staff note saved' : 'Reply sent to customer');
       }
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to send reply');
+      toast.error('Failed to send reply');
     } finally {
       setSendingReply(false);
     }
   };
 
+  // Quick Status changer
   const handleStatusChange = async (newStatus) => {
     if (!selectedTicketId) return;
     try {
-      const res = await api.patch(`/admin/tickets/${selectedTicketId}/status`, { status: newStatus });
+      const res = await api.patch(`/admin/tickets/${selectedTicketId}/status`, {
+        status: newStatus,
+      });
       if (res.data?.success) {
         toast.success(`Status updated to ${newStatus.replace('_', ' ')}`);
         fetchTicketDetails(selectedTicketId);
@@ -169,29 +217,16 @@ export default function TicketsManagementTab() {
     }
   };
 
-  const handleSaveNotes = async () => {
-    if (!selectedTicketId) return;
-    setSavingNotes(true);
-    try {
-      const res = await api.patch(`/admin/tickets/${selectedTicketId}/notes`, { admin_notes: adminNotes });
-      if (res.data?.success) {
-        toast.success('Internal notes saved');
-      }
-    } catch (err) {
-      toast.error('Failed to save notes');
-    } finally {
-      setSavingNotes(false);
-    }
-  };
-
+  // 1-Click Deposit Approver
   const handleApproveDeposit = async () => {
-    if (!selectedTicketId) return;
-    if (!window.confirm('Are you sure you want to approve this deposit and credit the buyer wallet?')) return;
+    if (!activeTicketData?.deposit_details?.id) return;
+    const depId = activeTicketData.deposit_details.id;
+    if (!window.confirm(`Approve deposit #${depId} and credit balance to customer?`)) return;
 
     try {
-      const res = await api.post(`/admin/tickets/${selectedTicketId}/approve-deposit`);
+      const res = await api.post(`/admin/deposits/${depId}/approve`);
       if (res.data?.success) {
-        toast.success(res.data.message || 'Deposit approved!');
+        toast.success('Deposit approved & wallet credited successfully!');
         fetchTicketDetails(selectedTicketId);
         fetchTickets();
       }
@@ -200,70 +235,79 @@ export default function TicketsManagementTab() {
     }
   };
 
-  const applyCannedResponse = (text) => {
-    setReplyText(text);
-  };
+  // Filter & Search Logic
+  const filteredTickets = tickets.filter((t) => {
+    if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+    if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchNum = t.ticket_number?.toLowerCase().includes(q);
+      const matchSub = t.subject?.toLowerCase().includes(q);
+      const matchUser = t.user_name?.toLowerCase().includes(q) || t.user_email?.toLowerCase().includes(q);
+      if (!matchNum && !matchSub && !matchUser) return false;
+    }
+    return true;
+  });
 
   return (
-    <div className="tickets-admin-wrapper">
-      
-      {/* 1. Stat Summary Cards */}
-      <div className="tickets-stats-grid">
-        <div className="ticket-stat-card">
-          <div className="ticket-stat-header">
-            <span className="ticket-stat-label">Total Tickets</span>
-            <span className="icon icon--sm icon--cyan">confirmation_number</span>
+    <div className="admin-tickets-container">
+
+      {/* 1. TOP STATS BAR */}
+      <div className="admin-tickets-stats-grid">
+        <div className="admin-tkt-stat-card">
+          <div className="stat-card-left">
+            <span className="stat-label">Total Tickets</span>
+            <span className="stat-number">{stats.total}</span>
           </div>
-          <div className="ticket-stat-value">{stats.total}</div>
+          <div className="stat-card-icon-wrap cyan">
+            <LifeBuoy size={20} color="#3874FF" />
+          </div>
         </div>
 
-        <div className="ticket-stat-card stat-card-open">
-          <div className="ticket-stat-header">
-            <span className="ticket-stat-label">Open / Action Needed</span>
-            <span className="icon icon--sm text-blue">pending_actions</span>
+        <div className="admin-tkt-stat-card">
+          <div className="stat-card-left">
+            <span className="stat-label">Open / Unresolved</span>
+            <span className="stat-number green">{stats.open}</span>
           </div>
-          <div className="ticket-stat-value text-blue">{stats.open}</div>
+          <div className="stat-card-icon-wrap green">
+            <Clock size={20} color="#10B981" />
+          </div>
         </div>
 
-        <div className="ticket-stat-card stat-card-amber">
-          <div className="ticket-stat-header">
-            <span className="ticket-stat-label">In Progress</span>
-            <span className="icon icon--sm text-amber">hourglass_top</span>
+        <div className="admin-tkt-stat-card">
+          <div className="stat-card-left">
+            <span className="stat-label">In Progress</span>
+            <span className="stat-number amber">{stats.inProgress}</span>
           </div>
-          <div className="ticket-stat-value text-amber">{stats.inProgress}</div>
+          <div className="stat-card-icon-wrap amber">
+            <RefreshCw size={20} color="#F59E0B" />
+          </div>
         </div>
 
-        <div className="ticket-stat-card stat-card-green">
-          <div className="ticket-stat-header">
-            <span className="ticket-stat-label">Payment &amp; Deposits</span>
-            <span className="icon icon--sm text-green">account_balance_wallet</span>
+        <div className="admin-tkt-stat-card">
+          <div className="stat-card-left">
+            <span className="stat-label">Resolved / Closed</span>
+            <span className="stat-number" style={{ color: '#10B981' }}>{stats.resolved + stats.closed}</span>
           </div>
-          <div className="ticket-stat-value text-green">{stats.paymentIssues}</div>
-        </div>
-
-        <div className="ticket-stat-card">
-          <div className="ticket-stat-header">
-            <span className="ticket-stat-label">Resolved &amp; Closed</span>
-            <span className="icon icon--sm text-muted">task_alt</span>
+          <div className="stat-card-icon-wrap cyan">
+            <CheckCircle2 size={20} color="#3874FF" />
           </div>
-          <div className="ticket-stat-value">{stats.resolved + stats.closed}</div>
         </div>
       </div>
 
-      {/* 2. Search & Filter Bar */}
-      <div className="tickets-filter-bar">
-        <div className="tickets-search-wrapper">
-          <span className="icon icon--sm search-icon">search</span>
+      {/* 2. CONTROLS TOOLBAR (Search & Custom Obsidian Dropdowns) */}
+      <div className="tickets-toolbar-card">
+        <div className="tickets-search-box">
+          <Search size={15} color="#64748B" />
           <input
             type="text"
-            className="tickets-search-input"
-            placeholder="Search by Ticket #, Email, Buyer Name, Order ID, or UTR..."
+            placeholder="Search ticket #, subject, or customer name/email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           {searchQuery && (
             <button className="tickets-search-clear" onClick={() => setSearchQuery('')}>
-              <span className="icon icon--xs">close</span>
+              <X size={14} />
             </button>
           )}
         </div>
@@ -274,13 +318,14 @@ export default function TicketsManagementTab() {
               { value: 'all', label: 'All Statuses' },
               { value: 'open', label: 'Open', color: '#10B981' },
               { value: 'in_progress', label: 'In Progress', color: '#F59E0B' },
+              { value: 'waiting_user', label: 'Waiting Customer', color: '#8B5CF6' },
               { value: 'resolved', label: 'Resolved', color: '#3874FF' },
               { value: 'closed', label: 'Closed', color: '#64748B' },
             ]}
             value={statusFilter}
             onChange={setStatusFilter}
             placeholder="All Statuses"
-            minWidth={140}
+            minWidth={150}
           />
 
           <CustomDropdown
@@ -295,107 +340,109 @@ export default function TicketsManagementTab() {
             value={categoryFilter}
             onChange={setCategoryFilter}
             placeholder="All Categories"
-            minWidth={160}
+            minWidth={165}
           />
 
           <button className="tickets-refresh-btn" onClick={fetchTickets} title="Refresh Tickets">
-            <span className="icon icon--sm">refresh</span>
+            <RefreshCw size={15} />
           </button>
         </div>
       </div>
 
-      {/* 3. Full-Width Tickets List Table / Data Grid (Popup Trigger) */}
+      {/* 3. TICKETS LIST TABLE & MOBILE CARDS */}
       <div className="tickets-table-card">
-        <div className="table-card-header">
-          <div className="table-header-left">
-            <span className="icon icon--sm icon--cyan">inbox</span>
-            <strong>Support Tickets Queue ({tickets.length})</strong>
-          </div>
-          {stats.pendingAdminReply > 0 && (
-            <span className="table-unread-tag">{stats.pendingAdminReply} Action Required</span>
-          )}
-        </div>
-
         {loading ? (
-          <div className="tickets-empty-state">
-            <span className="icon icon--lg spin">sync</span>
-            <p>Loading tickets queue...</p>
+          <div className="tickets-table-loading">
+            <RefreshCw size={24} className="spin" color="#3874FF" />
+            <p>Loading tickets catalog...</p>
           </div>
-        ) : tickets.length === 0 ? (
-          <div className="tickets-empty-state">
-            <span className="icon icon--xl icon--muted">inbox</span>
-            <p>No support tickets found matching your filters.</p>
+        ) : filteredTickets.length === 0 ? (
+          <div className="tickets-empty-box">
+            <LifeBuoy size={32} color="var(--color-text-muted)" />
+            <h4>No support tickets found</h4>
+            <p>Try clearing filters or search terms.</p>
           </div>
         ) : (
-          <div className="table-wrapper">
-            <table className="table admin-tickets-table">
+          <div className="admin-table-responsive hide-on-mobile">
+            <table className="admin-data-table">
               <thead>
                 <tr>
-                  <th>Ticket #</th>
+                  <th>Ticket</th>
                   <th>Customer</th>
                   <th>Category</th>
-                  <th>Subject</th>
+                  <th>Subject &amp; Last Message</th>
                   <th>Status</th>
-                  <th>Last Activity</th>
-                  <th>Action</th>
+                  <th>Created</th>
+                  <th style={{ textAlign: 'right' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {tickets.map((tkt) => {
-                  const isUnread = tkt.unread_admin_count > 0;
+                {filteredTickets.map((tkt) => {
+                  const statusColors = {
+                    open: '#10B981',
+                    in_progress: '#F59E0B',
+                    waiting_user: '#8B5CF6',
+                    resolved: '#3874FF',
+                    closed: '#64748B',
+                  };
+                  const color = statusColors[tkt.status] || '#3874FF';
+
                   return (
-                    <tr
-                      key={tkt.id}
-                      className={`admin-ticket-row ${isUnread ? 'unread-row' : ''}`}
-                      onClick={() => openTicketModal(tkt.id)}
-                    >
+                    <tr key={tkt.id} onClick={() => openTicketModal(tkt.id)} style={{ cursor: 'pointer' }}>
                       <td>
-                        <div className="tkt-num-cell">
-                          {isUnread && <span className="unread-dot-cell" />}
-                          <span className="tkt-id-text">{tkt.ticket_number}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="tkt-buyer-cell">
-                          <strong>{tkt.user_name || 'Buyer'}</strong>
-                          <span className="tkt-sub-text">{tkt.user_email}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="tkt-category-chip">
-                          <span className="icon icon--xs">
-                            {tkt.category === 'payment_issue' ? 'account_balance_wallet' : 'shopping_bag'}
-                          </span>
-                          <span>{tkt.category.replace('_', ' ')}</span>
+                        <span className="ticket-id-tag">
+                          {tkt.ticket_number || `TKT-${tkt.id.slice(0, 6).toUpperCase()}`}
                         </span>
                       </td>
                       <td>
-                        <div className="tkt-subject-text" title={tkt.subject}>
-                          {tkt.subject}
+                        <div className="user-info-stack">
+                          <strong>{tkt.user_name || 'Customer'}</strong>
+                          <span>{tkt.user_email}</span>
                         </div>
                       </td>
                       <td>
-                        <span className={`status-pill status-${tkt.status}`}>
-                          <span className="icon icon--xs">
-                            {tkt.status === 'open' ? 'pending' : tkt.status === 'in_progress' ? 'hourglass_top' : tkt.status === 'resolved' ? 'check_circle' : 'lock'}
-                          </span>
+                        <span className="ticket-cat-badge">
+                          {tkt.category === 'order_issue' && 'Order Issue'}
+                          {tkt.category === 'payment_issue' && 'Payment/UTR'}
+                          {tkt.category === 'key_replacement' && 'Replacement'}
+                          {tkt.category === 'general' && 'General'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="tkt-msg-snippet-stack">
+                          <strong>{tkt.subject || 'Support Ticket'}</strong>
+                          <p>{tkt.last_message || tkt.message}</p>
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          className="ticket-status-pill"
+                          style={{
+                            background: `${color}18`,
+                            color: color,
+                            border: `1px solid ${color}40`,
+                          }}
+                        >
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: color }} />
                           <span>{tkt.status.replace('_', ' ')}</span>
                         </span>
                       </td>
-                      <td className="tkt-time-text">
-                        {new Date(tkt.updated_at || tkt.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
-                      </td>
                       <td>
+                        <span className="tkt-time-tag">
+                          {new Date(tkt.created_at).toLocaleDateString()}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
                         <button
                           type="button"
-                          className="btn-open-dialog-action"
+                          className="admin-btn admin-btn-secondary admin-btn-sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             openTicketModal(tkt.id);
                           }}
                         >
-                          <span className="icon icon--xs">forum</span>
-                          <span>Inspect &amp; Reply</span>
+                          <span>Manage</span>
+                          <ChevronRight size={13} />
                         </button>
                       </td>
                     </tr>
@@ -419,9 +466,7 @@ export default function TicketsManagementTab() {
                   <span className="modal-tkt-number">{activeTicketData?.ticket?.ticket_number || 'Ticket'}</span>
                   {activeTicketData?.ticket?.status && (
                     <span className={`status-pill status-${activeTicketData.ticket.status}`}>
-                      <span className="icon icon--xs">
-                        {activeTicketData.ticket.status === 'open' ? 'pending' : activeTicketData.ticket.status === 'in_progress' ? 'hourglass_top' : activeTicketData.ticket.status === 'resolved' ? 'check_circle' : 'lock'}
-                      </span>
+                      <span className="pill-dot" />
                       <span>{activeTicketData.ticket.status.replace('_', ' ')}</span>
                     </span>
                   )}
@@ -440,7 +485,7 @@ export default function TicketsManagementTab() {
                     options={[
                       { value: 'open', label: 'Open', color: '#10B981' },
                       { value: 'in_progress', label: 'In Progress', color: '#F59E0B' },
-                      { value: 'waiting_user', label: 'Waiting on Customer', color: '#8B5CF6' },
+                      { value: 'waiting_user', label: 'Waiting Customer', color: '#8B5CF6' },
                       { value: 'resolved', label: 'Resolved', color: '#3874FF' },
                       { value: 'closed', label: 'Closed', color: '#64748B' },
                     ]}
@@ -456,7 +501,7 @@ export default function TicketsManagementTab() {
                   onClick={closeTicketModal}
                   aria-label="Close dialog"
                 >
-                  <span className="icon icon--md">close</span>
+                  <X size={18} />
                 </button>
               </div>
             </div>
@@ -465,17 +510,17 @@ export default function TicketsManagementTab() {
             <div className="modal-scroll-body">
               {loadingDetails || !activeTicketData ? (
                 <div className="modal-loading-state">
-                  <span className="icon icon--lg spin">sync</span>
+                  <RefreshCw size={24} className="spin" color="#3874FF" />
                   <p>Loading ticket thread...</p>
                 </div>
               ) : (
                 <>
-                  {/* EMBEDDED RECEIPT 1: Order Details */}
+                  {/* Linked Order Receipt Snippet */}
                   {activeTicketData.order_details && (
                     <div className="modal-receipt-box order-receipt">
                       <div className="receipt-head">
                         <div className="receipt-title-wrap">
-                          <span className="icon icon--sm icon--cyan">shopping_bag</span>
+                          <ShoppingBag size={16} color="#3874FF" />
                           <strong>Linked Order: #{activeTicketData.order_details.order_number}</strong>
                         </div>
                         <span className="receipt-status-pill">{activeTicketData.order_details.payment_status?.toUpperCase()}</span>
@@ -502,7 +547,8 @@ export default function TicketsManagementTab() {
                                   toast.success('Key copied to clipboard!');
                                 }}
                               >
-                                <span className="icon icon--xs">content_copy</span> Copy
+                                <Copy size={12} />
+                                <span>Copy</span>
                               </button>
                             </div>
                           </div>
@@ -511,12 +557,12 @@ export default function TicketsManagementTab() {
                     </div>
                   )}
 
-                  {/* EMBEDDED RECEIPT 2: Deposit Details */}
+                  {/* Linked Deposit Details */}
                   {activeTicketData.deposit_details && (
                     <div className="modal-receipt-box deposit-receipt">
                       <div className="receipt-head">
                         <div className="receipt-title-wrap">
-                          <span className="icon icon--sm icon--cyan">account_balance_wallet</span>
+                          <Wallet size={16} color="#3874FF" />
                           <strong>Linked Payment Deposit: #{activeTicketData.deposit_details.id}</strong>
                         </div>
                         <span className={`receipt-status-pill ${activeTicketData.deposit_details.status === 'completed' ? 'green' : 'amber'}`}>
@@ -545,7 +591,7 @@ export default function TicketsManagementTab() {
                             className="btn-1click-approve"
                             onClick={handleApproveDeposit}
                           >
-                            <span className="icon icon--sm">check_circle</span>
+                            <CheckCircle2 size={15} />
                             <span>1-Click Approve &amp; Credit ₹{activeTicketData.deposit_details.amount} to Buyer Wallet</span>
                           </button>
                         </div>
@@ -564,7 +610,7 @@ export default function TicketsManagementTab() {
                         return (
                           <div key={msg.id} className="system-pill-row">
                             <span className="system-pill">
-                              <span className="icon icon--xs icon--cyan">info</span>
+                              <Info size={13} color="#3874FF" />
                               <span>{msg.message}</span>
                             </span>
                           </div>
@@ -576,56 +622,42 @@ export default function TicketsManagementTab() {
                           key={msg.id}
                           className={`message-bubble-row ${isUser ? 'user-row' : 'admin-row'} ${isInternal ? 'internal-row' : ''}`}
                         >
-                          {isUser && (
-                            <div className="admin-chat-avatar user-av" title="Buyer">
-                              <span className="icon icon--sm">person</span>
-                            </div>
-                          )}
-
                           <div className={`message-bubble ${isUser ? 'user-bubble' : 'admin-bubble'} ${isInternal ? 'internal-bubble' : ''}`}>
                             <div className="msg-bubble-header">
                               <div className="msg-sender-info">
                                 <span className="msg-sender-name">{msg.sender_name || (isUser ? 'Customer' : 'Support Staff')}</span>
                                 {!isUser && !isInternal && (
                                   <span className="agent-badge">
-                                    <span className="icon icon--xs">verified</span> Support Staff
+                                    <ShieldCheck size={11} /> Support Staff
                                   </span>
                                 )}
                                 {isInternal && (
                                   <span className="internal-badge">
-                                    <span className="icon icon--xs">lock</span> Internal Note (Hidden from Customer)
+                                    <Lock size={11} /> Internal Note (Hidden from Customer)
                                   </span>
                                 )}
                               </div>
-                            </div>
-
-                            {msg.message && (
-                              <div className="msg-bubble-body">
-                                {msg.message}
-                              </div>
-                            )}
-
-                            {msg.image_url && (
-                              <div className="bubble-image-wrap" onClick={() => setLightboxImage(msg.image_url)}>
-                                <img src={msg.image_url} alt="Attached screenshot" className="bubble-image-thumb" />
-                                <span className="img-hover-badge">
-                                  <span className="icon icon--xs">zoom_in</span> View Full
-                                </span>
-                              </div>
-                            )}
-
-                            <div className="msg-bubble-footer">
-                              <span className="msg-time">
+                              <span className="msg-bubble-time">
                                 {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
-                          </div>
 
-                          {!isUser && !isInternal && (
-                            <div className="admin-chat-avatar staff-av" title="Support Staff">
-                              <span className="icon icon--sm icon--cyan">support_agent</span>
+                            <div className="msg-bubble-content">
+                              {msg.message}
                             </div>
-                          )}
+
+                            {msg.image_url && (
+                              <div
+                                className="msg-bubble-attachment"
+                                onClick={() => setLightboxImage(msg.image_url)}
+                              >
+                                <img src={msg.image_url} alt="Attachment" />
+                                <div className="attachment-overlay">
+                                  <ZoomIn size={14} /> Click to Enlarge
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
@@ -635,172 +667,148 @@ export default function TicketsManagementTab() {
               )}
             </div>
 
-            {/* Quick Canned Macros Bar */}
-            <div className="modal-macros-bar">
-              <span className="macros-title">Quick Responses:</span>
-              <button
-                type="button"
-                className="macro-btn"
-                onClick={() => applyCannedResponse('Hello! We have verified your purchase. Here are your fresh replacement credentials:\n\nEmail / User: \nPassword: \n\nPlease verify and let us know if you need further help!')}
-              >
-                <span className="icon icon--xs icon--cyan">bolt</span>
-                <span>Key Replaced</span>
-              </button>
-              <button
-                type="button"
-                className="macro-btn"
-                onClick={() => applyCannedResponse('Hello! Your payment transaction (UTR) has been successfully verified, and your wallet balance has been updated. Thank you for your patience!')}
-              >
-                <span className="icon icon--xs icon--cyan">account_balance_wallet</span>
-                <span>Payment Verified</span>
-              </button>
-              <button
-                type="button"
-                className="macro-btn"
-                onClick={() => applyCannedResponse('Hello! Our technical team is investigating this issue with the server provider. We will update you here within 15-30 minutes.')}
-              >
-                <span className="icon icon--xs icon--accent">search</span>
-                <span>Investigating</span>
-              </button>
-              <button
-                type="button"
-                className="macro-btn"
-                onClick={() => applyCannedResponse('Please check your email Spam/Junk folder or access your digital key directly under your user Dashboard -> Downloads tab.')}
-              >
-                <span className="icon icon--xs icon--cyan">download</span>
-                <span>Check Dashboard</span>
-              </button>
-            </div>
+            {/* Modal Bottom Reply Area with Canned Templates */}
+            <div className="modal-reply-bar admin-reply-box">
+              
+              {/* Canned Responses Preset Strip */}
+              <div className="canned-replies-strip">
+                <span className="canned-title">
+                  <Sparkles size={13} color="#3874FF" />
+                  <span>Templates:</span>
+                </span>
+                {CANNED_RESPONSES.map((tmpl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="canned-chip-btn"
+                    onClick={() => setReplyText(tmpl.text)}
+                  >
+                    {tmpl.title}
+                  </button>
+                ))}
+              </div>
 
-            {/* Modal Composer / Footer */}
-            <form onSubmit={handleSendReply} className="modal-admin-reply-box">
+              {/* 1-Click Quick Status Actions */}
+              <div style={{ display: 'flex', gap: 6, padding: '4px 16px', borderTop: '1px solid var(--color-border, rgba(255, 255, 255, 0.06))', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}>
+                  Quick Status:
+                </span>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary admin-btn-sm"
+                  onClick={() => handleStatusChange('resolved')}
+                  style={{ padding: '2px 8px', fontSize: 11, color: '#3874FF' }}
+                >
+                  <CheckCircle2 size={12} />
+                  <span>Mark Resolved</span>
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary admin-btn-sm"
+                  onClick={() => handleStatusChange('in_progress')}
+                  style={{ padding: '2px 8px', fontSize: 11, color: '#F59E0B' }}
+                >
+                  <Clock size={12} />
+                  <span>In Progress</span>
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary admin-btn-sm"
+                  onClick={() => handleStatusChange('waiting_user')}
+                  style={{ padding: '2px 8px', fontSize: 11, color: '#8B5CF6' }}
+                >
+                  <User size={12} />
+                  <span>Waiting Customer</span>
+                </button>
+              </div>
+
+              {/* Attached image preview in reply */}
               {attachedImage && (
-                <div className="modal-attached-bar">
-                  <div className="attached-thumb-box">
-                    <img src={attachedImage} alt="Attachment" className="attached-thumb" />
-                    <span className="attached-label">Image screenshot attached</span>
-                  </div>
+                <div className="reply-attachment-preview">
+                  <img src={attachedImage} alt="Attachment" />
                   <button
                     type="button"
-                    className="btn-remove-thumb"
+                    className="btn-remove-reply-image"
                     onClick={() => setAttachedImage(null)}
                   >
-                    <span className="icon icon--xs">close</span>
+                    <X size={13} />
                   </button>
                 </div>
               )}
 
-              <div className="admin-reply-input-wrap">
+              {/* Reply Form */}
+              <form onSubmit={handleSendReply} className="reply-form-inner">
                 <input
                   type="file"
-                  accept="image/*"
                   ref={fileInputRef}
                   style={{ display: 'none' }}
-                  onChange={(e) => handleUploadImage(e.target.files?.[0])}
-                />
-                <button
-                  type="button"
-                  className="btn-attach-icon"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingImage}
-                  title="Attach Screenshot"
-                >
-                  <span className="icon icon--sm icon--cyan">
-                    {uploadingImage ? 'sync' : 'attach_file'}
-                  </span>
-                </button>
-
-                <textarea
-                  className={`admin-reply-textarea ${isInternalNote ? 'is-internal' : ''}`}
-                  rows={2}
-                  placeholder={isInternalNote ? 'Write a private internal note for other admins...' : 'Type your official response to the customer... (Enter to send, Shift+Enter for new line)'}
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      if ((replyText.trim() || attachedImage) && !sendingReply) {
-                        handleSendReply(e);
-                      }
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      handleUploadImage(e.target.files[0]);
                     }
                   }}
                 />
-              </div>
 
-              <div className="admin-reply-footer-row">
-                <label className="admin-internal-toggle">
-                  <input
-                    type="checkbox"
-                    checked={isInternalNote}
-                    onChange={(e) => setIsInternalNote(e.target.checked)}
-                  />
-                  <span>Post as Internal Admin Note</span>
-                </label>
+                <button
+                  type="button"
+                  className="btn-attach-photo"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingImage || sendingReply}
+                  title="Attach screenshot/proof (Max 10MB)"
+                >
+                  {uploadingImage ? <RefreshCw size={16} className="spin" /> : <ImageIcon size={18} />}
+                </button>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <button
-                    type="button"
-                    className="btn-reply-resolve-action"
-                    onClick={(e) => handleSendReply(e, 'resolved')}
-                    disabled={sendingReply || (!replyText.trim() && !attachedImage)}
-                    title="Send message and mark ticket as Resolved"
-                  >
-                    <span className="icon icon--xs">task_alt</span>
-                    <span>Reply &amp; Resolve</span>
-                  </button>
-
-                  <button
-                    type="submit"
-                    className={`btn-send-admin-reply ${isInternalNote ? 'internal-btn' : ''}`}
-                    disabled={sendingReply || (!replyText.trim() && !attachedImage)}
-                  >
-                    <span className="icon icon--sm">send</span>
-                    <span>{sendingReply ? 'Sending...' : isInternalNote ? 'Save Internal Note' : 'Send Reply'}</span>
-                  </button>
+                <div className="internal-note-toggle-box">
+                  <label className="toggle-label-chk">
+                    <input
+                      type="checkbox"
+                      checked={isInternalNote}
+                      onChange={(e) => setIsInternalNote(e.target.checked)}
+                    />
+                    <span className="chk-custom" />
+                    <span className="chk-text">
+                      <Lock size={12} /> Internal Note
+                    </span>
+                  </label>
                 </div>
-              </div>
 
-              {/* Scratchpad Private Notes */}
-              <div className="admin-scratchpad-bar">
-                <div className="scratchpad-header">
-                  <span className="icon icon--xs icon--cyan">edit_note</span>
-                  <span>Internal Scratchpad Notes</span>
-                  <button
-                    type="button"
-                    className="btn-save-scratchpad"
-                    onClick={handleSaveNotes}
-                    disabled={savingNotes}
-                  >
-                    {savingNotes ? 'Saving...' : 'Save Notes'}
-                  </button>
-                </div>
                 <input
                   type="text"
-                  className="scratchpad-input"
-                  placeholder="Record supplier order ref, manual refund note, etc..."
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
+                  className={`reply-input-text ${isInternalNote ? 'internal-input-mode' : ''}`}
+                  placeholder={isInternalNote ? 'Write private internal staff note...' : 'Reply to customer...'}
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  disabled={sendingReply}
                 />
-              </div>
 
-            </form>
+                <button
+                  type="submit"
+                  className={`btn-send-reply ${isInternalNote ? 'internal-send-btn' : ''}`}
+                  disabled={(!replyText.trim() && !attachedImage) || sendingReply}
+                >
+                  {sendingReply ? <RefreshCw size={15} className="spin" /> : <Send size={15} />}
+                </button>
+              </form>
+            </div>
 
           </div>
         </div>
       )}
 
-      {/* 5. LIGHTBOX MODAL FOR IMAGE PREVIEW */}
+      {/* 5. LIGHTBOX MODAL */}
       {lightboxImage && (
-        <div className="ticket-lightbox-backdrop" onClick={() => setLightboxImage(null)}>
-          <div className="ticket-lightbox-panel" onClick={(e) => e.stopPropagation()}>
-            <img src={lightboxImage} alt="Fullscreen Screenshot" className="lightbox-img" />
+        <div className="lightbox-overlay" onClick={() => setLightboxImage(null)}>
+          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
-              className="lightbox-close-btn"
+              className="lightbox-close"
               onClick={() => setLightboxImage(null)}
             >
-              <span className="icon icon--md">close</span>
+              <X size={20} />
             </button>
+            <img src={lightboxImage} alt="Enlarged screenshot" />
           </div>
         </div>
       )}
