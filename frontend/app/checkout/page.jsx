@@ -85,19 +85,7 @@ function CheckoutContent() {
     if (user?.email) setEmail(user.email);
   }, [user]);
 
-  // ─── AUTH GUARD: Redirect to login if not logged in ───────────────────────
-  useEffect(() => {
-    if (!mounted) return;
-    // Wait for auth store to hydrate before checking
-    const stored = typeof window !== 'undefined'
-      ? JSON.parse(localStorage.getItem('quantumxd-auth') || '{}')?.state?.user
-      : null;
-    const currentUser = user || stored;
-    if (!currentUser) {
-      toast.error('Please login or create an account to place an order');
-      router.replace('/login?redirect=/checkout');
-    }
-  }, [mounted, user, router]);
+  // (Removed hard redirect - now showing Login/Register UI inline instead)
 
   // Fetch active payment methods from backend
   useEffect(() => {
@@ -391,23 +379,43 @@ function CheckoutContent() {
           {/* LEFT: Delivery & Payment Options */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-            {/* Delivery Email */}
-            <div className="card card--elevated" style={{ padding: 24 }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-text)' }}>
-                <span className="icon icon--md" style={{ color: 'var(--color-primary-light)' }}>email</span>
-                Delivery Email
-              </h3>
-              <div className="form-group">
-                <input
-                  type="email"
-                  className="form-input"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                />
-                <p className="form-hint">Digital license keys and download links will be sent here immediately.</p>
+            {!user ? (
+              <div className="card card--elevated" style={{ padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', background: 'var(--color-surface)', border: '2px dashed var(--color-border)' }}>
+                <span className="icon icon--lg" style={{ color: 'var(--color-primary)', fontSize: 56 }}>lock</span>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 24, fontWeight: 800, color: 'var(--color-text)' }}>
+                  Account Required for Checkout
+                </h3>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: 16, maxWidth: 400, margin: '0 auto', lineHeight: 1.5 }}>
+                  Please log in to your account or create a new one to securely place your order and get instant access to your products.
+                </p>
+                <div style={{ display: 'flex', gap: 16, marginTop: 16, width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <Link href="/login?redirect=/checkout" className="btn btn--primary" style={{ flex: 1, minWidth: 150, maxWidth: 200, justifyContent: 'center' }}>
+                    Login
+                  </Link>
+                  <Link href="/register?redirect=/checkout" className="btn btn--outline" style={{ flex: 1, minWidth: 150, maxWidth: 200, justifyContent: 'center' }}>
+                    Create Account
+                  </Link>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Delivery Email */}
+                <div className="card card--elevated" style={{ padding: 24 }}>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-text)' }}>
+                    <span className="icon icon--md" style={{ color: 'var(--color-primary-light)' }}>email</span>
+                    Delivery Email
+                  </h3>
+                  <div className="form-group">
+                    <input
+                      type="email"
+                      className="form-input"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                    />
+                    <p className="form-hint">Digital license keys and download links will be sent here immediately.</p>
+                  </div>
+                </div>
 
             {/* Coupon Code */}
             <div className="card card--elevated" style={{ padding: 24 }}>
@@ -730,6 +738,9 @@ function CheckoutContent() {
                   </button>
                 </div>
               </div>
+            )}
+
+              </>
             )}
 
           </div>
