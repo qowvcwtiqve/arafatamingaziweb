@@ -28,7 +28,7 @@ with open(pid_file, "w") as f:
     f.write(str(os.getpid()))
 
 from manager import ADMIN_BOT_TOKEN, STORE_BOT_TOKEN
-bot = telebot.TeleBot(ADMIN_BOT_TOKEN)
+bot = telebot.TeleBot(ADMIN_BOT_TOKEN, num_threads=20)
 
 try:
     STORE_BOT_USERNAME = telebot.TeleBot(STORE_BOT_TOKEN).get_me().username
@@ -1091,6 +1091,10 @@ def broadcast_discount(new_disc, db):
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
     chat_id = call.message.chat.id
+    # Acknowledge callback immediately to eliminate button loading spinner
+    try: bot.answer_callback_query(call.id)
+    except: pass
+
     # CRITICAL: Clear any pending text input handlers when an inline admin button is clicked
     bot.clear_step_handler_by_chat_id(chat_id)
     
@@ -3764,33 +3768,58 @@ def handle_callbacks(call):
         p_id, pool_id = parts[1], parts[2]
         db = load_db()
         pending = [s for s in db.get('sales', []) if s.get('pool_id') == pool_id and s.get('status') == 'Pre-Order']
-        pool_stock = db['products'][p_id]['stock_pools'].get(pool_id, [])
+        pool_stock = db.get('products', {}).get(p_id, {}).get('stock_pools', {}).get(pool_id, [])
           
         delivered_count = 0
+        from manager import STORE_BOT_TOKEN
+        target_bot = telebot.TeleBot(STORE_BOT_TOKEN)
+        kb = build_store_reply_keyboard()
+
         for sale in pending:
             if len(pool_stock) > 0:
                 cred = pool_stock.pop(0)
                 sale['credentials'] = cred
-                sale['status'] = "Pending" if db['products'][p_id].get('delivery_process', 'auto') == 'manual' else "Delivered"
+                sale['status'] = "Pending" if db.get('products', {}).get(p_id, {}).get('delivery_process', 'auto') == 'manual' else "Delivered"
                 delivered_count += 1
                   
-                # Send delivery message to user
+                # Send delivery message directly to customer via Store Bot
                 try:
                     user_id = sale.get('user_id')
-                    product_name = sale.get('product_name')
-                    variant_name = sale.get('variant_name')
+                    product_name = sale.get('product_name', 'Product')
+                    variant_name = sale.get('variant_name', '')
+                    sale_id = sale.get('sale_id', '')
+
+                    prod_obj = db.get('products', {}).get(p_id, {})
+                    prod_rules = prod_obj.get('pool_rules', {}).get(pool_id, '').strip()
+                    if not prod_rules:
+                        prod_rules = prod_obj.get('rules', '').strip()
+                    rules_text = f"\n━━━━━━━━━━━━━━━━━━━━━\n📜 *PRODUCT RULES*\n─────────────────────\n{prod_rules}\n" if prod_rules else ""
+
                     delivery_msg = (
-                        f"📦 **PRE-ORDER FULFILLED!** 📦\n\n"
-                        f"Your pre-order for **{product_name}** ({variant_name}) is ready!\n\n"
-                        f"**Credentials/Data:**\n`{cred}`\n\n"
-                        f"Thank you for your patience!"
+                        f"📦 *PRE-ORDER FULFILLED!* 📦\n"
+                        f"━━━━━━━━━━━━━━━━━━━━━\n"
+                        f"Your pre-order for *{product_name}* ({variant_name}) is ready and delivered!\n\n"
+                        f"🔑 *DELIVERED CREDENTIALS*\n"
+                        f"─────────────────────\n"
+                        f"`{cred}`\n"
+                        f"{rules_text}"
+                        f"━━━━━━━━━━━━━━━━━━━━━\n"
+                        f"💡 *Verification Code (OTP)*\n"
+                        f"If your login requires a verification code (OTP), click the button below to message support immediately.\n\n"
+                        f"🙏 *Thank you for your patience!*"
                     )
-                    bot.send_message(user_id, delivery_msg, parse_mode="Markdown")
+                    
+                    support_markup = InlineKeyboardMarkup()
+                    if sale_id:
+                        support_markup.row(InlineKeyboardButton("💬 Contact Support", callback_data=f"support:{sale_id}"))
+
+                    # Send to customer via Store Bot
+                    safe_send_store_message(target_bot, int(user_id), delivery_msg, reply_markup=support_markup if sale_id else kb)
                 except Exception as e:
-                    pass
+                    print(f"Error delivering pre-order to {sale.get('user_id')}: {e}")
                     
         save_db(db)
-        bot.edit_message_text(f"✅ Auto-delivered {delivered_count} pre-orders from pool `{pool_id}`!", chat_id, call.message.message_id)
+        bot.edit_message_text(f"✅ Auto-delivered {delivered_count} pre-order(s) from pool `{pool_id}` directly to customer(s) via Store Bot!", chat_id, call.message.message_id)
         return
     elif data.startswith("clearstock:"):
         parts = data.split(":", 2)
@@ -5076,6 +5105,15 @@ def step_save_edited_stock(message):
         if new_added > 0:
             import threading
             threading.Thread(target=broadcast_stock_addition, args=(pid, new_added), daemon=True).start()
+            
+            # Pre-Order Check
+            pending_pre = [s for s in db.get('sales', []) if s.get('pool_id') == pool_id and s.get('status') == 'Pre-Order']
+            if pending_pre:
+                markup = InlineKeyboardMarkup()
+                markup.add(InlineKeyboardButton("✅ Yes, Auto Deliver", callback_data=f"autodeliver:{pid}:{pool_id}"))
+                markup.add(InlineKeyboardButton("❌ No, Keep Pending", callback_data=f"editpool:{pid}:{pool_id}"))
+                bot.send_message(message.chat.id, f"📦 **PRE-ORDERS DETECTED!**\n\nYou updated stock in pool `{pool_id}`.\nThere are **{len(pending_pre)}** pending pre-orders waiting for this stock!\n\nDo you want to automatically fulfill and deliver them now?", reply_markup=markup, parse_mode="Markdown")
+                return
         
         report = f"✅ **Stock List Updated!**\n\nPool `{pool_id}` now has `{len(updated_stocks)}` items."
         markup = InlineKeyboardMarkup()

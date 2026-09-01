@@ -39,9 +39,9 @@ def get_binance_key(): return get_payment_settings().get('BINANCE_API_KEY')
 def get_binance_secret(): return get_payment_settings().get('BINANCE_API_SECRET')
 from flask import Flask, request, jsonify
 
-# Initialize Telegram Bots & Flask App
-bot = telebot.TeleBot(STORE_BOT_TOKEN)
-admin_bot = telebot.TeleBot(ADMIN_BOT_TOKEN)
+# Initialize Telegram Bots & Flask App (with high-performance worker thread pools)
+bot = telebot.TeleBot(STORE_BOT_TOKEN, num_threads=20)
+admin_bot = telebot.TeleBot(ADMIN_BOT_TOKEN, num_threads=15)
 app = Flask(__name__)
 
 # --- NETWORK RESILIENCE HANDLER ---
@@ -63,6 +63,7 @@ pending_orders = {}
 # For automatic payment detection
 pending_deposits = []
 payment_processing_lock = threading.Lock()
+purchase_lock = threading.Lock()
 active_purchases = set()
 
 # --- EXCHANGE RATE MANAGER ---
@@ -332,19 +333,17 @@ def check_membership(user_id, bypass_cache=False):
                 member_group = bot.get_chat_member(int(GROUP_CHAT_ID), user_id)
                 is_group_member = member_group.status in ['member', 'administrator', 'creator']
             except Exception as e:
-                print(f"Group Membership Check Error: {e}")
                 # If bot is not in group or group is misconfigured, allow access to avoid locking everyone out
                 is_group_member = True
                 
         is_member = is_channel_member and is_group_member
         
-        # Cache membership status: 5 minutes if member, 10 seconds if not member
-        cache_time = 300 if is_member else 10
+        # Cache membership status: 1 Hour (3600s) if member for instant button responses, 30 seconds if not member
+        cache_time = 3600 if is_member else 30
         membership_cache[user_id] = (is_member, now + cache_time)
         return is_member
     except Exception as e:
         # If bot is not admin or channel doesn't exist, allow access to avoid blocking everyone
-        print(f"Membership Check Error: {e}")
         return True
 
 def membership_required_screen(chat_id, is_callback=False):
@@ -385,6 +384,60 @@ def get_p_emoji(key, fallback):
 
 def html_escape(text):
     return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+def show_add_balance_menu(chat_id, user, currency, message_id=None):
+    bal_str = converter.format_price(user.get('balance', 0.0), currency)
+    uname = html_escape(str(user.get('username', 'Unknown')).replace('_', '-'))
+    uname_display = f"@{uname}" if uname != "Unknown" else "No Username"
+
+    p_emoji = get_p_emoji('balance', '💳')
+    e_user = get_p_emoji('user', '👤')
+    e_briefcase = get_p_emoji('briefcase', '💼')
+    e_flash = get_p_emoji('flash', '⚡')
+    e_note = get_p_emoji('note_time', '⏱️')
+    e_gateway = get_p_emoji('gateway', '📊')
+    e_down = get_p_emoji('down', '👇')
+
+    deposit_text = (
+        f"{p_emoji} <b>ADD FUNDS TO WALLET</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━\n"
+        f"{e_user} <b>User:</b> {uname_display} (<code>{chat_id}</code>)\n"
+        f"{e_briefcase} <b>Current Balance:</b> <code>{bal_str}</code>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━\n"
+        f"{e_flash} <b>All payments are 100% Auto-Verified and will be automatically credited to your wallet instantly upon completion!</b>\n\n"
+        f"{e_note} <b>Note:</b> Please complete the payment within <b>1 hour</b> after selecting a method.\n\n"
+        f"{e_gateway} <b>Gateway Details:</b>\n"
+        f"• <b>UPI:</b> <code>0% Fee</code> | <code>Min ₹1</code>\n"
+        f"• <b>Binance Pay:</b> <code>0% Fee</code> | <code>Min $1</code>\n"
+        f"• <b>Crypto:</b> <code>5% Fee</code> | <code>Min ₹500</code> / <code>$5</code>\n\n"
+        f"{e_down} <b>Select your preferred deposit method:</b>"
+    )
+    # Get active payment methods from database config
+    db_data = load_db()
+    methods = db_data.get('payment_methods', {"cashfree": True, "upi_qr": True, "crypto": True, "binance_pay": True})
+
+    markup = InlineKeyboardMarkup(row_width=2)
+    buttons = []
+    if methods.get("cashfree", True):
+        buttons.append(InlineKeyboardButton("💳 UPI", callback_data="dep_meth:inr"))
+    if methods.get("upi_qr", True):
+        buttons.append(InlineKeyboardButton("🇮🇳 UPI QR", callback_data="dep_meth:upi_qr"))
+    if methods.get("binance_pay", True):
+        buttons.append(InlineKeyboardButton("🟡 BINANCE PAY", callback_data="dep_meth:binance_pay"))
+    if methods.get("crypto", True):
+        buttons.append(InlineKeyboardButton("🪙 CRYPTO", callback_data="dep_meth:crypto"))
+    
+    markup.add(*buttons)
+    markup.add(InlineKeyboardButton("📜 Deposit History", callback_data="dep_history"))
+
+    if message_id:
+        try:
+            bot.edit_message_text(deposit_text, chat_id, message_id, reply_markup=markup, parse_mode='HTML')
+            return
+        except Exception as e:
+            if "message is not modified" not in str(e).lower():
+                pass
+    bot.send_message(chat_id, deposit_text, reply_markup=markup, parse_mode='HTML')
 
 # --- HELPER MENUS ---
 def build_reply_keyboard():
@@ -1036,6 +1089,9 @@ def verify_and_process_ipn(invoice_id, payment_id, payment_status):
             # Double check status from NOWPayments API using payment_id (which is 100% secure)
             if payment_id:
                 res = check_now_status(payment_id)
+                if not res:
+                    print(f"[IPN Webhook] API check failed for payment_id={payment_id}. Skipping to avoid false positives.")
+                    return
                 verified_status = res.get('payment_status')
                 print(f"[IPN Webhook] Verifying via API: payment_id={payment_id}, verified_status={verified_status}")
             else:
@@ -1068,15 +1124,14 @@ def verify_and_process_ipn(invoice_id, payment_id, payment_status):
                 if outcome_amount and outcome_currency:
                     estimated_inr = estimate_fiat_amount(outcome_amount, outcome_currency, "inr")
                     if estimated_inr is not None:
-                        credited_amount = round(estimated_inr, 2)
+                        credited_amount = round(estimated_inr / 1.05, 2)
                         print(f"[IPN Webhook] Primary estimate success: converted back to fiat = {credited_amount} INR")
                 
-                # 2. Fallback Method: Ratio-based calculation using (base_amount_inr * 1.05) * (actually_paid / pay_amount)
+                # 2. Fallback Method: Ratio-based calculation using base amount
                 if credited_amount is None:
                     if actually_paid and pay_amount and float(pay_amount) > 0:
                         ratio = float(actually_paid) / float(pay_amount)
-                        bill_amount = amount_inr * 1.05
-                        credited_amount = round(bill_amount * ratio, 2)
+                        credited_amount = round(amount_inr * ratio, 2)
                         print(f"[IPN Webhook] Fallback ratio calculation used: ratio={ratio:.4f}, credited_amount={credited_amount} INR")
                     else:
                         print(f"[IPN Webhook] Fallback failed: actually_paid data is missing. Cannot credit safely.")
@@ -2460,10 +2515,21 @@ def send_welcome(message):
 # --- CALLBACK ROUTER ---
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
+    chat_id = call.message.chat.id
+    data = call.data
+
+    # Acknowledge callback immediately to eliminate Telegram button spinner lag
+    if data != "check_joined":
+        try: bot.answer_callback_query(call.id)
+        except: pass
+
+    # CRITICAL: Clear any pending text input handlers when an inline button is clicked
+    bot.clear_step_handler_by_chat_id(chat_id)
+
     global db
     db = load_db()
 
-    if call.data == 'tutorials_menu':
+    if data == 'tutorials_menu':
         markup = InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("🟢 How to Top Up", callback_data="view_tut_how_to_topup"))
         markup.add(InlineKeyboardButton("🛒 How to Buy", callback_data="view_tut_how_to_buy"))
@@ -2472,8 +2538,8 @@ def handle_callbacks(call):
         bot.edit_message_text("📖 *Tutorials & Guides*\n\nSelect a topic below to learn how to use the bot:", chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=markup, parse_mode="Markdown")
         return
 
-    if call.data.startswith('view_tut_'):
-        tut_id = call.data.replace('view_tut_', '')
+    if data.startswith('view_tut_'):
+        tut_id = data.replace('view_tut_', '')
         tutorials = db.get('tutorials', {})
         tut_text = tutorials.get(tut_id, "_Tutorial not found_")
         markup = InlineKeyboardMarkup()
@@ -2481,12 +2547,7 @@ def handle_callbacks(call):
         bot.edit_message_text(tut_text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=markup, parse_mode="Markdown")
         return
 
-    chat_id = call.message.chat.id
-    # CRITICAL: Clear any pending text input handlers when an inline button is clicked
-    bot.clear_step_handler_by_chat_id(chat_id)
-
     str_chat_id = str(chat_id)
-    data = call.data
     user = get_user(call.from_user)
     currency = user['currency']
 
@@ -2517,10 +2578,13 @@ def handle_callbacks(call):
 
     # Gate all other callbacks
     if not check_membership(chat_id):
-        bot.answer_callback_query(call.id, "⚠️ Channel membership required!")
         membership_required_screen(chat_id, is_callback=True)
         return
-    bot.answer_callback_query(call.id)
+
+    # --- ADD BALANCE CALLBACK ---
+    if data == "add_bal":
+        show_add_balance_menu(chat_id, user, currency, message_id=call.message.message_id)
+        return
 
     # --- DEPOSIT QUICK AMOUNT SELECT ---
     if data.startswith("dep_amt:"):
@@ -3033,135 +3097,146 @@ def handle_callbacks(call):
             bot.answer_callback_query(call.id, "❄️ Your wallet is frozen. You cannot make any purchases.", show_alert=True)
             return
         
-        active_purchases.add(chat_id)
         parts = data.split(":")
         p_id, v_id, qty = parts[1], parts[2], int(parts[3])
         coupon_code = parts[4] if len(parts) > 4 else None
 
-        prod = db['products'].get(p_id)
-        var = prod['variants'].get(v_id)
-    
-        pool_id = var.get('pool_id')
-        pool_stock = prod.get('stock_pools', {}).get(pool_id, [])
-
-        is_preorder_purchase = False
-        is_preorder_enabled = prod.get('preorder_pools', {}).get(pool_id, False)
-
-        if not prod or not var:
-            active_purchases.discard(chat_id)
-            bot.answer_callback_query(call.id, "Sorry, product not found!", show_alert=True)
+        if qty <= 0:
+            bot.answer_callback_query(call.id, "Invalid quantity!", show_alert=True)
             return
-            
-        if len(pool_stock) < qty:
-            if is_preorder_enabled:
-                is_preorder_purchase = True
-            else:
+
+        active_purchases.add(chat_id)
+        
+        with purchase_lock:
+            # Force reload DB to get latest balance and stock accurately
+            global db
+            db = load_db(force_fetch=True)
+            user_fresh = db['users'].get(str_chat_id, user)
+
+            prod = db['products'].get(p_id)
+            var = prod.get('variants', {}).get(v_id) if prod else None
+
+            if not prod or not var:
                 active_purchases.discard(chat_id)
-                bot.answer_callback_query(call.id, "Sorry, not enough stock!", show_alert=True)
+                bot.answer_callback_query(call.id, "Sorry, product not found!", show_alert=True)
                 return
 
-        # Calculate base price with active product discount
-        original_price = var['price']
-        disc_price, disc_info = get_active_discount(p_id, original_price, db)
-        total_inr = disc_price * qty
-    
-        applied_coupon = None
-        coupon_discount = 0.0
-        if coupon_code:
-            coupon = db.get('coupons', {}).get(coupon_code)
-            if coupon and coupon.get('is_active', True):
-                # Verify date
-                now = time.time()
-                start_ts = coupon.get('start_date')
-                end_ts = coupon.get('end_date')
-                date_ok = not ((start_ts and now < start_ts) or (end_ts and now > end_ts))
-            
-                # Verify product
-                target_type = coupon.get('target_type', 'all')
-                prod_ok = not (target_type == 'specific' and p_id not in coupon.get('target_products', []))
-            
-                # Verify per-user usage limit
-                user_ok = True
-                per_user_limit = coupon.get('per_user_limit', -1)
-                if per_user_limit != -1:
-                    user_uses = sum(1 for s in db.get('sales', []) if s.get('user_id') == chat_id and s.get('coupon_code') == coupon_code)
-                    if user_uses >= per_user_limit:
-                        user_ok = False
+            pool_id = var.get('pool_id')
+            pool_stock = prod.get('stock_pools', {}).get(pool_id, [])
+
+            is_preorder_purchase = False
+            is_preorder_enabled = prod.get('preorder_pools', {}).get(pool_id, False)
+
+            if len(pool_stock) < qty:
+                if is_preorder_enabled:
+                    is_preorder_purchase = True
+                else:
+                    active_purchases.discard(chat_id)
+                    bot.answer_callback_query(call.id, "Sorry, not enough stock!", show_alert=True)
+                    return
+
+            # Calculate base price with active product discount
+            original_price = var['price']
+            disc_price, disc_info = get_active_discount(p_id, original_price, db)
+            total_inr = disc_price * qty
+        
+            applied_coupon = None
+            coupon_discount = 0.0
+            if coupon_code:
+                coupon = db.get('coupons', {}).get(coupon_code)
+                if coupon and coupon.get('is_active', True):
+                    # Verify date
+                    now = time.time()
+                    start_ts = coupon.get('start_date')
+                    end_ts = coupon.get('end_date')
+                    date_ok = not ((start_ts and now < start_ts) or (end_ts and now > end_ts))
+                
+                    # Verify product
+                    target_type = coupon.get('target_type', 'all')
+                    prod_ok = not (target_type == 'specific' and p_id not in coupon.get('target_products', []))
+                
+                    # Verify per-user usage limit
+                    user_ok = True
+                    per_user_limit = coupon.get('per_user_limit', -1)
+                    if per_user_limit != -1:
+                        user_uses = sum(1 for s in db.get('sales', []) if s.get('user_id') == chat_id and s.get('coupon_code') == coupon_code)
+                        if user_uses >= per_user_limit:
+                            user_ok = False
+                        
+                    # Verify overall usage limit
+                    limit_ok = True
+                    max_uses = coupon.get('max_uses', -1)
+                    used_count = coupon.get('used_count', 0)
+                    if max_uses != -1 and used_count >= max_uses:
+                        limit_ok = False
                     
-                # Verify overall usage limit
-                limit_ok = True
-                max_uses = coupon.get('max_uses', -1)
-                used_count = coupon.get('used_count', 0)
-                if max_uses != -1 and used_count >= max_uses:
-                    limit_ok = False
-                
-                if date_ok and prod_ok and limit_ok and user_ok:
-                    applied_coupon = coupon
-                    val = coupon.get('value', 0.0)
-                    if coupon.get('type') == 'percentage':
-                        coupon_discount = round(total_inr * (val / 100.0), 2)
-                    else:
-                        coupon_discount = round(val, 2)
-                
-                    total_inr = max(0.0, total_inr - coupon_discount)
+                    if date_ok and prod_ok and limit_ok and user_ok:
+                        applied_coupon = coupon
+                        val = coupon.get('value', 0.0)
+                        if coupon.get('type') == 'percentage':
+                            coupon_discount = round(total_inr * (val / 100.0), 2)
+                        else:
+                            coupon_discount = round(val, 2)
+                    
+                        total_inr = max(0.0, total_inr - coupon_discount)
 
-        if user['balance'] < total_inr:
-            active_purchases.discard(chat_id)
-            bot.answer_callback_query(call.id, "Insufficient Balance! Please add funds.", show_alert=True)
-            return
+            if user_fresh.get('balance', 0) < total_inr:
+                active_purchases.discard(chat_id)
+                bot.answer_callback_query(call.id, "Insufficient Balance! Please add funds.", show_alert=True)
+                return
 
-        db['users'][str_chat_id]['balance'] -= total_inr
-        db['users'][str_chat_id]['total_purchases'] += qty
-        
-        is_inf = prod.get('infinite_pools', {}).get(pool_id, False)
-        delivered_items = []
-        for _ in range(qty):
-            if is_inf and len(pool_stock) > 0:
-                delivered_items.append(pool_stock[0])
-            elif not is_preorder_purchase and len(pool_stock) > 0:
-                delivered_items.append(pool_stock.pop(0))
-            elif is_preorder_purchase:
-                delivered_items.append("⏳ Pre-Ordered Item (Awaiting Stock)")
-    
-        # Log every sale to sales.json for admin analytics
-        if 'sales' not in db: db['sales'] = []
-        import uuid
-        now = time.time()
-        u_obj = db['users'].get(str_chat_id, {})
-    
-        # Calculate expiry if product has duration
-        duration_months = var.get('duration', 0)
-        end_ts = None
-        if duration_months > 0:
-            end_ts = now + (duration_months * 30 * 24 * 3600)
-
-        batch_id = str(uuid.uuid4())[:8]
-        for item in delivered_items:
-            db['sales'].append({
-                "sale_id": str(uuid.uuid4())[:8],
-                "batch_id": batch_id,
-                "user_id": chat_id,
-                "username": u_obj.get('username', 'Unknown'),
-                "product_id": p_id,
-                "variant_id": v_id,
-                "pool_id": pool_id,
-                "product_name": prod['name'],
-                "variant_name": var['name'],
-                "price": round(total_inr / qty, 2), # actual paid unit price
-                "original_price": original_price,
-                "coupon_code": coupon_code,
-                "coupon_discount": round(coupon_discount / qty, 2) if coupon_code else 0.0,
-                "purchase_ts": now,
-                "end_ts": end_ts,
-                "status": "Pre-Order" if is_preorder_purchase else ("Pending" if prod.get('delivery_process', 'auto') == 'manual' else "Delivered"),
-                "credentials": item
-            })
-        
-        if applied_coupon:
-            db['coupons'][applied_coupon['code']]['used_count'] = applied_coupon.get('used_count', 0) + 1
+            db['users'][str_chat_id]['balance'] -= total_inr
+            db['users'][str_chat_id]['total_purchases'] = user_fresh.get('total_purchases', 0) + qty
             
-        save_db(db)
+            is_inf = prod.get('infinite_pools', {}).get(pool_id, False)
+            delivered_items = []
+            for _ in range(qty):
+                if is_inf and len(pool_stock) > 0:
+                    delivered_items.append(pool_stock[0])
+                elif not is_preorder_purchase and len(pool_stock) > 0:
+                    delivered_items.append(pool_stock.pop(0))
+                elif is_preorder_purchase:
+                    delivered_items.append("⏳ Pre-Ordered Item (Awaiting Stock)")
+    
+            # Log every sale to sales.json for admin analytics
+            if 'sales' not in db: db['sales'] = []
+            import uuid
+            now = time.time()
+            u_obj = db['users'].get(str_chat_id, {})
         
+            # Calculate expiry if product has duration
+            duration_months = var.get('duration', 0)
+            end_ts = None
+            if duration_months > 0:
+                end_ts = now + (duration_months * 30 * 24 * 3600)
+
+            batch_id = str(uuid.uuid4())[:8]
+            for item in delivered_items:
+                db['sales'].append({
+                    "sale_id": str(uuid.uuid4())[:8],
+                    "batch_id": batch_id,
+                    "user_id": chat_id,
+                    "username": u_obj.get('username', 'Unknown'),
+                    "product_id": p_id,
+                    "variant_id": v_id,
+                    "pool_id": pool_id,
+                    "product_name": prod['name'],
+                    "variant_name": var['name'],
+                    "price": round(total_inr / qty, 2), # actual paid unit price
+                    "original_price": original_price,
+                    "coupon_code": coupon_code,
+                    "coupon_discount": round(coupon_discount / qty, 2) if coupon_code else 0.0,
+                    "purchase_ts": now,
+                    "end_ts": end_ts,
+                    "status": "Pre-Order" if is_preorder_purchase else ("Pending" if prod.get('delivery_process', 'auto') == 'manual' else "Delivered"),
+                    "credentials": item
+                })
+            
+            if applied_coupon:
+                db['coupons'][applied_coupon['code']]['used_count'] = applied_coupon.get('used_count', 0) + 1
+                
+            save_db(db)
+            
         if is_preorder_purchase:
             _send_admin_alert(db, f"📦 **PRE-ORDER RECEIVED!**\n\n👤 **User:** @{u_obj.get('username', 'Unknown')} (`{chat_id}`)\n🛒 **Product:** {prod['name']} ({var['name']})\n📦 **Quantity:** {qty}\n🪪 **Pool ID:** `{pool_id}`\n\nStock is currently empty. This pre-order is waiting for auto-delivery.")
 
@@ -3343,50 +3418,7 @@ def handle_text_menus(message):
         bot.register_next_step_handler(msg, process_product_search)
 
     elif text.endswith("Add Balance"):
-        bal_str = converter.format_price(user['balance'], currency)
-        uname = html_escape(str(user.get('username', 'Unknown')).replace('_', '-'))
-        uname_display = f"@{uname}" if uname != "Unknown" else "No Username"
-    
-        p_emoji = get_p_emoji('balance', '💳')
-        e_user = get_p_emoji('user', '👤')
-        e_briefcase = get_p_emoji('briefcase', '💼')
-        e_flash = get_p_emoji('flash', '⚡')
-        e_note = get_p_emoji('note_time', '⏱️')
-        e_gateway = get_p_emoji('gateway', '📊')
-        e_down = get_p_emoji('down', '👇')
-    
-        deposit_text = (
-            f"{p_emoji} <b>ADD FUNDS TO WALLET</b>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━\n"
-            f"{e_user} <b>User:</b> {uname_display} (<code>{chat_id}</code>)\n"
-            f"{e_briefcase} <b>Current Balance:</b> <code>{bal_str}</code>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━\n"
-            f"{e_flash} <b>All payments are 100% Auto-Verified and will be automatically credited to your wallet instantly upon completion!</b>\n\n"
-            f"{e_note} <b>Note:</b> Please complete the payment within <b>1 hour</b> after selecting a method.\n\n"
-            f"{e_gateway} <b>Gateway Details:</b>\n"
-            f"• <b>UPI:</b> <code>0% Fee</code> | <code>Min ₹1</code>\n"
-            f"• <b>Binance Pay:</b> <code>0% Fee</code> | <code>Min $1</code>\n"
-            f"• <b>Crypto:</b> <code>5% Fee</code> | <code>Min ₹500</code> / <code>$5</code>\n\n"
-            f"{e_down} <b>Select your preferred deposit method:</b>"
-        )
-        # Get active payment methods from database config
-        methods = db.get('payment_methods', {"cashfree": True, "upi_qr": True, "crypto": True, "binance_pay": True})
-    
-        markup = InlineKeyboardMarkup(row_width=2)
-        buttons = []
-        if methods.get("cashfree", True):
-            buttons.append(InlineKeyboardButton("💳 UPI", callback_data="dep_meth:inr"))
-        if methods.get("upi_qr", True):
-            buttons.append(InlineKeyboardButton("🇮🇳 UPI QR", callback_data="dep_meth:upi_qr"))
-        if methods.get("binance_pay", True):
-            buttons.append(InlineKeyboardButton("🟡 BINANCE PAY", callback_data="dep_meth:binance_pay"))
-        if methods.get("crypto", True):
-            buttons.append(InlineKeyboardButton("🪙 CRYPTO", callback_data="dep_meth:crypto"))
-        
-        markup.add(*buttons)
-        markup.add(InlineKeyboardButton("📜 Deposit History", callback_data="dep_history"))
-    
-        bot.send_message(chat_id, deposit_text, reply_markup=markup, parse_mode='HTML')
+        show_add_balance_menu(chat_id, user, currency)
 
     elif text.endswith("My Account"):
         now_str = datetime.now(IST).strftime("%I:%M %p, %d %b %Y")

@@ -162,8 +162,8 @@ def load_db(force_fetch=False):
 
     try:
         now = time.time()
-        # If we synced very recently (within 5 seconds) and not forcing a fetch, return cache instantly
-        if not force_fetch and _cached_db is not None and (now - _last_sync_time) < 5:
+        # If we synced recently (within 20 seconds) and not forcing a fetch, return in-memory cache instantly (0ms)
+        if not force_fetch and _cached_db is not None and (now - _last_sync_time) < 20:
             return _cached_db
 
         # If we have cached data, only verify modification time to see if we need a full sync
@@ -224,7 +224,7 @@ def load_db(force_fetch=False):
             _hash_cache["coupons"] = get_hash(db['coupons'])
             
         tutorials_doc = db_mongo.system.find_one({'_id': 'tutorials'})
-        if tutorials_doc:
+        if tutorials_doc: 
             db['tutorials'] = tutorials_doc.get('data', _default_db()['tutorials'])
             _hash_cache["tutorials"] = get_hash(db['tutorials'])
             
@@ -265,6 +265,7 @@ def load_db(force_fetch=False):
 def save_db(db):
     global _cached_db, _last_sync_time, _hash_cache
     if not client: return
+    _cached_db = db
     try:
         changed = False
         
@@ -280,8 +281,11 @@ def save_db(db):
             
         # 2. Products
         current_pids = list(db.get('products', {}).keys())
-        res = db_mongo.products.delete_many({'_id': {'$nin': current_pids}})
-        if res.deleted_count > 0: changed = True
+        pids_h = get_hash(sorted(current_pids))
+        if _hash_cache.get("all_pids") != pids_h:
+            res = db_mongo.products.delete_many({'_id': {'$nin': current_pids}})
+            if res.deleted_count > 0: changed = True
+            _hash_cache["all_pids"] = pids_h
 
         prods_bulk = []
         for k, v in db.get('products', {}).items():
@@ -294,8 +298,11 @@ def save_db(db):
             
         # 3. Categories
         current_cids = list(db.get('categories', {}).keys())
-        res = db_mongo.categories.delete_many({'_id': {'$nin': current_cids}})
-        if res.deleted_count > 0: changed = True
+        cids_h = get_hash(sorted(current_cids))
+        if _hash_cache.get("all_cids") != cids_h:
+            res = db_mongo.categories.delete_many({'_id': {'$nin': current_cids}})
+            if res.deleted_count > 0: changed = True
+            _hash_cache["all_cids"] = cids_h
 
         cats_bulk = []
         for k, v in db.get('categories', {}).items():
