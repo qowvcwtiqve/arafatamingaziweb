@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../../lib/api';
 import toast from 'react-hot-toast';
-import { Search, Send, User, Clock, CheckCircle2 } from 'lucide-react';
+import { Search, Send, User, Clock, CheckCircle2, MessageSquare } from 'lucide-react';
 
 export default function WhatsAppCRMTab() {
   const [contacts, setContacts] = useState([]);
