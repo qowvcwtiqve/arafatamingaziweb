@@ -15,14 +15,14 @@ export default function WhatsAppCRMTab() {
 
   useEffect(() => {
     fetchContacts();
-    const interval = setInterval(fetchContacts, 10000); // Auto refresh contacts
+    const interval = setInterval(fetchContacts, 10000); 
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     if (selectedContact) {
       fetchMessages(selectedContact.phoneNumber);
-      const interval = setInterval(() => fetchMessages(selectedContact.phoneNumber), 5000); // Auto refresh messages
+      const interval = setInterval(() => fetchMessages(selectedContact.phoneNumber), 5000); 
       return () => clearInterval(interval);
     }
   }, [selectedContact]);
@@ -62,7 +62,6 @@ export default function WhatsAppCRMTab() {
     const msgToSend = inputMsg;
     setInputMsg('');
 
-    // Optimistic UI update
     setMessages(prev => [...prev, {
       _id: Date.now().toString(),
       direction: 'outgoing',
@@ -79,7 +78,7 @@ export default function WhatsAppCRMTab() {
       fetchMessages(selectedContact.phoneNumber);
     } catch (err) {
       toast.error('Failed to send message');
-      fetchMessages(selectedContact.phoneNumber); // revert optimistic
+      fetchMessages(selectedContact.phoneNumber); 
     }
   };
 
@@ -88,7 +87,7 @@ export default function WhatsAppCRMTab() {
   return (
     <div className="admin-card-section" style={{ display: 'flex', height: 'calc(100vh - 120px)', padding: 0, overflow: 'hidden' }}>
       
-      {/* Sidebar - Contacts */}
+      {}
       <div style={{ width: '320px', borderRight: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', background: 'var(--color-bg-secondary)' }}>
         <div style={{ padding: '20px', borderBottom: '1px solid var(--color-border)' }}>
           <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text)' }}>Inbox</h2>
@@ -134,11 +133,11 @@ export default function WhatsAppCRMTab() {
         </div>
       </div>
 
-      {/* Main Chat Area */}
+      {}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-bg-primary)' }}>
         {selectedContact ? (
           <>
-            {/* Chat Header */}
+            {}
             <div style={{ padding: '20px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 15, background: 'var(--color-bg-secondary)' }}>
               <div style={{ width: 45, height: 45, borderRadius: '50%', background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
                 <User size={24} />
@@ -149,7 +148,7 @@ export default function WhatsAppCRMTab() {
               </div>
             </div>
 
-            {/* Chat Messages */}
+            {}
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: 15 }}>
               {messages.map(msg => (
                 <div 
@@ -191,7 +190,7 @@ export default function WhatsAppCRMTab() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Chat Input */}
+            {}
             <div style={{ padding: '20px', borderTop: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)' }}>
               <form onSubmit={sendMessage} style={{ display: 'flex', gap: 10 }}>
                 <input 

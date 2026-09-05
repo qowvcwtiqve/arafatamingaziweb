@@ -3,9 +3,6 @@ import axios from 'axios';
 import WhatsappContact from '../models/WhatsappContact.js';
 import WhatsappMessage from '../models/WhatsappMessage.js';
 
-// @desc    Verify Meta Webhook
-// @route   GET /api/whatsapp/webhook
-// @access  Public
 export const verifyWebhook = asyncHandler(async (req, res) => {
   const verifyToken = process.env.META_WEBHOOK_VERIFY_TOKEN;
 
@@ -15,7 +12,7 @@ export const verifyWebhook = asyncHandler(async (req, res) => {
 
   if (mode && token) {
     if (mode === 'subscribe' && token === verifyToken) {
-      console.log('WEBHOOK_VERIFIED');
+      
       res.status(200).send(challenge);
     } else {
       res.sendStatus(403);
@@ -25,9 +22,6 @@ export const verifyWebhook = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Receive Message from Meta Webhook
-// @route   POST /api/whatsapp/webhook
-// @access  Public
 export const receiveMessage = asyncHandler(async (req, res) => {
   const body = req.body;
 
@@ -46,10 +40,8 @@ export const receiveMessage = asyncHandler(async (req, res) => {
       const messageId = messageObj.id;
       const contactName = body.entry[0].changes[0].value.contacts?.[0]?.profile?.name || 'Unknown';
 
-      console.log(`Received message from ${from}: ${msgBody}`);
-
       try {
-        // 1. Update or Create Contact
+        
         const contact = await WhatsappContact.findOneAndUpdate(
           { phoneNumber: from },
           { 
@@ -59,7 +51,6 @@ export const receiveMessage = asyncHandler(async (req, res) => {
           { upsert: true, new: true }
         );
 
-        // 2. Save Message
         const newMessage = await WhatsappMessage.create({
           messageId: messageId,
           phoneNumber: from,
@@ -68,8 +59,6 @@ export const receiveMessage = asyncHandler(async (req, res) => {
           text: msgBody,
           status: 'received'
         });
-
-        // 3. TODO: Emit to frontend via Socket.io for realtime update
 
       } catch (error) {
         console.error('Error saving WhatsApp message to DB:', error);
@@ -81,9 +70,6 @@ export const receiveMessage = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Send WhatsApp Message from CRM
-// @route   POST /api/whatsapp/send
-// @access  Private/Admin
 export const sendMessage = asyncHandler(async (req, res) => {
   const { to, message } = req.body;
   const phoneNumberId = process.env.META_PHONE_NUMBER_ID;
@@ -97,7 +83,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
   try {
     const response = await axios({
       method: 'POST',
-      url: `https://graph.facebook.com/v20.0/${phoneNumberId}/messages`,
+      url: `https:
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -112,7 +98,6 @@ export const sendMessage = asyncHandler(async (req, res) => {
 
     const messageId = response.data.messages[0].id;
 
-    // Save outgoing message to DB
     await WhatsappMessage.create({
       messageId: messageId,
       phoneNumber: to,
@@ -122,7 +107,6 @@ export const sendMessage = asyncHandler(async (req, res) => {
       status: 'sent'
     });
 
-    // Update lastMessageAt for contact
     await WhatsappContact.findOneAndUpdate(
       { phoneNumber: to },
       { lastMessageAt: new Date() },
@@ -137,22 +121,15 @@ export const sendMessage = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get WhatsApp Contacts
-// @route   GET /api/whatsapp/contacts
-// @access  Private/Admin
 export const getContacts = asyncHandler(async (req, res) => {
   const contacts = await WhatsappContact.find().sort({ lastMessageAt: -1 });
   res.status(200).json(contacts);
 });
 
-// @desc    Get Messages for a Contact
-// @route   GET /api/whatsapp/messages/:phoneNumber
-// @access  Private/Admin
 export const getMessages = asyncHandler(async (req, res) => {
   const { phoneNumber } = req.params;
   const messages = await WhatsappMessage.find({ phoneNumber }).sort({ createdAt: 1 });
-  
-  // Mark messages as read
+
   await WhatsappMessage.updateMany(
     { phoneNumber, direction: 'incoming', isRead: false },
     { $set: { isRead: true } }
