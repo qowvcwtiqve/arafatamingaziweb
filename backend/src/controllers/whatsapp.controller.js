@@ -83,7 +83,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
   try {
     const response = await axios({
       method: 'POST',
-      url: `https:
+      url: `https://graph.facebook.com/v20.0/${phoneNumberId}/messages`,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
