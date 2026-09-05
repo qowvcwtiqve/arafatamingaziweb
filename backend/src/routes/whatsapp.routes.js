@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { verifyWebhook, receiveMessage, sendMessage, getContacts, getMessages } from '../controllers/whatsapp.controller.js';
-import { protect, admin } from '../middleware/auth.middleware.js';
+import { protect, requireAdmin as admin } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
