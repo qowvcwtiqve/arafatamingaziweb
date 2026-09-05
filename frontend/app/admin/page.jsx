@@ -14,6 +14,7 @@ import {
   Tags,
   Wallet,
   MessageSquare,
+  MessageCircle,
   Menu,
   X,
   ExternalLink,
@@ -49,9 +50,11 @@ import CouponsTab from '../../components/admin/CouponsTab';
 import UserDetailModal from '../../components/admin/UserDetailModal';
 import PaymentSettingsTab from '../../components/admin/PaymentSettingsTab';
 import TicketsManagementTab from '../../components/admin/TicketsManagementTab';
+import WhatsAppCRMTab from '../../components/admin/WhatsAppCRMTab';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'whatsapp', label: 'WhatsApp CRM', icon: MessageCircle },
   { id: 'tickets', label: 'Support Tickets', icon: MessageSquare },
   { id: 'orders', label: 'Orders', icon: ReceiptText },
   { id: 'products', label: 'Products Catalog', icon: Box },
@@ -565,6 +568,11 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* TAB: WHATSAPP CRM */}
+          {activeTab === 'whatsapp' && (
+            <WhatsAppCRMTab />
           )}
 
           {/* TAB 2: SUPPORT TICKETS */}

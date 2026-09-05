@@ -15,6 +15,7 @@ import downloadRoutes from './routes/download.routes.js';
 import realtimeRoutes, { initRealtimeWatcher } from './routes/realtime.routes.js';
 import currencyRoutes from './routes/currency.routes.js';
 import ticketRoutes, { adminTicketRouter } from './routes/ticket.routes.js';
+import whatsappRoutes from './routes/whatsapp.routes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { connectMongoDB } from './config/mongodb.js';
 
@@ -78,6 +79,7 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/download', downloadRoutes);
 app.use('/api/realtime', realtimeRoutes);
 app.use('/api/currency', currencyRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 
 // =====================================================
 // ERROR HANDLING
